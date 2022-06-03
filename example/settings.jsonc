@@ -1,0 +1,437 @@
+{
+    /***************************************************************************
+    EDITOR
+    ***************************************************************************/
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "editor.minimap.maxColumn": 80,
+    "editor.minimap.showSlider": "always",
+    "editor.mouseWheelScrollSensitivity": 2,
+    "editor.renderControlCharacters": true,
+    "editor.renderLineHighlight": "all",
+    "editor.renderWhitespace": "boundary",
+    "editor.stablePeek": true,
+    "editor.suggest.preview": true,
+    // "workbench.colorCustomizations": {
+    //     "activityBar.activeBackground": "#00bbff20",
+    //     "activityBar.activeBorder": "#00bbff",
+    //     "activityBarBadge.background": "#007acc",
+    // },
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            // {
+            //     "scope": "variable.parameter.cpp",
+            //     "settings": {
+            //         "foreground": "#999999",
+            //         "fontStyle": "italic"
+            //     }
+            // },
+            // {
+            //     "scope": "variable.other.local.cpp",
+            //     "settings": {
+            //         "foreground": "#D4D4D4"
+            //     }
+            // },
+            // {
+            //     "scope": [
+            //         "punctuation.separator.delimiter.comma.cpp",
+            //         "punctuation.terminator.statement.cpp",
+            //         "punctuation.section.angle-brackets.start.template.definition.cpp",
+            //         "punctuation.section.angle-brackets.end.template.definition.cpp"
+            //     ],
+            //     "settings": {
+            //         "foreground": "#D5B734"
+            //     }
+            // },
+            // {
+            //     "scope": "entity.name.function.preprocessor.cpp",
+            //     "settings": {
+            //         "foreground": "#DCDCAA"
+            //     }
+            // },
+            // {
+            //     "scope": "string.quoted.other.lt-gt.include.cpp",
+            //     "settings": {
+            //         "foreground": "#DEA188"
+            //     }
+            // }
+        ]
+    },
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.trimFinalNewlines": true,
+    "workbench.editor.revealIfOpen": true,
+    "workbench.editor.wrapTabs": true,
+    "workbench.layoutControl.enabled": true,
+    "workbench.layoutControl.type": "both",
+    "window.openFilesInNewWindow": "on",
+    "window.title": "${dirty}${activeEditorLong}${separator}${rootName}",
+    "window.zoomLevel": 0,
+    /***************************************************************************
+    FEATURES -> EXPLORER
+    ***************************************************************************/
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.sortOrder": "type",
+    "workbench.tree.renderIndentGuides": "always",
+    "workbench.tree.indent": 12,
+    /***************************************************************************
+    FEATURES -> SCM
+    ***************************************************************************/
+    "scm.alwaysShowActions": true,
+    "scm.defaultViewMode": "tree",
+    /***************************************************************************
+    FEATURES -> TERMINAL
+    ***************************************************************************/
+    "terminal.external.windowsExec": "C:\\WINDOWS\\System32\\bash.exe",
+    "terminal.integrated.cursorBlinking": true,
+    "terminal.integrated.fontFamily": "Droid Sans Mono for Powerline",
+    "terminal.integrated.scrollback": 999999,
+    "terminal.integrated.defaultProfile.windows":"Ubuntu-18.04 (WSL)",
+    "terminal.integrated.windowsEnableConpty": true,
+    "terminal.integrated.letterSpacing": 0,
+    "terminal.integrated.fontSize": 15,
+    "terminal.integrated.minimumContrastRatio": 1,
+    "terminal.integrated.rendererType": "canvas",
+    "C_Cpp.default.intelliSenseMode": "clang-x64",
+    "C_Cpp.default.defines": [
+        "__linux__",
+        "__x86_64__",
+        "__GNUC__"
+    ],
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}",
+        "${default}"
+    ],
+    "C_Cpp.default.browse.path": [
+        "//wsl$/Ubuntu-18.04/usr/include/c++/5",
+        "//wsl$/Ubuntu-18.04/usr/include/x86_64-linux-gnu/c++/5",
+        "//wsl$/Ubuntu-18.04/usr/lib/gcc/x86_64-linux-gnu/5/include",
+        "//wsl$/Ubuntu-18.04/usr/local/include",
+        "//wsl$/Ubuntu-18.04/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed",
+        "//wsl$/Ubuntu-18.04/usr/include/x86_64-linux-gnu",
+        "//wsl$/Ubuntu-18.04/usr/include",
+        "${default}"
+    ],
+    "C_Cpp.default.cStandard": "c89",
+    "C_Cpp.default.cppStandard": "c++98",
+    // "C_Cpp.default.cppStandard": "c++11",
+    "C_Cpp.workspaceSymbols": "All",
+    "C_Cpp.workspaceParsingPriority": "highest",
+    "C_Cpp.loggingLevel": "Debug",
+    // "editor.quickSuggestions": {
+    //     "other": true,
+    //     "comments": false,
+    //     "strings": false
+    // },
+    "editor.suggest.localityBonus": true,
+    "C_Cpp.suggestSnippets": true,
+    "editor.suggest.filterGraceful": true,
+    /***************************************************************************
+    EXTENSIONS -> DOXYGEN
+    ***************************************************************************/
+    "doxdocgen.generic.authorTag": "BLET Mickaël",
+    "doxdocgen.file.fileTemplate": "{name}",
+    "doxdocgen.file.fileOrder":[
+        "file",
+        "empty",
+        "copyright"
+    ],
+    "doxdocgen.file.copyrightTag": [
+        "Licensed under the MIT License <http://opensource.org/licenses/MIT>.",
+        "Copyright (c) {year} BLET Mickaël.",
+        "",
+        "Permission is hereby granted, free of charge, to any person obtaining a copy",
+        "of this software and associated documentation files (the \"Software\"), to deal",
+        "in the Software without restriction, including without limitation the rights",
+        "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell",
+        "copies of the Software, and to permit persons to whom the Software is",
+        "furnished to do so, subject to the following conditions:",
+        "",
+        "The above copyright notice and this permission notice shall be included",
+        "in all copies or substantial portions of the Software.",
+        "",
+        "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR",
+        "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,",
+        "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE",
+        "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER",
+        "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,",
+        "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE",
+        "SOFTWARE."
+    ],
+    /***************************************************************************
+    EXTENSIONS -> MBLET_REGEX
+    ***************************************************************************/
+    "highlight.regex.timeout": 10,
+    "highlight.regex.regexes": [
+        {
+            "languageIds": [
+                "c",
+                "cpp",
+                "javascript",
+                "typescript"
+            ],
+            "regexes": [
+                {
+                    "regex": "(/\\*[^]*?\\*/)|(//[^]*?(?:(?<!\\\\)$))",
+                    "regexFlag": "gm",
+                    "regexes": [
+                        {
+                            "index": 0,
+                            "regex": "(?:(@?\\bbrief\\b)|(@?\\bt?param\\b)(?:(\\s*\\[\\s*)(in|out)(\\s*\\,\\s*)?(in|out)?(\\s*\\]\\s*))?|(@?\\b(?:return|throw)\\b)|(@\\b\\w+\\b))|(\\bTODO\\b)|(\\bTADA\\b)",
+                            "regexFlag": "gmi",
+                            "decorations": [
+                                {
+                                    "index": 1,
+                                    "color": "#DCDCAA",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 2,
+                                    "color": "#4EC9B0",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 3,
+                                    "color": "#FFFFFF",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 4,
+                                    "color": "#C586C0",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 5,
+                                    "color": "#FFFFFF",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 6,
+                                    "color": "#C586C0",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 7,
+                                    "color": "#FFFFFF",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 8,
+                                    "color": "#C586C0",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 9,
+                                    "color": "#9CDCFE",
+                                    "backgroundColor": "transparent"
+                                },
+                                {
+                                    "index": 10,
+                                    "borderRadius": "4px",
+                                    "fontWeight": "bold",
+                                    "overviewRulerColor": "#FF9900FF",
+                                    "overviewRulerLane": 4,
+                                    "light": {
+                                        "color": "#000000",
+                                        "backgroundColor": "#FF990050",
+                                        "border": "1px solid #FF990090"
+                                    },
+                                    "dark": {
+                                        "color": "#FFFFFF",
+                                        "backgroundColor": "#FF990090",
+                                        "border": "1px solid #FF990050"
+                                    }
+                                },
+                                {
+                                    "index": 11,
+                                    "borderRadius": "4px",
+                                    "fontWeight": "bold",
+                                    "overviewRulerColor": "#FF0000FF",
+                                    "overviewRulerLane": 4,
+                                    "light": {
+                                        "color": "#000000",
+                                        "backgroundColor": "#FF000050",
+                                        "border": "1px solid #FF000090"
+                                    },
+                                    "dark": {
+                                        "color": "#FFFFFF",
+                                        "backgroundColor": "#FF000090",
+                                        "border": "1px solid #FF000050"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        // {
+        //     "languageIds": [
+        //         "c",
+        //         "cpp"
+        //     ],
+        //     "regexes": [
+        //         {
+        //             "regex": "(?:['][^]*?(?:(?<!(?<!\\\\)\\\\)['])|[\"][^]*?(?:(?<!\\\\)[\"])|\\/\\*[^]*?\\*\\/|//[^]*?(?:(?<!\\\\)$)|#[^]*?(?:(?<!\\\\)$))|(\\b(?!__)_\\w+\\b)|(\\bthis\\b)",
+        //             "regexFlag": "gm",
+        //             "regexLimit": 10000,
+        //             "decorations": [
+        //                 {
+        //                     "index": 1,
+        //                     "fontWeight": "bold; text-shadow: 0px 0px 10px",
+        //                     "fontStyle": "italic"
+        //                 },
+        //                 {
+        //                     "index": 2,
+        //                     "fontStyle": "italic",
+        //                     "fontWeight": "bold",
+        //                     "color": "#C586C0"
+        //                 }
+        //             ]
+        //         }
+        //     ]
+        // },
+        {
+            "languageIds": [
+                "python"
+            ],
+            "regexes": [
+                {
+                    "regex": "(\"\"\"[^]*?\"\"\")|(#[^]*?(?:(?<!\\\\)$))",
+                    "regexFlag": "gm",
+                    "regexes": [
+                        {
+                            "index": 0,
+                            "regex": "(\\bTODO\\b)|(\\bTADA\\b)",
+                            "regexFlag": "gmi",
+                            "decorations": [
+                                {
+                                    "index": 1,
+                                    "borderRadius": "4px",
+                                    "fontWeight": "bold",
+                                    "overviewRulerColor": "#FF9900FF",
+                                    "overviewRulerLane": 4,
+                                    "light": {
+                                        "color": "#000000",
+                                        "backgroundColor": "#FF990050",
+                                        "border": "1px solid #FF990090"
+                                    },
+                                    "dark": {
+                                        "color": "#FFFFFF",
+                                        "backgroundColor": "#FF990090",
+                                        "border": "1px solid #FF990050"
+                                    }
+                                },
+                                {
+                                    "index": 2,
+                                    "borderRadius": "4px",
+                                    "fontWeight": "bold",
+                                    "overviewRulerColor": "#FF0000FF",
+                                    "overviewRulerLane": 4,
+                                    "light": {
+                                        "color": "#000000",
+                                        "backgroundColor": "#FF000050",
+                                        "border": "1px solid #FF000090"
+                                    },
+                                    "dark": {
+                                        "color": "#FFFFFF",
+                                        "backgroundColor": "#FF000090",
+                                        "border": "1px solid #FF000050"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    /***************************************************************************
+    EXTENSIONS -> MBLET_SYNTAX
+    ***************************************************************************/
+    "extensions.autoUpdate": false,
+    "git.untrackedChanges": "separate",
+    "workbench.view.alwaysShowHeaderActions": true,
+    "workbench.editor.highlightModifiedTabs": true,
+    "explorer.openEditors.visible": 6,
+    "editor.rulers": [
+        120
+    ],
+    "files.exclude": {
+        "**/.vscode": true
+    },
+    // "C_Cpp.intelliSenseEngine": "Tag Parser",
+    "remote.SSH.remotePlatform": {
+        "192.168.1.1": "linux"
+    },
+    "extensions.ignoreRecommendations": true,
+    "editor.guides.highlightActiveIndentation": true,
+    "editor.guides.bracketPairs": true,
+    "editor.matchBrackets": "near",
+    "editor.guides.bracketPairsHorizontal": true,
+    "editor.bracketPairColorization.enabled": true,
+    "highlight.cpp-parameters.timeout": 10,
+    "highlight.cpp-parameters.parameterDecoration": {
+        "fontStyle": "italic",
+        "light": {
+            "color": "#777777"
+        },
+        "dark": {
+            "color": "#999999"
+        }
+    },
+    "highlight.cpp-parameters.unusedParameterDecoration": {
+        "fontStyle": "italic",
+        "overviewRulerColor": "#DD8888FF",
+        "overviewRulerLane": 4,
+        "light": {
+            "color": "#AA4444"
+        },
+        "dark": {
+            "color": "#DD8888"
+        }
+    },
+    "security.workspace.trust.untrustedFiles": "open",
+    "search.useIgnoreFiles": false,
+    "git.repositoryScanMaxDepth": -1,
+    "editor.guides.indentation": false,
+    "editor.inlayHints.enabled": "off",
+    "workbench.editor.autoLockGroups": {},
+    "workbench.editor.enablePreview": false,
+    "C_Cpp.enhancedColorization": "Enabled",
+    "workbench.colorTheme": "Dark+ c++ - mblet",
+    "scm.diffDecorationsGutterPattern": {},
+    "gcovViewer.highlightMissedLines": true,
+    "cmake.configureOnOpen": true,
+    "cmake.ignoreKitEnv": true,
+    "cmake.statusbar.visibility": "icon",
+    "cmake.statusbar.advanced": {
+        "build": {
+            "visibility": "default"
+        },
+        "ctest": {
+            "visibility": "default"
+        },
+        "kit": {
+            "visibility": "hidden"
+        },
+        "debug": {
+            "visibility": "hidden"
+        },
+        "launch": {
+            "visibility": "hidden"
+        },
+        "status": {
+            "visibility": "hidden"
+        }
+    },
+    "cmake.configureSettings": {
+        "BUILD_TESTING": 1,
+        "BUILD_COVERAGE": 1,
+        "BUILD_EXAMPLE": 1
+    },
+    "cmake.ctest.parallelJobs": 1
+}

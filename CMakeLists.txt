@@ -16,7 +16,7 @@ set_target_properties("${PROJECT_NAME}"
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
         NO_SYSTEM_FROM_IMPORTED ON
-        PUBLIC_HEADER "include/optionator.hpp"
+        PUBLIC_HEADER "include/jsonator.h"
         INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
