@@ -29,23 +29,44 @@ namespace mblet {
 
 Jsonator::Map::Map() :
     std::map<std::string, Map>(),
-    key(""),
-    str("null"),
-    number(0),
-    boolean(false),
-    type(UNKNOWN)
+    _parent(NULL),
+    _key(""),
+    _str("null"),
+    _number(0),
+    _boolean(false),
+    _type(UNKNOWN)
+{}
+
+Jsonator::Map::Map(const Map* parent, const std::string& key) :
+    std::map<std::string, Map>(),
+    _parent(parent),
+    _key(key),
+    _str("null"),
+    _number(0),
+    _boolean(false),
+    _type(UNKNOWN)
+{}
+
+Jsonator::Map::Map(const Map& rhs) :
+    std::map<std::string, Map>(rhs),
+    _parent(rhs._parent),
+    _key(rhs._key),
+    _str(rhs._str),
+    _number(rhs._number),
+    _boolean(rhs._boolean),
+    _type(rhs._type)
 {}
 
 Jsonator::Map::~Map() {}
 
 static inline void s_newlineDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent) {
-    if (map.size() > 0 && indent > 0) {
+    if (!map.empty() && indent != 0) {
         oss << '\n';
     }
 }
 
 static inline void s_indentDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
-    if (map.size() > 0 && indent > 0) {
+    if (!map.empty() && indent != 0) {
         oss << std::string(indent * index, ' ');
     }
 }
@@ -64,6 +85,7 @@ static inline void s_stringDump(std::ostream& oss, const std::string& str) {
         std::pair<char, std::string>('\\', "\\\\") // Backslash
     };
     static const std::map<char, std::string> escapeChar(pairChars, pairChars + sizeof(pairChars) / sizeof(*pairChars));
+
     oss << '"';
     for (std::size_t i = 0; i < str.size(); ++i) {
         std::map<char, std::string>::const_iterator cit = escapeChar.find(str[i]);
@@ -79,7 +101,7 @@ static inline void s_stringDump(std::ostream& oss, const std::string& str) {
 
 static void s_typeDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index = 0);
 
-void s_objectDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
+static void s_objectDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
     oss << '{';
     s_newlineDump(oss, map, indent);
     ++index;
@@ -90,7 +112,7 @@ void s_objectDump(std::ostream& oss, const Jsonator::Map& map, std::size_t inden
         }
         s_indentDump(oss, map, indent, index);
         s_stringDump(oss, cit->first); // key
-        oss << ((indent > 0) ? ": " : ":");
+        oss << ((indent != 0) ? ": " : ":");
         s_typeDump(oss, cit->second, indent, index);
     }
     s_newlineDump(oss, map, indent);
@@ -99,7 +121,7 @@ void s_objectDump(std::ostream& oss, const Jsonator::Map& map, std::size_t inden
     oss << '}';
 }
 
-void s_arrayDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
+static void s_arrayDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
     oss << '[';
     s_newlineDump(oss, map, indent);
     ++index;
@@ -118,7 +140,7 @@ void s_arrayDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent
 }
 
 void s_typeDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
-    switch (map.type) {
+    switch (map.getType()) {
         case Jsonator::Map::ARRAY:
             s_arrayDump(oss, map, indent, index);
             break;
@@ -126,17 +148,15 @@ void s_typeDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent,
             s_objectDump(oss, map, indent, index);
             break;
         case Jsonator::Map::STRING:
-            s_stringDump(oss, map.str);
+            s_stringDump(oss, map.getString());
             break;
         case Jsonator::Map::NUMBER:
-            oss << map.number;
+            oss << map.getNumber();
             break;
         case Jsonator::Map::BOOL:
-            oss << ((map.boolean) ? "true" : "false");
+            oss << ((map.getBool()) ? "true" : "false");
             break;
         case Jsonator::Map::NONE:
-            oss << "null";
-            break;
         case Jsonator::Map::UNKNOWN:
             oss << "null";
             break;

@@ -1,4 +1,12 @@
 {
-    // test
-    "0": { "0": { "0": { "0": { "0": { "0": { "0": { "0": { "0 }}}}}}}}" : null }}}}}}}}
+    /* comment */
+    "key": "string",
+    "array": [
+        0
+    ],
+    "number": 0,
+    "object": {
+        "null": null
+    },
+    "bool": false
 }
