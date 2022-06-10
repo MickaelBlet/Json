@@ -23,7 +23,8 @@ int main(int argc, char* argv[]) {
     map["object"]["1"] = "test";
     map["array"][1][10] = 42;
     map.erase("key");
-    std::cout << map["object"] << std::endl;
+    std::cout << map.at("object") << std::endl;
+    std::cout << map.at("array").at(0) << std::endl;
     std::cout << map["array"] << std::endl;
     // std::cout << jsonator["0"]["0"] << std::endl;
     // std::cout << jsonator["0"]["0"]["0"] << std::endl;

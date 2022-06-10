@@ -43,18 +43,17 @@ class Jsonator {
   public:
 
     /**
-     * @brief
+     * @brief multi level of map
      */
     class Map : public std::map<std::string, Map> {
       public:
 
         /**
-         * @brief Basic exception from std::exception
+         * @brief Access exception from std::exception
          */
         class AccessException : public std::exception {
           public:
-            AccessException() : _str(std::string()) {}
-            AccessException(const Map& map, const char* str) {
+            AccessException(const Map& map, const char* message) : std::exception(), _message(message), _map(map) {
                 std::stack<const Map*> maps;
                 const Map* pMap = map._parent;
                 while (pMap != NULL) {
@@ -77,20 +76,29 @@ class Jsonator {
                 if (map._parent && map._parent->isArray()) {
                     oss << '[' << map._key << ']';
                 }
-                oss << ' ' << str << '.';
-                _str = oss.str();
+                oss << ' ' << message << '.';
+                _what = oss.str();
             }
             virtual ~AccessException() throw() {}
             const char* what() const throw() {
-                return _str.c_str();
+                return _what.c_str();
+            }
+            const std::string& message() const throw() {
+                return _message;
+            }
+            const Map& map() const throw() {
+                return _map;
             }
           protected:
-            std::string _str;
+            std::string _what;
+            const std::string _message;
+            const Map& _map;
         };
 
         class ChildException : public AccessException {
           public:
-            ChildException(const Map& map, const std::string& child) : AccessException() {
+            ChildException(const Map& map, const std::string& child) : AccessException(map, "has not a child"),
+                _child(child) {
                 std::stack<const Map*> maps;
                 const Map* pMap = map._parent;
                 while (pMap != NULL) {
@@ -114,14 +122,18 @@ class Jsonator {
                     oss << '[' << map._key << ']';
                 }
                 oss << " has not a child '" << child << "'.";
-                _str = oss.str();
+                _what = oss.str();
             }
             virtual ~ChildException() throw() {}
+            const std::string& child() const throw() {
+                return _child;
+            }
+          protected:
+            const std::string _child;
         };
 
         enum Type {
-            UNKNOWN = 0,
-            NONE,
+            NONE = 0,
             OBJECT,
             ARRAY,
             STRING,
@@ -168,65 +180,130 @@ class Jsonator {
         /**
          * @brief overide operator for set value from str
          *
-         * @param str : new value
+         * @param value : new value
+         */
+        inline void operator=(const std::string& value) {
+            newString(value);
+        }
+
+        /**
+         * @brief overide operator for set value from str
+         *
+         * @param value : new value
          */
         inline void operator=(const char* value) {
             newString(value);
         }
 
-        inline void operator=(const std::string& value) {
-            newString(value.c_str());
-        }
-
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const char& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const unsigned char& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const short& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const unsigned short& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const int& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const unsigned int& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const long& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const unsigned long& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const float& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const double& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for set value from number
+         *
+         * @param value : new value
+         */
         inline void operator=(const long double& value) {
             newNumber(value);
         }
 
+        /**
+         * @brief overide operator for copy map
+         *
+         * @param map
+         */
         inline void operator=(const Map& map) {
             this->_key = map._key;
-            this->_str = map._str;
+            this->_string = map._string;
             this->_number = map._number;
-            this->_boolean = map._boolean;
+            this->_bool = map._bool;
             this->_type = map._type;
             std::map<std::string, Map>::operator=(map);
         }
@@ -238,7 +315,7 @@ class Jsonator {
          * @return Map& : map from index
          */
         inline Map& operator[](unsigned long index) {
-            if (_type == UNKNOWN) {
+            if (_type == NONE) {
                 _type = ARRAY;
             }
             if (_type != ARRAY) {
@@ -284,7 +361,7 @@ class Jsonator {
          * @return Map& : map from string
          */
         inline Map& operator[](const std::string& str) {
-            if (_type == UNKNOWN) {
+            if (_type == NONE) {
                 _type = OBJECT;
             }
             if (_type != OBJECT) {
@@ -314,79 +391,223 @@ class Jsonator {
             throw ChildException(*this, str);
         }
 
+        inline Map& at(const std::string& str) {
+            if (_type != OBJECT) {
+                throw AccessException(*this, "is not a object");
+            }
+            Map::iterator it = find(str);
+            if (it != end()) {
+                return it->second;
+            }
+            throw ChildException(*this, str);
+        }
+
+        inline const Map& at(const std::string& str) const {
+            if (_type != OBJECT) {
+                throw AccessException(*this, "is not a object");
+            }
+            Map::const_iterator it = find(str);
+            if (it != end()) {
+                return it->second;
+            }
+            throw ChildException(*this, str);
+        }
+
+        inline Map& at(const char* str) {
+            return at(std::string(str));
+        }
+
+        inline const Map& at(const char* str) const {
+            return at(std::string(str));
+        }
+
+        inline Map& at(unsigned long index) {
+            if (_type != ARRAY) {
+                throw AccessException(*this, "is not a array");
+            }
+            char str[32];
+            ::snprintf(str, sizeof(str), "%lu", index);
+            Map::iterator it = find(str);
+            if (it != end()) {
+                return it->second;
+            }
+            throw ChildException(*this, str);
+        }
+
+        inline const Map& at(unsigned long index) const {
+            if (_type != ARRAY) {
+                throw AccessException(*this, "is not a array");
+            }
+            char str[32];
+            ::snprintf(str, sizeof(str), "%lu", index);
+            Map::const_iterator it = find(str);
+            if (it != end()) {
+                return it->second;
+            }
+            throw ChildException(*this, str);
+        }
+
+        inline Map& at(long index) {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline const Map& at(long index) const {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline Map& at(unsigned int index) {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline const Map& at(unsigned int index) const {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline Map& at(int index) {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline const Map& at(int index) const {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline Map& at(unsigned short index) {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline const Map& at(unsigned short index) const {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline Map& at(short index) {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline const Map& at(short index) const {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline Map& at(unsigned char index) {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline const Map& at(unsigned char index) const {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline Map& at(char index) {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        inline const Map& at(char index) const {
+            return at(static_cast<unsigned long>(index));
+        }
+
+        /**
+         * @brief create object
+         *
+         * @return true : create ok
+         * @return false : create ko
+         */
         inline bool newObject() {
-            if (_type != UNKNOWN && _type != ARRAY) {
+            if (_type != NONE && _type != OBJECT) {
                 return false;
             }
-            _str = std::string();
+            _string = std::string();
             _number = 0;
-            _boolean = false;
+            _bool = false;
             _type = OBJECT;
             return true;
         }
 
+        /**
+         * @brief create array
+         *
+         * @return true : create ok
+         * @return false : create ko
+         */
         inline bool newArray() {
-            if (_type != UNKNOWN && _type != ARRAY) {
+            if (_type != NONE && _type != ARRAY) {
                 return false;
             }
-            _str = std::string();
+            _string = std::string();
             _number = 0;
-            _boolean = false;
+            _bool = false;
             _type = ARRAY;
             return true;
         }
 
+        /**
+         * @brief create string from template
+         *
+         * @tparam T : type of value
+         * @param value
+         * @return true : create ok
+         * @return false : create ko
+         */
         template<typename T>
         inline bool newString(const T& value) {
-            if (_type != UNKNOWN && _type != STRING) {
+            if (_type != NONE && _type != STRING) {
                 return false;
             }
             std::ostringstream oss("");
             oss << value;
-            _str = oss.str();
+            _string = oss.str();
             _number = 0;
-            _boolean = false;
+            _bool = false;
             _type = STRING;
             return true;
         }
 
+        /**
+         * @brief create number from template
+         *
+         * @tparam T : type of value
+         * @param value
+         * @return true : create ok
+         * @return false : create ko
+         */
         template<typename T>
         inline bool newNumber(const T& value) {
-            if (_type != UNKNOWN && _type != NUMBER) {
+            if (_type != NONE && _type != NUMBER) {
                 return false;
             }
-            _str = std::string();
+            _string = std::string();
             _number = value;
-            _boolean = false;
+            _bool = false;
             _type = NUMBER;
             return true;
         }
 
+        /**
+         * @brief create bool from template
+         *
+         * @tparam T : type of value
+         * @param value
+         * @return true : create ok
+         * @return false : create ko
+         */
         template<typename T>
         inline bool newBoolean(const T& value) {
-            if (_type != UNKNOWN && _type != BOOL) {
+            if (_type != NONE && _type != BOOL) {
                 return false;
             }
-            _str = std::string();
+            _string = std::string();
             _number = 0;
-            _boolean = value;
+            _bool = value;
             _type = BOOL;
             return true;
         }
 
         inline bool newNull() {
-            if (_type != UNKNOWN && _type != NONE) {
+            if (_type != NONE && _type != NONE) {
                 return false;
             }
-            _str = std::string();
+            _string = std::string();
             _number = 0;
-            _boolean = false;
+            _bool = false;
             _type = NONE;
             return true;
-        }
-
-        inline bool isUnknown() const {
-            return _type == UNKNOWN;
         }
 
         inline bool isNull() const {
@@ -415,7 +636,7 @@ class Jsonator {
 
         std::string dump(std::size_t indent = 0) const;
 
-        inline Map& erase(const char* str) {
+        inline Map& erase(const std::string& str) {
             if (_type != OBJECT) {
                 throw AccessException(*this, "is not a object");
             }
@@ -423,7 +644,7 @@ class Jsonator {
             if (it != end()) {
                 std::map<std::string, Map>::erase(str);
                 if (empty()) {
-                    _type = UNKNOWN;
+                    _type = NONE;
                 }
             }
             else {
@@ -432,8 +653,8 @@ class Jsonator {
             return *this;
         }
 
-        inline Map& erase(const std::string& str) {
-            return erase(str.c_str());
+        inline Map& erase(const char* str) {
+            return erase(std::string(str));
         }
 
         inline Map& erase(unsigned long index) {
@@ -446,7 +667,7 @@ class Jsonator {
             if (it != end()) {
                 std::map<std::string, Map>::erase(str);
                 if (empty()) {
-                    _type = UNKNOWN;
+                    _type = NONE;
                 }
             }
             else {
@@ -495,7 +716,7 @@ class Jsonator {
             if (_type != STRING) {
                 throw AccessException(*this, "is not a string");
             }
-            return _str;
+            return _string;
         }
 
         inline const double& getNumber() const {
@@ -509,7 +730,7 @@ class Jsonator {
             if (_type != BOOL) {
                 throw AccessException(*this, "is not a boolean");
             }
-            return _boolean;
+            return _bool;
         }
 
         inline const Type& getType() const {
@@ -519,54 +740,48 @@ class Jsonator {
       private:
         const Map* _parent;
         std::string _key;
-        std::string _str;
+        std::string _string;
         double _number;
-        bool _boolean;
+        bool _bool;
         Type _type;
 
     };
 
     /**
-     * @brief Basic exception from std::exception
-     */
-    class Exception : public std::exception {
-      public:
-        Exception() : _str(std::string()) {}
-        Exception(const char* str) : _str(str) {}
-        virtual ~Exception() throw() {}
-        const char* what() const throw() {
-            return _str.c_str();
-        }
-      protected:
-        std::string _str;
-    };
-
-    /**
      * @brief Parse exception from Exception
      */
-    class ParseException : public Exception {
+    class ParseException : public std::exception {
       public:
-        ParseException(const char* fileName, const char* message) : Exception(),
-            _line(0), _column(0) {
+        ParseException(const char* filename, const char* message) : std::exception(),
+            _filename(filename), _message(message), _line(0), _column(0) {
             std::ostringstream oss("");
             oss << "Parse ";
-            if (fileName != NULL) {
-                oss << fileName << ':';
+            if (filename != NULL) {
+                oss << filename << ':';
             }
             oss << " (" << message << ").";
-            _str = oss.str();
+            _what = oss.str();
         };
-        ParseException(const char* fileName, std::size_t line, std::size_t column, const char* message) : Exception(),
-            _line(line), _column(column) {
+        ParseException(const char* filename, std::size_t line, std::size_t column, const char* message) : std::exception(),
+            _filename(filename), _message(message), _line(line), _column(column) {
             std::ostringstream oss("");
             oss << "Parse at ";
-            if (fileName != NULL) {
-                oss << fileName << ':';
+            if (filename != NULL) {
+                oss << filename << ':';
             }
             oss << line << ':' << column << " (" << message << ").";
-            _str = oss.str();
+            _what = oss.str();
         };
         virtual ~ParseException() throw() {}
+        const char* what() const throw() {
+            return _what.c_str();
+        }
+        const std::string& filename() const throw() {
+            return _filename;
+        }
+        const std::string& message() const throw() {
+            return _message;
+        }
         std::size_t line() const throw() {
             return _line;
         }
@@ -574,8 +789,11 @@ class Jsonator {
             return _column;
         }
       protected:
-        std::size_t _line;
-        std::size_t _column;
+        std::string _what;
+        const std::string _filename;
+        const std::string _message;
+        const std::size_t _line;
+        const std::size_t _column;
     };
 
     /**

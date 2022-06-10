@@ -419,11 +419,6 @@ static std::string s_streamToStr(JsonatorParseInfo& info, std::istream& stream) 
         ++nLine;
     }
     return oss.str();
-    std::string str(oss.str());
-    if (info.comment) {
-
-    }
-    return str;
 }
 
 void Jsonator::_parseStream(std::istream& stream) {
