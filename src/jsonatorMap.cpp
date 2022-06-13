@@ -23,6 +23,9 @@
  * SOFTWARE.
  */
 
+#include <iomanip>
+#include <limits>
+
 #include "mblet/jsonator.h"
 
 namespace mblet {
@@ -164,6 +167,7 @@ void s_typeDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent,
 
 std::string Jsonator::Map::dump(std::size_t indent) const {
     std::ostringstream oss("");
+    oss << std::setprecision(std::numeric_limits<double>::digits10 + 1);
     s_typeDump(oss, *this, indent);
     return oss.str();
 }

@@ -509,15 +509,11 @@ class Jsonator {
          * @return true : create ok
          * @return false : create ko
          */
-        inline bool newObject() {
+        inline void newObject() {
             if (_type != NONE && _type != OBJECT) {
-                return false;
+                throw AccessException(*this, "is not a object");
             }
-            _string = std::string();
-            _number = 0;
-            _bool = false;
             _type = OBJECT;
-            return true;
         }
 
         /**
@@ -526,15 +522,11 @@ class Jsonator {
          * @return true : create ok
          * @return false : create ko
          */
-        inline bool newArray() {
+        inline void newArray() {
             if (_type != NONE && _type != ARRAY) {
-                return false;
+                throw AccessException(*this, "is not a array");
             }
-            _string = std::string();
-            _number = 0;
-            _bool = false;
             _type = ARRAY;
-            return true;
         }
 
         /**
@@ -546,17 +538,14 @@ class Jsonator {
          * @return false : create ko
          */
         template<typename T>
-        inline bool newString(const T& value) {
+        inline void newString(const T& value) {
             if (_type != NONE && _type != STRING) {
-                return false;
+                throw AccessException(*this, "is not a string");
             }
             std::ostringstream oss("");
             oss << value;
             _string = oss.str();
-            _number = 0;
-            _bool = false;
             _type = STRING;
-            return true;
         }
 
         /**
@@ -568,15 +557,12 @@ class Jsonator {
          * @return false : create ko
          */
         template<typename T>
-        inline bool newNumber(const T& value) {
+        inline void newNumber(const T& value) {
             if (_type != NONE && _type != NUMBER) {
-                return false;
+                throw AccessException(*this, "is not a number");
             }
-            _string = std::string();
             _number = value;
-            _bool = false;
             _type = NUMBER;
-            return true;
         }
 
         /**
@@ -588,26 +574,19 @@ class Jsonator {
          * @return false : create ko
          */
         template<typename T>
-        inline bool newBoolean(const T& value) {
+        inline void newBoolean(const T& value) {
             if (_type != NONE && _type != BOOL) {
-                return false;
+                throw AccessException(*this, "is not a boolean");
             }
-            _string = std::string();
-            _number = 0;
             _bool = value;
             _type = BOOL;
-            return true;
         }
 
-        inline bool newNull() {
-            if (_type != NONE && _type != NONE) {
-                return false;
+        inline void newNull() {
+            if (_type != NONE) {
+                throw AccessException(*this, "is not a null");
             }
-            _string = std::string();
-            _number = 0;
-            _bool = false;
             _type = NONE;
-            return true;
         }
 
         inline bool isNull() const {

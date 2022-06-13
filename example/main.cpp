@@ -1,9 +1,8 @@
 #include "mblet/jsonator.h"
 
-#include <stdint.h>
-
 int main(int argc, char* argv[]) {
     if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " JSON_FILE" << std::endl;
         return 1;
     }
     mblet::Jsonator jsonator;
@@ -16,7 +15,7 @@ int main(int argc, char* argv[]) {
     // jsonator.getMap()["3"] = map;
     // jsonator["object"]["2"];
     std::cout << jsonator.dump(2) << std::endl;
-    std::cout << jsonator.dump(0) << std::endl;
+    std::cout << jsonator.dump() << std::endl;
     std::string str = jsonator.dump(0);
     jsonator.parseString(str);
     mblet::Jsonator::Map map(jsonator.getMap());
