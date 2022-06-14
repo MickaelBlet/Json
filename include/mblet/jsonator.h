@@ -374,6 +374,11 @@ class Jsonator {
             return insert(std::pair<std::string, Map>(str, Map(this, str))).first->second;
         }
 
+        template<size_t Size>
+        inline Map& operator[](const char (&str)[Size]) {
+            return operator[](std::string(str, Size));
+        }
+
         /**
          * @brief overide operator for get const map from string
          *
@@ -389,6 +394,11 @@ class Jsonator {
                 return it->second;
             }
             throw ChildException(*this, str);
+        }
+
+        template<size_t Size>
+        inline const Map& operator[](const char (&str)[Size]) const {
+            return operator[](std::string(str, Size));
         }
 
         inline Map& at(const std::string& str) {
@@ -716,6 +726,51 @@ class Jsonator {
             return _type;
         }
 
+        template<typename T>
+        inline T get() const {
+            T ret;
+            std::stringstream ss("");
+            switch (_type) {
+                case NONE:
+                    ss << static_cast<void*>(0);
+                    break;
+                case OBJECT:
+                case ARRAY:
+                    ss << *this;
+                    break;
+                case STRING:
+                    ss << _string;
+                    break;
+                case NUMBER:
+                    ss << _number;
+                    break;
+                case BOOL:
+                    ss << _bool;
+                    break;
+            }
+            if (ss >> ret) {
+                return ret;
+            }
+            else {
+                throw AccessException(*this, "bad convertion to other type");
+            }
+        }
+
+        template<typename T>
+        inline void get(T& ret) const {
+            ret = get<T>();
+        }
+
+        template<typename T>
+        inline operator T() const {
+            return get<T>();
+        }
+
+        template<typename T>
+        inline operator T() {
+            return get<T>();
+        }
+
       private:
         const Map* _parent;
         std::string _key;
@@ -853,7 +908,7 @@ class Jsonator {
      * @return Map& : map from index
      */
     inline const Map& operator[](std::size_t index) const {
-        return _map[index];
+        return _map.at(index);
     }
 
     /**
@@ -863,7 +918,7 @@ class Jsonator {
      * @return Map& : map from string
      */
     inline const Map& operator[](const char* str) const {
-        return _map[str];
+        return _map.at(str);
     }
 
     /**
@@ -873,7 +928,7 @@ class Jsonator {
      * @return Map& : map from string
      */
     inline const Map& operator[](const std::string& str) const {
-        return _map[str];
+        return _map.at(str);
     }
 
     inline const std::string& getFilename() const {

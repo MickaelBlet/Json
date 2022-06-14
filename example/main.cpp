@@ -14,6 +14,12 @@ int main(int argc, char* argv[]) {
     // map["array"][0][0][0][0][0][0][0][0][0][0]["test"] = test;
     // jsonator.getMap()["3"] = map;
     // jsonator["object"]["2"];
+    std::string strKey = jsonator["key"];
+    const mblet::Jsonator::Map* ptrMap = &jsonator["key"];
+    double testd = jsonator["number"];
+    std::cout << ptrMap->get<std::string>() << std::endl;
+    std::cout << jsonator["number"].get<int>() << std::endl;
+    std::cout << testd << std::endl;
     std::cout << jsonator.dump(2) << std::endl;
     std::cout << jsonator.dump() << std::endl;
     std::string str = jsonator.dump(0);

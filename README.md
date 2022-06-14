@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
     mblet::Jsonator jsonator;
 
     jsonator.parseFile(argv[1]);
+    std::string key = jsonator["key"].getString();
     std::cout << jsonator.dump(2) << std::endl;
     // {
     //   "array": [
