@@ -22,10 +22,9 @@ GTEST_TEST(jsonator, test1) {
     std::cout << str << std::endl;
     jsonator.parseString(str);
     EXPECT_EQ(jsonator["example"].getKey(), "example");
-    EXPECT_EQ(jsonator["example"].getKey(), "example");
     EXPECT_EQ(jsonator["example"]["array"].getKey(), "array");
-    EXPECT_EQ(jsonator["example"]["array"][0].getKey(), "array");
-    EXPECT_EQ(jsonator["example"]["array"][0][0].getKey(), "array");
+    EXPECT_EQ(jsonator["example"]["array"][0].getKey(), "0");
+    EXPECT_EQ(jsonator["example"]["array"][0][0].getKey(), "0");
     EXPECT_EQ(jsonator["example"]["array"][0][0].getNumber(), 0);
     EXPECT_EQ(jsonator["example"]["array"][0][1].getNumber(), 1);
     EXPECT_EQ(jsonator["example"]["array"][0][2].getNumber(), 2);
@@ -34,5 +33,5 @@ GTEST_TEST(jsonator, test1) {
     EXPECT_EQ(jsonator["example"]["bool"].getBool(), false);
     EXPECT_EQ(jsonator["example"]["n\"one"].getType(), mblet::Jsonator::Map::NONE);
     std::cout << jsonator.dump(2) << std::endl;
-    std::cout << jsonator.dump(0) << std::endl;
+    std::cout << jsonator.dump() << std::endl;
 }

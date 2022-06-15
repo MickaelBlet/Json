@@ -22,5 +22,7 @@ endforeach()
 
 if (BUILD_COVERAGE)
     add_test(NAME "gcov_jsonator.cpp" COMMAND sh -c "find \"${CMAKE_CURRENT_BINARY_DIR}/..\" -name \"jsonator.cpp.gcda\" -exec sh -c \"gcov -n \\\"{}\\\" | grep -A 1 \\\"jsonator.cpp\\\" | grep \\\":\\\" | sed 's/[^:]\\+[:]\\([0-9]\\+[.][0-9]\\+%\\).*/\\1/g'\" \\;")
+    add_test(NAME "gcov_jsonatorMap.cpp" COMMAND sh -c "find \"${CMAKE_CURRENT_BINARY_DIR}/..\" -name \"jsonatorMap.cpp.gcda\" -exec sh -c \"gcov -n \\\"{}\\\" | grep -A 1 \\\"jsonatorMap.cpp\\\" | grep \\\":\\\" | sed 's/[^:]\\+[:]\\([0-9]\\+[.][0-9]\\+%\\).*/\\1/g'\" \\;")
     set_property(TEST "gcov_jsonator.cpp" PROPERTY PASS_REGULAR_EXPRESSION "^100.00%")
-endif() # BUILD_COVERAGE
+    set_property(TEST "gcov_jsonatorMap.cpp" PROPERTY PASS_REGULAR_EXPRESSION "^100.00%")
+    endif() # BUILD_COVERAGE

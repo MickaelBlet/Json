@@ -374,9 +374,13 @@ class Jsonator {
             return insert(std::pair<std::string, Map>(str, Map(this, str))).first->second;
         }
 
+        inline Map& operator[](const char*& str) {
+            return operator[](std::string(str));
+        }
+
         template<size_t Size>
         inline Map& operator[](const char (&str)[Size]) {
-            return operator[](std::string(str, Size));
+            return operator[](std::string(str));
         }
 
         /**
@@ -396,9 +400,13 @@ class Jsonator {
             throw ChildException(*this, str);
         }
 
+        inline const Map& operator[](const char*& str) const {
+            return operator[](std::string(str));
+        }
+
         template<size_t Size>
         inline const Map& operator[](const char (&str)[Size]) const {
-            return operator[](std::string(str, Size));
+            return operator[](std::string(str));
         }
 
         inline Map& at(const std::string& str) {
