@@ -36,7 +36,7 @@ Jsonator::Map::Map() :
     _key(""),
     _string("null"),
     _number(0),
-    _bool(false),
+    _boolean(false),
     _type(NONE)
 {}
 
@@ -46,7 +46,7 @@ Jsonator::Map::Map(const Map* parent, const std::string& key) :
     _key(key),
     _string("null"),
     _number(0),
-    _bool(false),
+    _boolean(false),
     _type(NONE)
 {}
 
@@ -56,7 +56,7 @@ Jsonator::Map::Map(const Map& rhs) :
     _key(rhs._key),
     _string(rhs._string),
     _number(rhs._number),
-    _bool(rhs._bool),
+    _boolean(rhs._boolean),
     _type(rhs._type)
 {}
 
@@ -114,7 +114,7 @@ static void s_objectDump(std::ostream& oss, const Jsonator::Map& map, std::size_
             s_newlineDump(oss, map, indent);
         }
         s_indentDump(oss, map, indent, index);
-        s_stringDump(oss, cit->first); // key
+        s_stringDump(oss, cit->second.getKey()); // key
         oss << ((indent != 0) ? ": " : ":");
         s_typeDump(oss, cit->second, indent, index);
     }
@@ -156,8 +156,8 @@ void s_typeDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent,
         case Jsonator::Map::NUMBER:
             oss << map.getNumber();
             break;
-        case Jsonator::Map::BOOL:
-            oss << ((map.getBool()) ? "true" : "false");
+        case Jsonator::Map::BOOLEAN:
+            oss << ((map.getBoolean()) ? "true" : "false");
             break;
         case Jsonator::Map::NONE:
             oss << "null";

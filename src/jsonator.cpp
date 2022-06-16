@@ -80,7 +80,7 @@ void Jsonator::parseFile(const char* filename) {
  * @brief structure of info parser
  */
 struct JsonatorParseInfo {
-    JsonatorParseInfo(const char* filename_, bool additionnalNext_, bool comment_) :
+    JsonatorParseInfo(const std::string& filename_, bool additionnalNext_, bool comment_) :
         filename(filename_),
         additionalNext(additionnalNext_),
         comment(comment_)
@@ -103,7 +103,7 @@ struct JsonatorParseInfo {
         return i - lineToIndex[indexToLine.back() - 1];
     }
 
-    const char* filename;
+    const std::string& filename;
     bool additionalNext;
     bool comment;
     std::vector<std::size_t> indexToLine;
@@ -422,7 +422,7 @@ static std::string s_streamToStr(JsonatorParseInfo& info, std::istream& stream) 
 }
 
 void Jsonator::_parseStream(std::istream& stream) {
-    JsonatorParseInfo info(_filename.c_str(), _parseAdditionalNext, _parseComment);
+    JsonatorParseInfo info(_filename, _parseAdditionalNext, _parseComment);
     _map.clear();
     std::string str = s_streamToStr(info, stream);
     if (info.comment) {

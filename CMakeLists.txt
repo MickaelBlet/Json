@@ -30,7 +30,7 @@ if (BUILD_TESTING)
     enable_testing()
     if (BUILD_COVERAGE)
         message(STATUS "Enable BUILD_COVERAGE: ${BUILD_COVERAGE}")
-        target_compile_options("${PROJECT_NAME}" PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
+        target_compile_options("${PROJECT_NAME}" PRIVATE -g --coverage -fprofile-arcs -ftest-coverage)
         target_link_libraries("${PROJECT_NAME}" gcov)
         # Path to CodeCoverage
         set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/etc/cmake")
