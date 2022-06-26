@@ -742,14 +742,6 @@ class Jsonator {
      */
     Jsonator& operator=(const Jsonator& rhs);
 
-    void setParseComment(bool comment) {
-        _parseComment = comment;
-    }
-
-    void setParseAdditionalNext(bool next) {
-        _parseAdditionalNext = next;
-    }
-
     /**
      * @brief read file and load its config
      *
@@ -757,15 +749,15 @@ class Jsonator {
      * @return true
      * @return false
      */
-    void parseFile(const char* filename);
+    void parseFile(const char* filename, bool comment = true, bool additionalNext = true);
 
     /**
      * @brief read stream and load its config
      *
      * @param stream
      */
-    void parseStream(std::istream& stream) {
-        _parseStream(stream);
+    void parseStream(std::istream& stream, bool comment = true, bool additionalNext = true) {
+        _parseStream(stream, comment, additionalNext);
     }
 
     /**
@@ -773,9 +765,9 @@ class Jsonator {
      *
      * @param str
      */
-    void parseString(const std::string& str) {
+    void parseString(const std::string& str, bool comment = true, bool additionalNext = true) {
         std::istringstream iss(str);
-        _parseStream(iss);
+        _parseStream(iss, comment, additionalNext);
     }
 
     /**
@@ -784,8 +776,8 @@ class Jsonator {
      * @param data
      * @param size
      */
-    void parseData(const char* data, std::size_t size) {
-        parseString(std::string(data, size));
+    void parseData(const char* data, std::size_t size, bool comment = true, bool additionalNext = true) {
+        parseString(std::string(data, size), comment, additionalNext);
     }
 
     /**
@@ -824,11 +816,9 @@ class Jsonator {
      *
      * @param stream
      */
-    void _parseStream(std::istream& stream);
+    void _parseStream(std::istream& stream, bool comment, bool additionalNext);
 
     std::string _filename;
-    bool _parseAdditionalNext;
-    bool _parseComment;
     Map _map;
 };
 

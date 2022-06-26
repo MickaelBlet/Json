@@ -32,9 +32,7 @@
 namespace mblet {
 
 Jsonator::Jsonator() :
-    _filename(std::string("")),
-    _parseAdditionalNext(true),
-    _parseComment(true) {
+    _filename(std::string("")) {
 }
 
 Jsonator::~Jsonator() {
@@ -42,8 +40,6 @@ Jsonator::~Jsonator() {
 
 Jsonator::Jsonator(const Jsonator& rhs) :
     _filename(rhs._filename),
-    _parseAdditionalNext(rhs._parseAdditionalNext),
-    _parseComment(rhs._parseComment),
     _map(rhs._map) {
 }
 
@@ -52,19 +48,17 @@ Jsonator& Jsonator::operator=(const Jsonator& rhs) {
         return *this;
     }
     _filename = rhs._filename;
-    _parseAdditionalNext = rhs._parseAdditionalNext;
-    _parseComment = rhs._parseComment;
     _map = rhs._map;
     return *this;
 }
 
-void Jsonator::parseFile(const char* filename) {
+void Jsonator::parseFile(const char* filename, bool comment, bool next) {
     _filename = "";
 
     std::ifstream fileStream(filename); // open file
     if (fileStream.is_open()) {
         _filename = filename;
-        _parseStream(fileStream); // parse file
+        _parseStream(fileStream, comment, next); // parse file
         fileStream.close();
     }
     else {
@@ -80,11 +74,10 @@ void Jsonator::parseFile(const char* filename) {
  * @brief structure of info parser
  */
 struct JsonatorParseInfo {
-    JsonatorParseInfo(const std::string& filename_, bool additionnalNext_, bool comment_) :
+    JsonatorParseInfo(const std::string& filename_, bool additionnalNext_) :
         filename(filename_),
-        additionalNext(additionnalNext_),
-        comment(comment_)
-    {}
+        additionalNext(additionnalNext_) {
+    }
     ~JsonatorParseInfo() {}
 
     inline std::size_t line(std::size_t i) const {
@@ -105,7 +98,6 @@ struct JsonatorParseInfo {
 
     const std::string& filename;
     bool additionalNext;
-    bool comment;
     std::vector<std::size_t> indexToLine;
     std::vector<std::size_t> lineToIndex;
 };
@@ -421,11 +413,11 @@ static std::string s_streamToStr(JsonatorParseInfo& info, std::istream& stream) 
     return oss.str();
 }
 
-void Jsonator::_parseStream(std::istream& stream) {
-    JsonatorParseInfo info(_filename, _parseAdditionalNext, _parseComment);
+void Jsonator::_parseStream(std::istream& stream, bool comment, bool additionalNext) {
+    JsonatorParseInfo info(_filename, additionalNext);
     _map.clear();
     std::string str = s_streamToStr(info, stream);
-    if (info.comment) {
+    if (comment) {
         s_replaceCommentBySpace(str);
     }
     std::size_t i = 0;
