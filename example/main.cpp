@@ -38,7 +38,8 @@ int main(int argc, char* argv[]) {
     map[nu + 1] = true;
     bool boolean = map[nu + 1];
     map["array\\"][1][1] = 42;
-    map.erase("key");
+    const char ttt[4] = "key";
+    map.erase(ttt);
     mblet::Jsonator::Map testai;
     testai.push_back(0);
     testai.push_back("1");
@@ -85,6 +86,7 @@ int main(int argc, char* argv[]) {
     // map[""]["array"][1][0][0].erase(u)[u] = 24;
     std::cout << map.dump(2) << std::endl;
     map["array"].erase(0).push_front(24);
+    map["array"].erase(0)[0] = 24;
     std::cout << map.dump(2) << std::endl;
     return 0;
 }

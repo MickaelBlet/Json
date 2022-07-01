@@ -33,6 +33,10 @@
 #include <stack>
 #include <string>
 
+#define MBLET_JSONATOR_INDEX_TO_STR(str, index) \
+    char str[32]; \
+    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
+
 namespace mblet {
 
 /**
@@ -97,8 +101,22 @@ class Jsonator {
 
         class ChildException : public AccessException {
           public:
+            ChildException(const Map& map, unsigned long index) : AccessException(map, "has not a child") {
+                MBLET_JSONATOR_INDEX_TO_STR(str, index);
+                generateWhat(map, str);
+            }
             ChildException(const Map& map, const std::string& child) : AccessException(map, "has not a child"),
                 _child(child) {
+                generateWhat(map, child);
+            }
+            virtual ~ChildException() throw() {}
+            const std::string& child() const throw() {
+                return _child;
+            }
+          protected:
+            const std::string _child;
+          private:
+            void generateWhat(const Map& map, const std::string& child) {
                 std::stack<const Map*> maps;
                 const Map* pMap = map._parent;
                 while (pMap != NULL) {
@@ -124,12 +142,6 @@ class Jsonator {
                 oss << " has not a child '" << child << "'.";
                 _what = oss.str();
             }
-            virtual ~ChildException() throw() {}
-            const std::string& child() const throw() {
-                return _child;
-            }
-          protected:
-            const std::string _child;
         };
 
         enum Type {
@@ -181,6 +193,13 @@ class Jsonator {
          * @param key
          */
         Map(const Map* parent, const std::string& key);
+
+        /**
+         * @brief Construct a new Map object
+         *
+         * @param index
+         */
+        Map(const Map* parent, unsigned long index);
 
         /**
          * @brief Construct a new Map object
@@ -271,8 +290,7 @@ class Jsonator {
 
         template<typename T>
         Map::iterator find(const T& index) {
-            char str[32];
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
+            MBLET_JSONATOR_INDEX_TO_STR(str, index);
             return std::map<std::string, Map>::find(str);
         }
 
@@ -291,8 +309,7 @@ class Jsonator {
 
         template<typename T>
         Map::const_iterator find(const T& index) const {
-            char str[32];
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
+            MBLET_JSONATOR_INDEX_TO_STR(str, index);
             return std::map<std::string, Map>::find(str);
         }
 
@@ -359,15 +376,13 @@ class Jsonator {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            char str[32];
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
+            MBLET_JSONATOR_INDEX_TO_STR(str, index);
             Map::iterator it = find(str);
             if (it != end()) {
                 return it->second;
             }
             while (static_cast<unsigned long>(size()) < static_cast<unsigned long>(index)) {
-                char strTmp[32];
-                ::snprintf(strTmp, sizeof(strTmp), "%lu", static_cast<unsigned long>(size()));
+                MBLET_JSONATOR_INDEX_TO_STR(strTmp, size());
                 insert(std::pair<std::string, Map>(strTmp, Map(this, strTmp)));
             }
             return insert(std::pair<std::string, Map>(str, Map(this, str))).first->second;
@@ -378,13 +393,11 @@ class Jsonator {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            char str[32];
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
-            Map::const_iterator it = find(str);
+            Map::const_iterator it = find(index);
             if (it != end()) {
                 return it->second;
             }
-            throw ChildException(*this, str);
+            throw ChildException(*this, index);
         }
 
         Map& at(const std::string& str) {
@@ -432,13 +445,11 @@ class Jsonator {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            char str[32];
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
-            Map::iterator it = find(str);
+            Map::iterator it = find(index);
             if (it != end()) {
                 return it->second;
             }
-            throw ChildException(*this, str);
+            throw ChildException(*this, index);
         }
 
         template<typename T>
@@ -446,22 +457,20 @@ class Jsonator {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            char str[32];
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
-            Map::const_iterator it = find(str);
+            Map::const_iterator it = find(index);
             if (it != end()) {
                 return it->second;
             }
-            throw ChildException(*this, str);
+            throw ChildException(*this, index);
         }
 
         template<typename T>
         void push_front(const T& value) {
             for (std::size_t i = size() ; i > 0 ; --i) {
-                operator[](i) = at(i - 1);
+                at(i - 1)._moveTo(i);
             }
             // create and replace first value
-            Map mValue(this, "0");
+            Map mValue(this, 0);
             mValue = value;
             operator[](0) = mValue;
         }
@@ -622,21 +631,18 @@ class Jsonator {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            char str[32];
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
-            Map::iterator it = find(str);
+            Map::iterator it = find(index);
             if (it != end()) {
                 for (std::size_t i = index ; i < size() - 1; ++i) {
-                    operator[](i) = at(i + 1);
+                    at(i + 1)._moveTo(i);
                 }
-                ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(size() - 1));
-                std::map<std::string, Map>::erase(str);
+                _erase(size() - 1);
                 if (empty()) {
                     _type = NONE;
                 }
             }
             else {
-                throw ChildException(*this, str);
+                throw ChildException(*this, index);
             }
             return *this;
         }
@@ -727,6 +733,20 @@ class Jsonator {
         }
 
       private:
+        void _moveTo(unsigned long index) {
+            if (_parent != NULL) {
+                Map& parent = *(const_cast<Map*>(_parent));
+                MBLET_JSONATOR_INDEX_TO_STR(str, index);
+                _key = str;
+                parent[index] = *this;
+            }
+        }
+
+        void _erase(unsigned long index) {
+            MBLET_JSONATOR_INDEX_TO_STR(str, index);
+            std::map<std::string, Map>::erase(str);
+        }
+
         const Map* _parent;
         std::string _key;
         std::string _string;
