@@ -33,10 +33,6 @@
 #include <stack>
 #include <string>
 
-#define MBLET_JSONATOR_INDEX_TO_STR(str, index) \
-    char str[32]; \
-    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
-
 namespace mblet {
 
 /**
@@ -102,7 +98,8 @@ class Jsonator {
         class ChildException : public AccessException {
           public:
             ChildException(const Map& map, unsigned long index) : AccessException(map, "has not a child") {
-                MBLET_JSONATOR_INDEX_TO_STR(str, index);
+                char str[32]; \
+                ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
                 generateWhat(map, str);
             }
             ChildException(const Map& map, const std::string& child) : AccessException(map, "has not a child"),
@@ -197,13 +194,6 @@ class Jsonator {
         /**
          * @brief Construct a new Map object
          *
-         * @param index
-         */
-        Map(const Map* parent, unsigned long index);
-
-        /**
-         * @brief Construct a new Map object
-         *
          * @param rhs
          */
         Map(const Map& rhs);
@@ -279,26 +269,20 @@ class Jsonator {
             return std::map<std::string, Map>::find(str);
         }
 
+        Map::const_iterator find(const std::string& str) const {
+            return std::map<std::string, Map>::find(str);
+        }
+
         Map::iterator find(const char* str) {
+            return std::map<std::string, Map>::find(str);
+        }
+
+        Map::const_iterator find(const char* str) const {
             return std::map<std::string, Map>::find(str);
         }
 
         template<size_t Size>
         Map::iterator find(const char (&str)[Size]) {
-            return std::map<std::string, Map>::find(str);
-        }
-
-        template<typename T>
-        Map::iterator find(const T& index) {
-            MBLET_JSONATOR_INDEX_TO_STR(str, index);
-            return std::map<std::string, Map>::find(str);
-        }
-
-        Map::const_iterator find(const std::string& str) const {
-            return std::map<std::string, Map>::find(str);
-        }
-
-        Map::const_iterator find(const char* str) const {
             return std::map<std::string, Map>::find(str);
         }
 
@@ -308,8 +292,16 @@ class Jsonator {
         }
 
         template<typename T>
+        Map::iterator find(const T& index) {
+            char str[32]; \
+            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
+            return std::map<std::string, Map>::find(str);
+        }
+
+        template<typename T>
         Map::const_iterator find(const T& index) const {
-            MBLET_JSONATOR_INDEX_TO_STR(str, index);
+            char str[32]; \
+            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
             return std::map<std::string, Map>::find(str);
         }
 
@@ -376,14 +368,16 @@ class Jsonator {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            MBLET_JSONATOR_INDEX_TO_STR(str, index);
+            char str[32];
+            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
             Map::iterator it = find(str);
             if (it != end()) {
                 return it->second;
             }
             while (static_cast<unsigned long>(size()) < static_cast<unsigned long>(index)) {
-                MBLET_JSONATOR_INDEX_TO_STR(strTmp, size());
-                insert(std::pair<std::string, Map>(strTmp, Map(this, strTmp)));
+                char strIndex[32]; \
+                ::snprintf(strIndex, sizeof(strIndex), "%lu", static_cast<unsigned long>(size()));
+                insert(std::pair<std::string, Map>(strIndex, Map(this, strIndex)));
             }
             return insert(std::pair<std::string, Map>(str, Map(this, str))).first->second;
         }
@@ -467,12 +461,18 @@ class Jsonator {
         template<typename T>
         void push_front(const T& value) {
             for (std::size_t i = size() ; i > 0 ; --i) {
-                at(i - 1)._moveTo(i);
+                Map& m = at(i - 1);
+                char str[32];
+                ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(i));
+                m._key = str;
+                operator[](i) = m;
             }
-            // create and replace first value
-            Map mValue(this, 0);
-            mValue = value;
-            operator[](0) = mValue;
+            {
+                // create and replace first value
+                Map m(this, "0");
+                m = value;
+                operator[](0) = m;
+            }
         }
 
         template<typename T>
@@ -634,9 +634,17 @@ class Jsonator {
             Map::iterator it = find(index);
             if (it != end()) {
                 for (std::size_t i = index ; i < size() - 1; ++i) {
-                    at(i + 1)._moveTo(i);
+                    Map& m = at(i + 1);
+                    char str[32];
+                    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(i));
+                    m._key = str;
+                    operator[](i) = m;
                 }
-                _erase(size() - 1);
+                {
+                    char str[32];
+                    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(size() - 1));
+                    std::map<std::string, Map>::erase(str);
+                }
                 if (empty()) {
                     _type = NONE;
                 }
@@ -733,20 +741,6 @@ class Jsonator {
         }
 
       private:
-        void _moveTo(unsigned long index) {
-            if (_parent != NULL) {
-                Map& parent = *(const_cast<Map*>(_parent));
-                MBLET_JSONATOR_INDEX_TO_STR(str, index);
-                _key = str;
-                parent[index] = *this;
-            }
-        }
-
-        void _erase(unsigned long index) {
-            MBLET_JSONATOR_INDEX_TO_STR(str, index);
-            std::map<std::string, Map>::erase(str);
-        }
-
         const Map* _parent;
         std::string _key;
         std::string _string;

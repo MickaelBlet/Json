@@ -50,17 +50,6 @@ Jsonator::Map::Map(const Map* parent, const std::string& key) :
     _type(NONE)
 {}
 
-Jsonator::Map::Map(const Map* parent, unsigned long index) :
-    std::map<std::string, Map>(),
-    _parent(parent),
-    _string("null"),
-    _number(0),
-    _boolean(false),
-    _type(NONE) {
-    MBLET_JSONATOR_INDEX_TO_STR(str, index)
-    _key = str;
-}
-
 Jsonator::Map::Map(const Map& rhs) :
     std::map<std::string, Map>(rhs),
     _parent(rhs._parent),

@@ -226,7 +226,8 @@ static inline Jsonator::Map& s_createNewObjectElement(const JsonatorParseInfo& i
 }
 
 static inline Jsonator::Map& s_createNewArrayElement(Jsonator::Map& map) {
-    MBLET_JSONATOR_INDEX_TO_STR(str, map.size());
+    char str[32]; \
+    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(map.size()));
     return map.insert(std::pair<std::string, Jsonator::Map>(str, Jsonator::Map(&map, str))).first->second;
 }
 
