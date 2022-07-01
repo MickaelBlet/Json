@@ -200,11 +200,11 @@ class Jsonator {
          * @param map
          */
         void operator=(const Map& map) {
-            this->_key = map._key;
-            this->_string = map._string;
-            this->_number = map._number;
-            this->_boolean = map._boolean;
-            this->_type = map._type;
+            _key = map._key;
+            _string = map._string;
+            _number = map._number;
+            _boolean = map._boolean;
+            _type = map._type;
             std::map<std::string, Map>::operator=(map);
         }
 
@@ -254,6 +254,46 @@ class Jsonator {
         template<typename T>
         void operator=(const T& value) {
             newNumber(value);
+        }
+
+        Map::iterator find(const std::string& str) {
+            return std::map<std::string, Map>::find(str);
+        }
+
+        Map::iterator find(const char* str) {
+            return std::map<std::string, Map>::find(str);
+        }
+
+        template<size_t Size>
+        Map::iterator find(const char (&str)[Size]) {
+            return std::map<std::string, Map>::find(str);
+        }
+
+        template<typename T>
+        Map::iterator find(const T& index) {
+            char str[32];
+            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
+            return std::map<std::string, Map>::find(str);
+        }
+
+        Map::const_iterator find(const std::string& str) const {
+            return std::map<std::string, Map>::find(str);
+        }
+
+        Map::const_iterator find(const char* str) const {
+            return std::map<std::string, Map>::find(str);
+        }
+
+        template<size_t Size>
+        Map::const_iterator find(const char (&str)[Size]) const {
+            return std::map<std::string, Map>::find(str);
+        }
+
+        template<typename T>
+        Map::const_iterator find(const T& index) const {
+            char str[32];
+            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
+            return std::map<std::string, Map>::find(str);
         }
 
         /**
@@ -415,6 +455,30 @@ class Jsonator {
             throw ChildException(*this, str);
         }
 
+        template<typename T>
+        void push_front(const T& value) {
+            for (std::size_t i = size() ; i > 0 ; --i) {
+                operator[](i) = at(i - 1);
+            }
+            // create and replace first value
+            Map mValue(this, "0");
+            mValue = value;
+            operator[](0) = mValue;
+        }
+
+        template<typename T>
+        void push_back(const T& value) {
+            operator[](size()) = value;
+        }
+
+        void pop_front() {
+            erase(0);
+        }
+
+        void pop_back() {
+            erase(size() - 1);
+        }
+
         /**
          * @brief create object
          *
@@ -549,7 +613,7 @@ class Jsonator {
         }
 
         template<size_t Size>
-        Map& erase(const char str[Size]) {
+        Map& erase(const char (&str)[Size]) {
             return erase(std::string(str));
         }
 
@@ -562,6 +626,10 @@ class Jsonator {
             ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
             Map::iterator it = find(str);
             if (it != end()) {
+                for (std::size_t i = index ; i < size() - 1; ++i) {
+                    operator[](i) = at(i + 1);
+                }
+                ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(size() - 1));
                 std::map<std::string, Map>::erase(str);
                 if (empty()) {
                     _type = NONE;

@@ -2,11 +2,11 @@
     /* comment */
     "key": "string",
     "array": [
-        0
+        0,
     ],
     "number": 0.42,
     "object": {
-        "null": null
+        "null": null,
     },
-    "bool": false
+    "bool": false,
 }

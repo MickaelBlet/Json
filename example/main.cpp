@@ -1,4 +1,5 @@
 #include "mblet/jsonator.h"
+#include <vector>
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -32,19 +33,42 @@ int main(int argc, char* argv[]) {
     jsonator.parseString(str);
     mblet::Jsonator::Map map(jsonator.getMap());
     map["object"]["1"] = "test";
-    map["array"][1][10] = 42;
+    map["array"][1][1] = 42;
     map[nu] = 32;
     map[nu + 1] = true;
     bool boolean = map[nu + 1];
-    map["array\\"][1][10] = 42;
+    map["array\\"][1][1] = 42;
     map.erase("key");
+    mblet::Jsonator::Map testai;
+    testai.push_back(0);
+    testai.push_back("1");
+    testai.push_back(2);
+    testai.push_back(3);
+    std::cout << testai << std::endl;
+    testai.push_front(4);
+    std::cout << testai << std::endl;
+    std::cout << testai[3] << std::endl;
+    testai.erase(3);
+    testai.erase(3);
+    std::cout << testai << std::endl;
+    testai.pop_front();
+    testai.pop_front();
+    testai.pop_back();
+    std::cout << testai << std::endl;
+    testai[0];
+    std::cout << testai << std::endl;
+    mblet::Jsonator::Map testas;
+    testas.push_front(42);
+    // testas.erase(0)[0];
+    map["array"][2] = testai;
+    map["array"][3] = testas;
     std::cout << map.at("object").getKey() << std::endl;
     std::cout << map.at("object").isObject() << std::endl;
     std::cout << map.at("object").isArray() << std::endl;
     std::cout << map.at("object").isString() << std::endl;
     std::cout << map.at("array").at(0) << std::endl;
     std::cout << map["array"] << std::endl;
-    std::cout << boolean << std::endl;
+    std::cout << boolean << boolean << std::endl;
     // std::cout << jsonator["0"]["0"] << std::endl;
     // std::cout << jsonator["0"]["0"]["0"] << std::endl;
     // std::cout << jsonator["0"]["0"]["0"]["0"] << std::endl;
@@ -54,12 +78,13 @@ int main(int argc, char* argv[]) {
     // std::cout << jsonator["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"].dump(4) << std::endl;
     // std::cout << jsonator["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"].dump(4) << std::endl;
     // std::cout << map.dump(2) << std::endl;
-    unsigned int u = 0;
-    mblet::Jsonator::Map map2;
+    // unsigned int u = 0;
+    // mblet::Jsonator::Map map2;
     // map2[0][1].erase(u);
     // map[""].erase(0);
     // map[""]["array"][1][0][0].erase(u)[u] = 24;
-    map["array"].erase(u)[u] = 24;
-    std::cout << map.dump() << std::endl;
+    std::cout << map.dump(2) << std::endl;
+    map["array"].erase(0).push_front(24);
+    std::cout << map.dump(2) << std::endl;
     return 0;
 }
