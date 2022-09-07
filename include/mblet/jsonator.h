@@ -98,9 +98,7 @@ class Jsonator {
         class ChildException : public AccessException {
           public:
             ChildException(const Map& map, unsigned long index) : AccessException(map, "has not a child") {
-                char str[32]; \
-                ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
-                generateWhat(map, str);
+                generateWhat(map, indexToString(index));
             }
             ChildException(const Map& map, const std::string& child) : AccessException(map, "has not a child"),
                 _child(child) {
@@ -277,10 +275,6 @@ class Jsonator {
             return std::map<std::string, Map>::find(str);
         }
 
-        Map::const_iterator find(const char* str) const {
-            return std::map<std::string, Map>::find(str);
-        }
-
         template<size_t Size>
         Map::iterator find(const char (&str)[Size]) {
             return std::map<std::string, Map>::find(str);
@@ -293,16 +287,12 @@ class Jsonator {
 
         template<typename T>
         Map::iterator find(const T& index) {
-            char str[32]; \
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
-            return std::map<std::string, Map>::find(str);
+            return std::map<std::string, Map>::find(indexToString(index));
         }
 
         template<typename T>
         Map::const_iterator find(const T& index) const {
-            char str[32]; \
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
-            return std::map<std::string, Map>::find(str);
+            return std::map<std::string, Map>::find(indexToString(index));
         }
 
         /**
@@ -368,16 +358,14 @@ class Jsonator {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            char str[32];
-            ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(index));
+            std::string str = indexToString(index);
             Map::iterator it = find(str);
             if (it != end()) {
                 return it->second;
             }
             while (static_cast<unsigned long>(size()) < static_cast<unsigned long>(index)) {
-                char strIndex[32]; \
-                ::snprintf(strIndex, sizeof(strIndex), "%lu", static_cast<unsigned long>(size()));
-                insert(std::pair<std::string, Map>(strIndex, Map(this, strIndex)));
+                std::string strTmp = indexToString(size());
+                insert(std::pair<std::string, Map>(strTmp, Map(this, strTmp)));
             }
             return insert(std::pair<std::string, Map>(str, Map(this, str))).first->second;
         }
@@ -741,6 +729,25 @@ class Jsonator {
         }
 
       private:
+
+        void _moveTo(unsigned long index) {
+            if (_parent != NULL) {
+                Map& parent = *(const_cast<Map*>(_parent));
+                _key = indexToString(index);
+                parent[index] = *this;
+            }
+        }
+
+        void _erase(unsigned long index) {
+            std::map<std::string, Map>::erase(indexToString(index));
+        }
+
+        static std::string indexToString(unsigned long index) {
+            char str[32];
+            ::snprintf(str, sizeof(str), "%lu", index);
+            return str;
+        }
+
         const Map* _parent;
         std::string _key;
         std::string _string;

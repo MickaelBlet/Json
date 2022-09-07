@@ -85,8 +85,7 @@ int main(int argc, char* argv[]) {
     // map[""].erase(0);
     // map[""]["array"][1][0][0].erase(u)[u] = 24;
     map["array"].erase(0).push_front(24);
-    // std::cout << map.dump(2) << std::endl;
-    // map["array"].erase(0)[0] = 24;
+    map["array\\"][0].newNull();
     std::cout << map.dump(2) << std::endl;
     return 0;
 }
