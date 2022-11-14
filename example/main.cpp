@@ -1,5 +1,6 @@
-#include "mblet/jsonator.h"
 #include <vector>
+
+#include "mblet/jsonator.h"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -8,17 +9,18 @@ int main(int argc, char* argv[]) {
     }
     mblet::Jsonator jsonator;
     jsonator.parseFile(argv[1]);
-    // mblet::Jsonator::Map map;
+    std::cout << jsonator.dump(2) << std::endl;
+    // mblet::Jsonator::Json json;
     // char* test = (char*)"test";
-    // map["key"] = "test";
-    // map["type"] = "test";
-    // map["array"][0][0][0][0][0][0][0][0][0][0]["test"] = test;
-    // jsonator.getMap()["3"] = map;
+    // json["key"] = "test";
+    // json["type"] = "test";
+    // json["array"][0][0][0][0][0][0][0][0][0][0]["test"] = test;
+    // jsonator.getJson()["3"] = json;
     // jsonator["object"]["2"];
     std::string strKey2 = jsonator["key"];
     const double& dd = jsonator["number"];
-    mblet::Jsonator::Map strKey = jsonator["object"];
-    const mblet::Jsonator::Map* ptrMap = &jsonator["key"];
+    mblet::Jsonator::Json strKey = jsonator["object"];
+    const mblet::Jsonator::Json* ptrMap = &jsonator["key"];
     const char* nu = "number";
     double testd = jsonator[nu].get<double>();
     std::cout << ptrMap->get<std::string>() << std::endl;
@@ -31,16 +33,16 @@ int main(int argc, char* argv[]) {
     std::cout << jsonator.dump() << std::endl;
     std::string str = jsonator.dump(0);
     jsonator.parseString(str);
-    mblet::Jsonator::Map map(jsonator.getMap());
-    map["object"]["1"] = "test";
-    map["array"][1][1] = 42;
-    map[nu] = 32;
-    map[nu + 1] = true;
-    bool boolean = map[nu + 1];
-    map["array\\"][1][1] = 42;
+    mblet::Jsonator::Json json(jsonator.getJson());
+    json["object"]["1"] = "test";
+    json["array"][1][1] = 42;
+    json[nu] = 32;
+    json[nu + 1] = true;
+    // bool boolean = json[nu + 1];
+    json["array\\"][1][1][1][1][1][1] = 42;
     const char ttt[4] = "key";
-    map.erase(ttt);
-    mblet::Jsonator::Map testai;
+    json.erase(ttt);
+    mblet::Jsonator::Json testai;
     testai.push_back(0);
     testai.push_back("1");
     testai.push_back(2);
@@ -48,7 +50,7 @@ int main(int argc, char* argv[]) {
     std::cout << testai << std::endl;
     testai.push_front(4);
     std::cout << testai << std::endl;
-    std::cout << testai[3] << std::endl;
+    std::cout << testai[-1] << std::endl;
     testai.erase(3);
     testai.erase(3);
     std::cout << testai << std::endl;
@@ -58,34 +60,37 @@ int main(int argc, char* argv[]) {
     std::cout << testai << std::endl;
     testai[0];
     std::cout << testai << std::endl;
-    mblet::Jsonator::Map testas;
+    mblet::Jsonator::Json testas;
     testas.push_front(42);
     // testas.erase(0)[0];
-    map["array"][2] = testai;
-    map["array"][3] = testas;
-    std::cout << map.at("object").getKey() << std::endl;
-    std::cout << map.at("object").isObject() << std::endl;
-    std::cout << map.at("object").isArray() << std::endl;
-    std::cout << map.at("object").isString() << std::endl;
-    std::cout << map.at("array").at(0) << std::endl;
-    std::cout << map["array"] << std::endl;
-    std::cout << boolean << boolean << std::endl;
+    json["array"][2] = testai;
+    json["array"][3] = testas;
+    std::cout << json.at("object").getKey() << std::endl;
+    std::cout << json.at("object").isObject() << std::endl;
+    std::cout << json.at("object").isArray() << std::endl;
+    std::cout << json.at("object").isString() << std::endl;
+    std::cout << json.at("array").at(0) << std::endl;
+    std::cout << json["array"] << std::endl;
     // std::cout << jsonator["0"]["0"] << std::endl;
     // std::cout << jsonator["0"]["0"]["0"] << std::endl;
     // std::cout << jsonator["0"]["0"]["0"]["0"] << std::endl;
     // std::cout << jsonator["0"]["0"]["0"]["0"]["0"] << std::endl;
     // std::cout << jsonator["0"]["0"]["0"]["0"]["0"]["0"] << std::endl;
     // std::cout << jsonator["0"]["0"]["0"]["0"]["0"]["0"]["0"] << std::endl;
-    // std::cout << jsonator["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"].dump(4) << std::endl;
-    // std::cout << jsonator["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"].dump(4) << std::endl;
-    // std::cout << map.dump(2) << std::endl;
+    // std::cout << jsonator["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"].dump(4) <<
+    // std::endl; std::cout <<
+    // jsonator["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"]["0"].dump(4) << std::endl;
+    // std::cout << json.dump(2) << std::endl;
     // unsigned int u = 0;
-    // mblet::Jsonator::Map map2;
+    // mblet::Jsonator::Json map2;
     // map2[0][1].erase(u);
-    // map[""].erase(0);
-    // map[""]["array"][1][0][0].erase(u)[u] = 24;
-    map["array"].erase(0).push_front(24);
-    map["array\\"][0].newNull();
-    std::cout << map.dump(2) << std::endl;
+    // json[""].erase(0);
+    // json[""]["array"][1][0][0].erase(u)[u] = 24;
+    json["array"].erase(0).push_front(24);
+    std::cout << json["array"] << std::endl;
+    json["array"][json["array"].size()].newArray();
+    std::cout << json.dump(2) << std::endl;
+    json["array"][json["array"].size() - 1].push_back("24");
+    std::cout << json.dump(2) << std::endl;
     return 0;
 }

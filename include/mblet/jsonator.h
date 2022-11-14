@@ -39,44 +39,24 @@ namespace mblet {
  * @brief Parse and create a json object
  */
 class Jsonator {
-
   public:
-
     /**
-     * @brief multi level of map
+     * @brief multi level of json
      */
-    class Map : public std::map<std::string, Map> {
+    class Json : public std::map<std::string, Json> {
       public:
-
         /**
          * @brief Access exception from std::exception
          */
         class AccessException : public std::exception {
           public:
-            AccessException(const Map& map, const char* message) : std::exception(), _message(message), _map(map) {
-                std::stack<const Map*> maps;
-                const Map* pMap = map._parent;
-                while (pMap != NULL) {
-                    maps.push(pMap);
-                    pMap = pMap->_parent;
-                }
+            AccessException(const Json& json, const char* message) :
+                std::exception(),
+                _message(message),
+                _json(json) {
                 std::ostringstream oss("");
-                while (!maps.empty()) {
-                    if (maps.top()->_parent && maps.top()->_parent->isObject()) {
-                        oss << '\"' << maps.top()->_key << '\"' << ':';
-                    }
-                    if (maps.top()->_parent && maps.top()->_parent->isArray()) {
-                        oss << '[' << maps.top()->_key << ']' << ':';
-                    }
-                    maps.pop();
-                }
-                if (map._parent && map._parent->isObject()) {
-                    oss << '\"' << map._key << '\"';
-                }
-                if (map._parent && map._parent->isArray()) {
-                    oss << '[' << map._key << ']';
-                }
-                oss << ' ' << message << '.';
+                jsonToPath(oss, json);
+                oss << ' ' << message << " (is " << getStrFromType(json._type) << ")" << '.';
                 _what = oss.str();
             }
             virtual ~AccessException() throw() {}
@@ -86,57 +66,64 @@ class Jsonator {
             const std::string& message() const throw() {
                 return _message;
             }
-            const Map& map() const throw() {
-                return _map;
+            const Json& json() const throw() {
+                return _json;
             }
+
+            static void jsonToPath(std::ostringstream& oss, const Json& json) {
+                std::stack<const Json*> jsons;
+                const Json* pJson = json._parent;
+                while (pJson != NULL) {
+                    jsons.push(pJson);
+                    pJson = pJson->_parent;
+                }
+                while (!jsons.empty()) {
+                    if (jsons.top()->_parent && jsons.top()->_parent->isObject()) {
+                        oss << '\"' << jsons.top()->_key << '\"' << ':';
+                    }
+                    if (jsons.top()->_parent && jsons.top()->_parent->isArray()) {
+                        oss << '[' << jsons.top()->_key << ']' << ':';
+                    }
+                    jsons.pop();
+                }
+                if (json._parent && json._parent->isObject()) {
+                    oss << '\"' << json._key << '\"';
+                }
+                if (json._parent && json._parent->isArray()) {
+                    oss << '[' << json._key << ']';
+                }
+            }
+
           protected:
             std::string _what;
             const std::string _message;
-            const Map& _map;
+            const Json& _json;
         };
 
         class ChildException : public AccessException {
           public:
-            ChildException(const Map& map, unsigned long index) : AccessException(map, "has not a child") {
-                generateWhat(map, indexToString(index));
+            ChildException(const Json& json, unsigned long index) :
+                AccessException(json, "has not a child") {
+                std::ostringstream oss("");
+                jsonToPath(oss, json);
+                oss << " out of range '" << index << "'.";
+                _what = oss.str();
             }
-            ChildException(const Map& map, const std::string& child) : AccessException(map, "has not a child"),
+            ChildException(const Json& json, const std::string& child) :
+                AccessException(json, "has not a child"),
                 _child(child) {
-                generateWhat(map, child);
+                std::ostringstream oss("");
+                jsonToPath(oss, json);
+                oss << " has not a child '" << child << "'.";
+                _what = oss.str();
             }
             virtual ~ChildException() throw() {}
             const std::string& child() const throw() {
                 return _child;
             }
+
           protected:
             const std::string _child;
-          private:
-            void generateWhat(const Map& map, const std::string& child) {
-                std::stack<const Map*> maps;
-                const Map* pMap = map._parent;
-                while (pMap != NULL) {
-                    maps.push(pMap);
-                    pMap = pMap->_parent;
-                }
-                std::ostringstream oss("");
-                while (!maps.empty()) {
-                    if (maps.top()->_parent && maps.top()->_parent->isObject()) {
-                        oss << '\"' << maps.top()->_key << '\"' << ':';
-                    }
-                    if (maps.top()->_parent && maps.top()->_parent->isArray()) {
-                        oss << '[' << maps.top()->_key << ']' << ':';
-                    }
-                    maps.pop();
-                }
-                if (map._parent && map._parent->isObject()) {
-                    oss << '\"' << map._key << '\"';
-                }
-                if (map._parent && map._parent->isArray()) {
-                    oss << '[' << map._key << ']';
-                }
-                oss << " has not a child '" << child << "'.";
-                _what = oss.str();
-            }
         };
 
         enum Type {
@@ -162,6 +149,8 @@ class Jsonator {
                     return "NUMBER";
                 case BOOLEAN:
                     return "BOOLEAN";
+                default:
+                    return "UNKNOWN";
             }
         }
 
@@ -169,50 +158,50 @@ class Jsonator {
          * @brief overide operator stream for print value
          *
          * @param os
-         * @param map
+         * @param json
          * @return std::ostream&
          */
-        friend std::ostream& operator<<(std::ostream& os, const Map& map) {
-            os << map.dump();
+        friend std::ostream& operator<<(std::ostream& os, const Json& json) {
+            os << json.dump();
             return os;
         }
 
         /**
-         * @brief Construct the Map object
+         * @brief Construct the Json object
          */
-        Map();
+        Json();
 
         /**
-         * @brief Construct a new Map object
+         * @brief Construct a new Json object
          *
          * @param key
          */
-        Map(const Map* parent, const std::string& key);
+        Json(const Json* parent, const std::string& key);
 
         /**
-         * @brief Construct a new Map object
+         * @brief Construct a new Json object
          *
          * @param rhs
          */
-        Map(const Map& rhs);
+        Json(const Json& rhs);
 
         /**
-         * @brief Destroy the Map object
+         * @brief Destroy the Json object
          */
-        virtual ~Map();
+        virtual ~Json();
 
         /**
-         * @brief overide operator for copy map
+         * @brief overide operator for copy json
          *
-         * @param map
+         * @param json
          */
-        void operator=(const Map& map) {
-            _key = map._key;
-            _string = map._string;
-            _number = map._number;
-            _boolean = map._boolean;
-            _type = map._type;
-            std::map<std::string, Map>::operator=(map);
+        void operator=(const Json& json) {
+            _key = json._key;
+            _string = json._string;
+            _number = json._number;
+            _boolean = json._boolean;
+            _type = json._type;
+            std::map<std::string, Json>::operator=(json);
         }
 
         /**
@@ -240,7 +229,7 @@ class Jsonator {
          */
         template<size_t Size>
         void operator=(const char (&value)[Size]) {
-            newString(value);
+            newString(std::string(value, Size - 1));
         }
 
         /**
@@ -263,171 +252,191 @@ class Jsonator {
             newNumber(value);
         }
 
-        Map::iterator find(const std::string& str) {
-            return std::map<std::string, Map>::find(str);
+        iterator find(const std::string& str) {
+            return std::map<std::string, Json>::find(str);
         }
 
-        Map::const_iterator find(const std::string& str) const {
-            return std::map<std::string, Map>::find(str);
-        }
-
-        Map::iterator find(const char* str) {
-            return std::map<std::string, Map>::find(str);
+        iterator find(const char* str) {
+            return std::map<std::string, Json>::find(str);
         }
 
         template<size_t Size>
-        Map::iterator find(const char (&str)[Size]) {
-            return std::map<std::string, Map>::find(str);
+        iterator find(const char (&str)[Size]) {
+            return std::map<std::string, Json>::find(std::string(str, Size - 1));
+        }
+
+        template<typename T>
+        iterator find(const T& index) {
+            if (index < 0) {
+                return std::map<std::string, Json>::find(indexToString(size() + index));
+            }
+            else {
+                return std::map<std::string, Json>::find(indexToString(index));
+            }
+        }
+
+        const_iterator find(const std::string& str) const {
+            return std::map<std::string, Json>::find(str);
+        }
+
+        const_iterator find(const char* str) const {
+            return std::map<std::string, Json>::find(str);
         }
 
         template<size_t Size>
-        Map::const_iterator find(const char (&str)[Size]) const {
-            return std::map<std::string, Map>::find(str);
+        const_iterator find(const char (&str)[Size]) const {
+            return std::map<std::string, Json>::find(std::string(str, Size - 1));
         }
 
         template<typename T>
-        Map::iterator find(const T& index) {
-            return std::map<std::string, Map>::find(indexToString(index));
-        }
-
-        template<typename T>
-        Map::const_iterator find(const T& index) const {
-            return std::map<std::string, Map>::find(indexToString(index));
+        const_iterator find(const T& index) const {
+            if (index < 0) {
+                return std::map<std::string, Json>::find(indexToString(size() + index));
+            }
+            else {
+                return std::map<std::string, Json>::find(indexToString(index));
+            }
         }
 
         /**
-         * @brief overide operator for get map from string
+         * @brief overide operator for get json from string
          *
          * @param str : at string
-         * @return Map& : map from string
+         * @return Json& : json from string
          */
-        Map& operator[](const std::string& str) {
+        Json& operator[](const std::string& str) {
             if (_type == NONE) {
                 _type = OBJECT;
             }
             if (_type != OBJECT) {
                 throw AccessException(*this, "is not a object");
             }
-            Map::iterator it = find(str);
+            iterator it = find(str);
             if (it != end()) {
                 return it->second;
             }
-            return insert(std::pair<std::string, Map>(str, Map(this, str))).first->second;
+            return insert(std::pair<std::string, Json>(str, Json(this, str))).first->second;
         }
 
         /**
-         * @brief overide operator for get const map from string
+         * @brief overide operator for get const json from string
          *
          * @param str : search string
-         * @return const Map& : map from string
+         * @return const Json& : json from string
          */
-        const Map& operator[](const std::string& str) const {
+        const Json& operator[](const std::string& str) const {
             if (_type != OBJECT) {
                 throw AccessException(*this, "is not a object");
             }
-            Map::const_iterator it = find(str);
+            const_iterator it = find(str);
             if (it != end()) {
                 return it->second;
             }
             throw ChildException(*this, str);
         }
 
-        Map& operator[](const char* str) {
+        Json& operator[](const char* str) {
             return operator[](std::string(str));
         }
 
-        const Map& operator[](const char* str) const {
-            return operator[](std::string(str));
-        }
-
-        template<size_t Size>
-        Map& operator[](const char (&str)[Size]) {
+        const Json& operator[](const char* str) const {
             return operator[](std::string(str));
         }
 
         template<size_t Size>
-        const Map& operator[](const char (&str)[Size]) const {
-            return operator[](std::string(str));
+        Json& operator[](const char (&str)[Size]) {
+            return operator[](std::string(str, Size - 1));
+        }
+
+        template<size_t Size>
+        const Json& operator[](const char (&str)[Size]) const {
+            return operator[](std::string(str, Size - 1));
         }
 
         template<typename T>
-        Map& operator[](const T& index) {
+        Json& operator[](const T& index) {
             if (_type == NONE) {
                 _type = ARRAY;
             }
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            std::string str = indexToString(index);
-            Map::iterator it = find(str);
+            std::string str;
+            if (index < 0) {
+                str = indexToString(size() + index);
+            }
+            else {
+                str = indexToString(index);
+            }
+            iterator it = find(str);
             if (it != end()) {
                 return it->second;
             }
             while (static_cast<unsigned long>(size()) < static_cast<unsigned long>(index)) {
                 std::string strTmp = indexToString(size());
-                insert(std::pair<std::string, Map>(strTmp, Map(this, strTmp)));
+                insert(std::pair<std::string, Json>(strTmp, Json(this, strTmp)));
             }
-            return insert(std::pair<std::string, Map>(str, Map(this, str))).first->second;
+            return insert(std::pair<std::string, Json>(str, Json(this, str))).first->second;
         }
 
         template<typename T>
-        const Map& operator[](const T& index) const {
+        const Json& operator[](const T& index) const {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            Map::const_iterator it = find(index);
+            const_iterator it = find(index);
             if (it != end()) {
                 return it->second;
             }
             throw ChildException(*this, index);
         }
 
-        Map& at(const std::string& str) {
+        Json& at(const std::string& str) {
             if (_type != OBJECT) {
                 throw AccessException(*this, "is not a object");
             }
-            Map::iterator it = find(str);
+            iterator it = find(str);
             if (it != end()) {
                 return it->second;
             }
             throw ChildException(*this, str);
         }
 
-        const Map& at(const std::string& str) const {
+        const Json& at(const std::string& str) const {
             if (_type != OBJECT) {
                 throw AccessException(*this, "is not a object");
             }
-            Map::const_iterator it = find(str);
+            const_iterator it = find(str);
             if (it != end()) {
                 return it->second;
             }
             throw ChildException(*this, str);
         }
 
-        Map& at(const char* str) {
+        Json& at(const char* str) {
             return at(std::string(str));
         }
 
-        const Map& at(const char* str) const {
-            return at(std::string(str));
-        }
-
-        template<size_t Size>
-        Map& at(const char (&str)[Size]) {
+        const Json& at(const char* str) const {
             return at(std::string(str));
         }
 
         template<size_t Size>
-        const Map& at(const char (&str)[Size]) const {
-            return at(std::string(str));
+        Json& at(const char (&str)[Size]) {
+            return at(std::string(str, Size - 1));
+        }
+
+        template<size_t Size>
+        const Json& at(const char (&str)[Size]) const {
+            return at(std::string(str, Size - 1));
         }
 
         template<typename T>
-        Map& at(const T& index) {
+        Json& at(const T& index) {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            Map::iterator it = find(index);
+            iterator it = find(index);
             if (it != end()) {
                 return it->second;
             }
@@ -435,11 +444,11 @@ class Jsonator {
         }
 
         template<typename T>
-        const Map& at(const T& index) const {
+        const Json& at(const T& index) const {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            Map::const_iterator it = find(index);
+            const_iterator it = find(index);
             if (it != end()) {
                 return it->second;
             }
@@ -448,16 +457,14 @@ class Jsonator {
 
         template<typename T>
         void push_front(const T& value) {
-            for (std::size_t i = size() ; i > 0 ; --i) {
-                Map& m = at(i - 1);
-                char str[32];
-                ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(i));
-                m._key = str;
+            for (std::size_t i = size(); i > 0; --i) {
+                Json& m = at(i - 1);
+                m._key = indexToString(i);
                 operator[](i) = m;
             }
             {
                 // create and replace first value
-                Map m(this, "0");
+                Json m(this, "0");
                 m = value;
                 operator[](0) = m;
             }
@@ -478,9 +485,6 @@ class Jsonator {
 
         /**
          * @brief create object
-         *
-         * @return true : create ok
-         * @return false : create ko
          */
         void newObject() {
             if (_type != NONE && _type != OBJECT) {
@@ -491,9 +495,6 @@ class Jsonator {
 
         /**
          * @brief create array
-         *
-         * @return true : create ok
-         * @return false : create ko
          */
         void newArray() {
             if (_type != NONE && _type != ARRAY) {
@@ -507,8 +508,6 @@ class Jsonator {
          *
          * @tparam T : type of value
          * @param value
-         * @return true : create ok
-         * @return false : create ko
          */
         template<typename T>
         void newString(const T& value) {
@@ -526,8 +525,6 @@ class Jsonator {
          *
          * @tparam T : type of value
          * @param value
-         * @return true : create ok
-         * @return false : create ko
          */
         template<typename T>
         void newNumber(const T& value) {
@@ -543,8 +540,6 @@ class Jsonator {
          *
          * @tparam T : type of value
          * @param value
-         * @return true : create ok
-         * @return false : create ko
          */
         template<typename T>
         void newBoolean(const T& value) {
@@ -555,6 +550,9 @@ class Jsonator {
             _type = BOOLEAN;
         }
 
+        /**
+         * @brief create null
+         */
         void newNull() {
             if (_type != NONE) {
                 throw AccessException(*this, "is not a null");
@@ -588,13 +586,13 @@ class Jsonator {
 
         std::string dump(std::size_t indent = 0) const;
 
-        Map& erase(const std::string& str) {
+        Json& erase(const std::string& str) {
             if (_type != OBJECT) {
                 throw AccessException(*this, "is not a object");
             }
-            Map::iterator it = find(str);
+            iterator it = find(str);
             if (it != end()) {
-                std::map<std::string, Map>::erase(str);
+                std::map<std::string, Json>::erase(str);
                 if (empty()) {
                     _type = NONE;
                 }
@@ -605,34 +603,28 @@ class Jsonator {
             return *this;
         }
 
-        Map& erase(const char* str) {
+        Json& erase(const char* str) {
             return erase(std::string(str));
         }
 
         template<size_t Size>
-        Map& erase(const char (&str)[Size]) {
-            return erase(std::string(str));
+        Json& erase(const char (&str)[Size]) {
+            return erase(std::string(str, Size - 1));
         }
 
         template<typename T>
-        Map& erase(const T& index) {
+        Json& erase(const T& index) {
             if (_type != ARRAY) {
                 throw AccessException(*this, "is not a array");
             }
-            Map::iterator it = find(index);
+            iterator it = find(index);
             if (it != end()) {
-                for (std::size_t i = index ; i < size() - 1; ++i) {
-                    Map& m = at(i + 1);
-                    char str[32];
-                    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(i));
-                    m._key = str;
+                for (std::size_t i = index; i < size() - 1; ++i) {
+                    Json& m = at(i + 1);
+                    m._key = indexToString(i);
                     operator[](i) = m;
                 }
-                {
-                    char str[32];
-                    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(size() - 1));
-                    std::map<std::string, Map>::erase(str);
-                }
+                std::map<std::string, Json>::erase(indexToString(size() - 1));
                 if (empty()) {
                     _type = NONE;
                 }
@@ -643,7 +635,7 @@ class Jsonator {
             return *this;
         }
 
-        const Map* getParent() const {
+        const Json* getParent() const {
             return _parent;
         }
 
@@ -729,32 +721,18 @@ class Jsonator {
         }
 
       private:
-
-        void _moveTo(unsigned long index) {
-            if (_parent != NULL) {
-                Map& parent = *(const_cast<Map*>(_parent));
-                _key = indexToString(index);
-                parent[index] = *this;
-            }
-        }
-
-        void _erase(unsigned long index) {
-            std::map<std::string, Map>::erase(indexToString(index));
-        }
-
         static std::string indexToString(unsigned long index) {
             char str[32];
             ::snprintf(str, sizeof(str), "%lu", index);
             return str;
         }
 
-        const Map* _parent;
+        const Json* _parent;
         std::string _key;
         std::string _string;
         double _number;
         bool _boolean;
         Type _type;
-
     };
 
     /**
@@ -762,8 +740,12 @@ class Jsonator {
      */
     class ParseException : public std::exception {
       public:
-        ParseException(const std::string& filename, const std::string& message) : std::exception(),
-            _filename(filename), _message(message), _line(0), _column(0) {
+        ParseException(const std::string& filename, const std::string& message) :
+            std::exception(),
+            _filename(filename),
+            _message(message),
+            _line(0),
+            _column(0) {
             std::ostringstream oss("");
             oss << "Parse ";
             if (!filename.empty()) {
@@ -772,8 +754,12 @@ class Jsonator {
             oss << " (" << message << ").";
             _what = oss.str();
         };
-        ParseException(const std::string& filename, std::size_t line, std::size_t column, const std::string& message) : std::exception(),
-            _filename(filename), _message(message), _line(line), _column(column) {
+        ParseException(const std::string& filename, std::size_t line, std::size_t column, const std::string& message) :
+            std::exception(),
+            _filename(filename),
+            _message(message),
+            _line(line),
+            _column(column) {
             std::ostringstream oss("");
             oss << "Parse at ";
             if (!filename.empty()) {
@@ -798,6 +784,7 @@ class Jsonator {
         std::size_t column() const throw() {
             return _column;
         }
+
       protected:
         std::string _what;
         const std::string _filename;
@@ -856,7 +843,7 @@ class Jsonator {
      */
     void parseString(const std::string& str, bool comment = true, bool additionalNext = true) {
         std::istringstream iss(str);
-        _parseStream(iss, comment, additionalNext);
+        parseStream(iss, comment, additionalNext);
     }
 
     /**
@@ -865,50 +852,49 @@ class Jsonator {
      * @param data
      * @param size
      */
-    void parseData(const char* data, std::size_t size, bool comment = true, bool additionalNext = true) {
-        parseString(std::string(data, size), comment, additionalNext);
+    void parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true) {
+        parseString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
     }
 
     /**
-     * @brief overide operator for get const map from key
+     * @brief overide operator for get const json from key
      *
      * @param index : at index
-     * @return Map& : map from index
+     * @return Json& : json from index
      */
     template<typename T>
-    const Map& operator[](const T& key) const {
-        return _map.at(key);
+    const Json& operator[](const T& key) const {
+        return _json.at(key);
     }
 
     const std::string& getFilename() const {
         return _filename;
     }
 
-    const Map& getMap() const {
-        return _map;
+    const Json& getJson() const {
+        return _json;
     }
 
     /**
-     * @brief dump map object
+     * @brief dump json object
      *
      * @param oss
      * @return std::ostream&
      */
     std::string dump(std::size_t indent = 0) const {
-        return _map.dump(indent);
+        return _json.dump(indent);
     }
 
   private:
-
     /**
-     * @brief parse and fill the map from stream
+     * @brief parse and fill the json from stream
      *
      * @param stream
      */
     void _parseStream(std::istream& stream, bool comment, bool additionalNext);
 
     std::string _filename;
-    Map _map;
+    Json _json;
 };
 
 } // namespace mblet

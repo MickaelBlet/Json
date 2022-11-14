@@ -3,10 +3,12 @@
     "key": "string",
     "array": [
         0,
+        [],
+        2
     ],
     "number": 0.42,
     "object": {
         "null": null,
     },
-    "bool": false,
+    "bool": false, // test
 }

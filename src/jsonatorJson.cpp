@@ -1,5 +1,5 @@
 /**
- * map.cpp
+ * jsonatorJson.cpp
  *
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * Copyright (c) 2022 BLET Mickaël.
@@ -30,62 +30,59 @@
 
 namespace mblet {
 
-Jsonator::Map::Map() :
-    std::map<std::string, Map>(),
+Jsonator::Json::Json() :
+    std::map<std::string, Json>(),
     _parent(NULL),
     _key(""),
     _string("null"),
     _number(0),
     _boolean(false),
-    _type(NONE)
-{}
+    _type(NONE) {}
 
-Jsonator::Map::Map(const Map* parent, const std::string& key) :
-    std::map<std::string, Map>(),
+Jsonator::Json::Json(const Json* parent, const std::string& key) :
+    std::map<std::string, Json>(),
     _parent(parent),
     _key(key),
     _string("null"),
     _number(0),
     _boolean(false),
-    _type(NONE)
-{}
+    _type(NONE) {}
 
-Jsonator::Map::Map(const Map& rhs) :
-    std::map<std::string, Map>(rhs),
+Jsonator::Json::Json(const Json& rhs) :
+    std::map<std::string, Json>(rhs),
     _parent(rhs._parent),
     _key(rhs._key),
     _string(rhs._string),
     _number(rhs._number),
     _boolean(rhs._boolean),
-    _type(rhs._type)
-{}
+    _type(rhs._type) {}
 
-Jsonator::Map::~Map() {}
+Jsonator::Json::~Json() {}
 
-static inline void s_newlineDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent) {
-    if (!map.empty() && indent != 0) {
+static inline void s_newlineDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent) {
+    if (!json.empty() && indent != 0) {
         oss << '\n';
     }
 }
 
-static inline void s_indentDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
-    if (!map.empty() && indent != 0) {
+static inline void s_indentDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index) {
+    if (!json.empty() && indent != 0) {
         oss << std::string(indent * index, ' ');
     }
 }
 
 static inline void s_stringDump(std::ostream& oss, const std::string& str) {
     static const std::pair<char, std::string> pairChars[] = {
-        std::pair<char, std::string>('\a', "\\a"), // Alert (bell, alarm)
-        std::pair<char, std::string>('\b', "\\b"), // Backspace
-        std::pair<char, std::string>('\f', "\\f"), // Form feed (new page)
-        std::pair<char, std::string>('\n', "\\n"), // New-line
-        std::pair<char, std::string>('\r', "\\r"), // Carriage return
-        std::pair<char, std::string>('\t', "\\t"), // Horizontal tab
-        std::pair<char, std::string>('\v', "\\v"), // Vertical tab
-        std::pair<char, std::string>('\'', "\\'"), // Single quotation mark
+        std::pair<char, std::string>('\a', "\\a"),  // Alert (bell, alarm)
+        std::pair<char, std::string>('\b', "\\b"),  // Backspace
+        std::pair<char, std::string>('\f', "\\f"),  // Form feed (new page)
+        std::pair<char, std::string>('\n', "\\n"),  // New-line
+        std::pair<char, std::string>('\r', "\\r"),  // Carriage return
+        std::pair<char, std::string>('\t', "\\t"),  // Horizontal tab
+        std::pair<char, std::string>('\v', "\\v"),  // Vertical tab
+        std::pair<char, std::string>('\'', "\\'"),  // Single quotation mark
         std::pair<char, std::string>('\"', "\\\""), // Double quotation mark
-        std::pair<char, std::string>('\\', "\\\\") // Backslash
+        std::pair<char, std::string>('\\', "\\\\")  // Backslash
     };
     static const std::map<char, std::string> escapeChar(pairChars, pairChars + sizeof(pairChars) / sizeof(*pairChars));
 
@@ -102,70 +99,70 @@ static inline void s_stringDump(std::ostream& oss, const std::string& str) {
     oss << '"';
 }
 
-static void s_typeDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index = 0);
+static void s_typeDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index = 0);
 
-static void s_objectDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
+static void s_objectDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index) {
     oss << '{';
-    s_newlineDump(oss, map, indent);
+    s_newlineDump(oss, json, indent);
     ++index;
-    for (Jsonator::Map::const_iterator cit = map.begin(); cit != map.end(); ++cit) {
-        if (cit != map.begin()) {
+    for (Jsonator::Json::const_iterator cit = json.begin(); cit != json.end(); ++cit) {
+        if (cit != json.begin()) {
             oss << ',';
-            s_newlineDump(oss, map, indent);
+            s_newlineDump(oss, json, indent);
         }
-        s_indentDump(oss, map, indent, index);
+        s_indentDump(oss, json, indent, index);
         s_stringDump(oss, cit->second.getKey()); // key
         oss << ((indent != 0) ? ": " : ":");
         s_typeDump(oss, cit->second, indent, index);
     }
-    s_newlineDump(oss, map, indent);
+    s_newlineDump(oss, json, indent);
     --index;
-    s_indentDump(oss, map, indent, index);
+    s_indentDump(oss, json, indent, index);
     oss << '}';
 }
 
-static void s_arrayDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
+static void s_arrayDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index) {
     oss << '[';
-    s_newlineDump(oss, map, indent);
+    s_newlineDump(oss, json, indent);
     ++index;
-    for (std::size_t i = 0; i < map.size(); ++i) {
+    for (std::size_t i = 0; i < json.size(); ++i) {
         if (i != 0) {
             oss << ',';
-            s_newlineDump(oss, map, indent);
+            s_newlineDump(oss, json, indent);
         }
-        s_indentDump(oss, map, indent, index);
-        s_typeDump(oss, map[i], indent, index);
+        s_indentDump(oss, json, indent, index);
+        s_typeDump(oss, json[i], indent, index);
     }
-    s_newlineDump(oss, map, indent);
+    s_newlineDump(oss, json, indent);
     --index;
-    s_indentDump(oss, map, indent, index);
+    s_indentDump(oss, json, indent, index);
     oss << ']';
 }
 
-void s_typeDump(std::ostream& oss, const Jsonator::Map& map, std::size_t indent, std::size_t index) {
-    switch (map.getType()) {
-        case Jsonator::Map::ARRAY:
-            s_arrayDump(oss, map, indent, index);
+void s_typeDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index) {
+    switch (json.getType()) {
+        case Jsonator::Json::ARRAY:
+            s_arrayDump(oss, json, indent, index);
             break;
-        case Jsonator::Map::OBJECT:
-            s_objectDump(oss, map, indent, index);
+        case Jsonator::Json::OBJECT:
+            s_objectDump(oss, json, indent, index);
             break;
-        case Jsonator::Map::STRING:
-            s_stringDump(oss, map.getString());
+        case Jsonator::Json::STRING:
+            s_stringDump(oss, json.getString());
             break;
-        case Jsonator::Map::NUMBER:
-            oss << map.getNumber();
+        case Jsonator::Json::NUMBER:
+            oss << json.getNumber();
             break;
-        case Jsonator::Map::BOOLEAN:
-            oss << ((map.getBoolean()) ? "true" : "false");
+        case Jsonator::Json::BOOLEAN:
+            oss << ((json.getBoolean()) ? "true" : "false");
             break;
-        case Jsonator::Map::NONE:
+        case Jsonator::Json::NONE:
             oss << "null";
             break;
     }
 }
 
-std::string Jsonator::Map::dump(std::size_t indent) const {
+std::string Jsonator::Json::dump(std::size_t indent) const {
     std::ostringstream oss("");
     oss << std::setprecision(std::numeric_limits<double>::digits10 + 1);
     s_typeDump(oss, *this, indent);

@@ -24,6 +24,7 @@
  */
 
 #include "mblet/jsonator.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -32,23 +33,20 @@
 namespace mblet {
 
 Jsonator::Jsonator() :
-    _filename(std::string("")) {
-}
+    _filename(std::string("")) {}
 
-Jsonator::~Jsonator() {
-}
+Jsonator::~Jsonator() {}
 
 Jsonator::Jsonator(const Jsonator& rhs) :
     _filename(rhs._filename),
-    _map(rhs._map) {
-}
+    _json(rhs._json) {}
 
 Jsonator& Jsonator::operator=(const Jsonator& rhs) {
     if (this == &rhs) {
         return *this;
     }
     _filename = rhs._filename;
-    _map = rhs._map;
+    _json = rhs._json;
     return *this;
 }
 
@@ -76,23 +74,22 @@ void Jsonator::parseFile(const char* filename, bool comment, bool next) {
 struct JsonatorParseInfo {
     JsonatorParseInfo(const std::string& filename_, bool additionnalNext_) :
         filename(filename_),
-        additionalNext(additionnalNext_) {
-    }
+        additionalNext(additionnalNext_) {}
     ~JsonatorParseInfo() {}
 
-    inline std::size_t line(std::size_t i) const {
+    std::size_t line(std::size_t i) const {
         return indexToLine[i];
     }
 
-    inline std::size_t column(std::size_t i) const {
+    std::size_t column(std::size_t i) const {
         return i - lineToIndex[indexToLine[i] - 1];
     }
 
-    inline std::size_t lastLine(std::size_t /*i*/) const {
+    std::size_t lastLine(std::size_t /*i*/) const {
         return indexToLine.back();
     }
 
-    inline std::size_t lastColumn(std::size_t i) const {
+    std::size_t lastColumn(std::size_t i) const {
         return i - lineToIndex[indexToLine.back() - 1];
     }
 
@@ -104,16 +101,16 @@ struct JsonatorParseInfo {
 
 static inline std::string s_replaceEscapeChar(const std::string& str) {
     static const std::pair<char, char> pairChars[] = {
-        std::pair<char, char>('a', '\a'), // Alert (bell, alarm)
-        std::pair<char, char>('b', '\b'), // Backspace
-        std::pair<char, char>('f', '\f'), // Form feed (new page)
-        std::pair<char, char>('n', '\n'), // New-line
-        std::pair<char, char>('r', '\r'), // Carriage return
-        std::pair<char, char>('t', '\t'), // Horizontal tab
-        std::pair<char, char>('v', '\v'), // Vertical tab
+        std::pair<char, char>('a', '\a'),  // Alert (bell, alarm)
+        std::pair<char, char>('b', '\b'),  // Backspace
+        std::pair<char, char>('f', '\f'),  // Form feed (new page)
+        std::pair<char, char>('n', '\n'),  // New-line
+        std::pair<char, char>('r', '\r'),  // Carriage return
+        std::pair<char, char>('t', '\t'),  // Horizontal tab
+        std::pair<char, char>('v', '\v'),  // Vertical tab
         std::pair<char, char>('\'', '\''), // Single quotation mark
-        std::pair<char, char>('"', '\"'), // Double quotation mark
-        std::pair<char, char>('\\', '\\') // Backslash
+        std::pair<char, char>('"', '\"'),  // Double quotation mark
+        std::pair<char, char>('\\', '\\')  // Backslash
     };
     static const std::map<char, char> escapeChar(pairChars, pairChars + sizeof(pairChars) / sizeof(pairChars[0]));
     std::string ret(str);
@@ -141,18 +138,23 @@ static inline void s_stringJumpSpace(const std::string& str, std::size_t& index)
     }
 }
 
-static inline void s_parseNull(std::size_t& i, Jsonator::Map& map) {
-    map.newNull();
+static inline void s_parseNull(std::size_t& i, Jsonator::Json& json) {
+    json.newNull();
     i += sizeof("null") - 1;
 }
 
-static inline void s_parseBool(bool boolean, std::size_t& i, Jsonator::Map& map) {
-    map.newBoolean(boolean);
-    i += (boolean) ? sizeof("true") - 1 : sizeof("false") - 1;
+static inline void s_parseBool(bool boolean, std::size_t& i, Jsonator::Json& json) {
+    json.newBoolean(boolean);
+    if (boolean) {
+        i += sizeof("true") - 1;
+    }
+    else {
+        i += sizeof("false") - 1;
+    }
 }
 
 static inline void s_parseNumber(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                                 Jsonator::Map& map) {
+                                 Jsonator::Json& json) {
     if (str[i] == '0' && ::isdigit(str[i + 1])) {
         throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Octal number not allowed");
     }
@@ -161,7 +163,7 @@ static inline void s_parseNumber(const JsonatorParseInfo& info, const std::strin
     if (ret == NULL) {
         throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Bad number");
     }
-    map.newNumber(number);
+    json.newNumber(number);
     std::size_t jump = ret - (str.c_str() + i);
     if (jump == 0) {
         throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Bad number");
@@ -170,7 +172,7 @@ static inline void s_parseNumber(const JsonatorParseInfo& info, const std::strin
 }
 
 static inline void s_parseString(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                                 Jsonator::Map& map) {
+                                 Jsonator::Json& json) {
     ++i; // jump '"'
     std::size_t start = i;
     // search end quote
@@ -188,11 +190,11 @@ static inline void s_parseString(const JsonatorParseInfo& info, const std::strin
     }
     std::size_t end = i;
     ++i; // jump '"'
-    map.newString(s_replaceEscapeChar(str.substr(start, end - start)));
+    json.newString(s_replaceEscapeChar(str.substr(start, end - start)));
 }
 
-static inline Jsonator::Map& s_createNewObjectElement(const JsonatorParseInfo& info, const std::string& str,
-                                                      std::size_t& i, Jsonator::Map& map) {
+static inline Jsonator::Json& s_createNewObjectElement(const JsonatorParseInfo& info, const std::string& str,
+                                                       std::size_t& i, Jsonator::Json& json) {
     // parser key
     ++i; // jump '"'
     std::size_t start = i;
@@ -219,32 +221,32 @@ static inline Jsonator::Map& s_createNewObjectElement(const JsonatorParseInfo& i
     s_stringJumpSpace(str, i);
     // get key
     std::string key = s_replaceEscapeChar(str.substr(start, end - start));
-    if (map.find(key) != map.end()) {
+    if (json.find(key) != json.end()) {
         throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
-    return map.insert(std::pair<std::string, Jsonator::Map>(key, Jsonator::Map(&map, key))).first->second;
+    return json.insert(std::pair<std::string, Jsonator::Json>(key, Jsonator::Json(&json, key))).first->second;
 }
 
-static inline Jsonator::Map& s_createNewArrayElement(Jsonator::Map& map) {
+static inline Jsonator::Json& s_createNewArrayElement(Jsonator::Json& json) {
     char str[32];
-    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(map.size()));
-    return map.insert(std::pair<std::string, Jsonator::Map>(str, Jsonator::Map(&map, str))).first->second;
+    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(json.size()));
+    return json.insert(std::pair<std::string, Jsonator::Json>(str, Jsonator::Json(&json, str))).first->second;
 }
 
-static void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Map& map);
-static void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Map& map);
+static void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Json& json);
+static void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Json& json);
 
 static inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                               Jsonator::Map& map) {
+                               Jsonator::Json& json) {
     switch (str[i]) {
         case '[':
-            s_parseArray(info, str, i, map);
+            s_parseArray(info, str, i, json);
             break;
         case '{':
-            s_parseObject(info, str, i, map);
+            s_parseObject(info, str, i, json);
             break;
         case '"':
-            s_parseString(info, str, i, map);
+            s_parseString(info, str, i, json);
             break;
         case '-':
         case '0':
@@ -257,11 +259,11 @@ static inline bool s_parseType(const JsonatorParseInfo& info, const std::string&
         case '7':
         case '8':
         case '9':
-            s_parseNumber(info, str, i, map);
+            s_parseNumber(info, str, i, json);
             break;
         case 't':
             if (!::strncmp(str.c_str() + i, "true", sizeof("true") - 1)) {
-                s_parseBool(true, i, map);
+                s_parseBool(true, i, json);
             }
             else {
                 return false;
@@ -269,7 +271,7 @@ static inline bool s_parseType(const JsonatorParseInfo& info, const std::string&
             break;
         case 'f':
             if (!::strncmp(str.c_str() + i, "false", sizeof("false") - 1)) {
-                s_parseBool(false, i, map);
+                s_parseBool(false, i, json);
             }
             else {
                 return false;
@@ -277,7 +279,7 @@ static inline bool s_parseType(const JsonatorParseInfo& info, const std::string&
             break;
         case 'n':
             if (!::strncmp(str.c_str() + i, "null", sizeof("null") - 1)) {
-                s_parseNull(i, map);
+                s_parseNull(i, json);
             }
             else {
                 return false;
@@ -290,18 +292,19 @@ static inline bool s_parseType(const JsonatorParseInfo& info, const std::string&
     return true;
 }
 
-void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Map& map) {
-    map.newArray();
+void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Json& json) {
+    json.newArray();
     bool next = false;
 
     ++i; // jump '['
     s_stringJumpSpace(str, i);
     while (str[i] != ']' || (next == true && info.additionalNext == false)) {
         if (str[i] == '\0') {
-            throw Jsonator::ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of array not found");
+            throw Jsonator::ParseException(info.filename, info.lastLine(i), info.lastColumn(i),
+                                           "End of array not found");
         }
         // search array, object, string, number, bool or null
-        if (!s_parseType(info, str, i, s_createNewArrayElement(map))) {
+        if (!s_parseType(info, str, i, s_createNewArrayElement(json))) {
             throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Bad element of array");
         }
         s_stringJumpSpace(str, i);
@@ -318,19 +321,20 @@ void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::si
     ++i; // jump ']'
 }
 
-void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Map& map) {
-    map.newObject();
+void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Json& json) {
+    json.newObject();
     bool next = false;
 
     ++i; // jump '{'
     s_stringJumpSpace(str, i);
     while (str[i] != '}' || (next == true && info.additionalNext == false)) {
         if (str[i] == '\0') {
-            throw Jsonator::ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of object not found");
+            throw Jsonator::ParseException(info.filename, info.lastLine(i), info.lastColumn(i),
+                                           "End of object not found");
         }
         else if (str[i] == '"') {
             // search array, object, string, number, bool or null
-            if (!s_parseType(info, str, i, s_createNewObjectElement(info, str, i, map))) {
+            if (!s_parseType(info, str, i, s_createNewObjectElement(info, str, i, json))) {
                 throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Bad element in the key");
             }
         }
@@ -355,31 +359,26 @@ static void s_replaceCommentBySpace(std::string& str) {
     for (std::size_t i = 0; i < str.size(); ++i) {
         if (str[i] == '"') {
             ++i;
-            while (str[i] != '"') {
+            while (str[i] != '\n' && str[i] != '\0' && str[i] != '"') {
                 if (str[i] == '\\' && (str[i + 1] == '"' || str[i + 1] == '\\')) {
-                    ++i;
-                }
-                else if (str[i] == '\n' || str[i] == '\0') {
-                    break;
+                    ++i; // escape character
                 }
                 ++i;
             }
         }
         else if (str[i] == '/' && str[i + 1] == '*') {
-            str[i] = ' ';
+            str[i] = ' '; // replace '/'
             ++i;
-            str[i] = ' ';
+            str[i] = ' '; // replace '*'
             ++i;
-            while (str[i] != '*' || str[i + 1] != '/') {
-                if (str[i] == '\0') {
-                    break;
-                }
+            while (str[i] != '\0' && (str[i] != '*' || str[i + 1] != '/')) {
                 str[i] = ' ';
                 ++i;
             }
             if (str[i] != '\0') {
-                str[i] = ' ';
-                str[i + 1] = ' ';
+                str[i] = ' '; // replace '*'
+                ++i;
+                str[i] = ' '; // replace '/'
             }
         }
         else if (str[i] == '/' && str[i + 1] == '/') {
@@ -387,10 +386,7 @@ static void s_replaceCommentBySpace(std::string& str) {
             ++i;
             str[i] = ' ';
             ++i;
-            while (str[i] != '\n') {
-                if (str[i] == '\0') {
-                    break;
-                }
+            while (str[i] != '\0' && str[i] != '\n') {
                 str[i] = ' ';
                 ++i;
             }
@@ -415,7 +411,7 @@ static std::string s_streamToStr(JsonatorParseInfo& info, std::istream& stream) 
 
 void Jsonator::_parseStream(std::istream& stream, bool comment, bool additionalNext) {
     JsonatorParseInfo info(_filename, additionalNext);
-    _map.clear();
+    _json.clear();
     std::string str = s_streamToStr(info, stream);
     if (comment) {
         s_replaceCommentBySpace(str);
@@ -425,10 +421,10 @@ void Jsonator::_parseStream(std::istream& stream, bool comment, bool additionalN
     try {
         switch (str[i]) {
             case '{':
-                s_parseObject(info, str, i, _map);
+                s_parseObject(info, str, i, _json);
                 break;
             case '[':
-                s_parseArray(info, str, i, _map);
+                s_parseArray(info, str, i, _json);
                 break;
             case '\0':
                 return;
@@ -437,7 +433,7 @@ void Jsonator::_parseStream(std::istream& stream, bool comment, bool additionalN
         }
     }
     catch (const ParseException& /*e*/) {
-        _map.clear();
+        _json.clear();
         throw;
     }
 }
