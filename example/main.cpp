@@ -3,8 +3,8 @@
 #include "mblet/jsonator.h"
 
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " JSON_FILE" << std::endl;
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " JSON_FILE1 JSON_FILE2" << std::endl;
         return 1;
     }
     mblet::Jsonator jsonator;
@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
     // jsonator["object"]["2"];
     std::string strKey2 = jsonator["key"];
     const double& dd = jsonator["number"];
-    mblet::Jsonator::Json strKey = jsonator["object"];
-    const mblet::Jsonator::Json* ptrMap = &jsonator["key"];
+    mblet::Jsonator strKey = jsonator["object"];
+    const mblet::Jsonator* ptrMap = &jsonator["key"];
     const char* nu = "number";
     double testd = jsonator[nu].get<double>();
     std::cout << ptrMap->get<std::string>() << std::endl;
@@ -33,16 +33,18 @@ int main(int argc, char* argv[]) {
     std::cout << jsonator.dump() << std::endl;
     std::string str = jsonator.dump(0);
     jsonator.parseString(str);
-    mblet::Jsonator::Json json(jsonator.getJson());
+    mblet::Jsonator json(jsonator.getConst());
+    std::cout << json.dump(2) << std::endl;
     json["object"]["1"] = "test";
     json["array"][1][1] = 42;
     json[nu] = 32;
     json[nu + 1] = true;
+    std::cout << json.dump(2) << std::endl;
     // bool boolean = json[nu + 1];
     json["array\\"][1][1][1][1][1][1] = 42;
     const char ttt[4] = "key";
     json.erase(ttt);
-    mblet::Jsonator::Json testai;
+    mblet::Jsonator testai;
     testai.push_back(0);
     testai.push_back("1");
     testai.push_back(2);
@@ -60,7 +62,7 @@ int main(int argc, char* argv[]) {
     std::cout << testai << std::endl;
     testai[0];
     std::cout << testai << std::endl;
-    mblet::Jsonator::Json testas;
+    mblet::Jsonator testas;
     testas.push_front(42);
     // testas.erase(0)[0];
     json["array"][2] = testai;
@@ -92,5 +94,8 @@ int main(int argc, char* argv[]) {
     std::cout << json.dump(2) << std::endl;
     json["array"][json["array"].size() - 1].push_back("24");
     std::cout << json.dump(2) << std::endl;
+    json["xxx"].parseFile(argv[2]);
+    std::cout << json["xxx"].getParent()->dump(2) << std::endl;
+    std::cout << json["array"].getFilename() << std::endl;
     return 0;
 }

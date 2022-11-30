@@ -33,22 +33,36 @@
 namespace mblet {
 
 Jsonator::Jsonator() :
-    _filename(std::string("")) {}
+    std::map<std::string, Jsonator>(),
+    _parent(NULL),
+    _key(""),
+    _string("null"),
+    _number(0),
+    _boolean(false),
+    _type(NONE) ,
+    _filename("") {}
 
-Jsonator::~Jsonator() {}
+Jsonator::Jsonator(const Jsonator* parent, const std::string& key) :
+    std::map<std::string, Jsonator>(),
+    _parent(parent),
+    _key(key),
+    _string("null"),
+    _number(0),
+    _boolean(false),
+    _type(NONE),
+    _filename("") {}
 
 Jsonator::Jsonator(const Jsonator& rhs) :
-    _filename(rhs._filename),
-    _json(rhs._json) {}
+    std::map<std::string, Jsonator>(rhs),
+    _parent(rhs._parent),
+    _key(rhs._key),
+    _string(rhs._string),
+    _number(rhs._number),
+    _boolean(rhs._boolean),
+    _type(rhs._type),
+    _filename(rhs._filename) {}
 
-Jsonator& Jsonator::operator=(const Jsonator& rhs) {
-    if (this == &rhs) {
-        return *this;
-    }
-    _filename = rhs._filename;
-    _json = rhs._json;
-    return *this;
-}
+Jsonator::~Jsonator() {}
 
 void Jsonator::parseFile(const char* filename, bool comment, bool next) {
     _filename = "";
@@ -138,12 +152,12 @@ static inline void s_stringJumpSpace(const std::string& str, std::size_t& index)
     }
 }
 
-static inline void s_parseNull(std::size_t& i, Jsonator::Json& json) {
+static inline void s_parseNull(std::size_t& i, Jsonator& json) {
     json.newNull();
     i += sizeof("null") - 1;
 }
 
-static inline void s_parseBool(bool boolean, std::size_t& i, Jsonator::Json& json) {
+static inline void s_parseBool(bool boolean, std::size_t& i, Jsonator& json) {
     json.newBoolean(boolean);
     if (boolean) {
         i += sizeof("true") - 1;
@@ -154,7 +168,7 @@ static inline void s_parseBool(bool boolean, std::size_t& i, Jsonator::Json& jso
 }
 
 static inline void s_parseNumber(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                                 Jsonator::Json& json) {
+                                 Jsonator& json) {
     if (str[i] == '0' && ::isdigit(str[i + 1])) {
         throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Octal number not allowed");
     }
@@ -172,7 +186,7 @@ static inline void s_parseNumber(const JsonatorParseInfo& info, const std::strin
 }
 
 static inline void s_parseString(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                                 Jsonator::Json& json) {
+                                 Jsonator& json) {
     ++i; // jump '"'
     std::size_t start = i;
     // search end quote
@@ -193,8 +207,8 @@ static inline void s_parseString(const JsonatorParseInfo& info, const std::strin
     json.newString(s_replaceEscapeChar(str.substr(start, end - start)));
 }
 
-static inline Jsonator::Json& s_createNewObjectElement(const JsonatorParseInfo& info, const std::string& str,
-                                                       std::size_t& i, Jsonator::Json& json) {
+static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, const std::string& str,
+                                                       std::size_t& i, Jsonator& json) {
     // parser key
     ++i; // jump '"'
     std::size_t start = i;
@@ -224,20 +238,20 @@ static inline Jsonator::Json& s_createNewObjectElement(const JsonatorParseInfo& 
     if (json.find(key) != json.end()) {
         throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
-    return json.insert(std::pair<std::string, Jsonator::Json>(key, Jsonator::Json(&json, key))).first->second;
+    return json.insert(std::pair<std::string, Jsonator>(key, Jsonator(&json, key))).first->second;
 }
 
-static inline Jsonator::Json& s_createNewArrayElement(Jsonator::Json& json) {
+static inline Jsonator& s_createNewArrayElement(Jsonator& json) {
     char str[32];
     ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(json.size()));
-    return json.insert(std::pair<std::string, Jsonator::Json>(str, Jsonator::Json(&json, str))).first->second;
+    return json.insert(std::pair<std::string, Jsonator>(str, Jsonator(&json, str))).first->second;
 }
 
-static void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Json& json);
-static void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Json& json);
+static void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json);
+static void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json);
 
 static inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                               Jsonator::Json& json) {
+                               Jsonator& json) {
     switch (str[i]) {
         case '[':
             s_parseArray(info, str, i, json);
@@ -292,7 +306,7 @@ static inline bool s_parseType(const JsonatorParseInfo& info, const std::string&
     return true;
 }
 
-void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Json& json) {
+void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json) {
     json.newArray();
     bool next = false;
 
@@ -321,7 +335,7 @@ void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::si
     ++i; // jump ']'
 }
 
-void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator::Json& json) {
+void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json) {
     json.newObject();
     bool next = false;
 
@@ -411,7 +425,6 @@ static std::string s_streamToStr(JsonatorParseInfo& info, std::istream& stream) 
 
 void Jsonator::_parseStream(std::istream& stream, bool comment, bool additionalNext) {
     JsonatorParseInfo info(_filename, additionalNext);
-    _json.clear();
     std::string str = s_streamToStr(info, stream);
     if (comment) {
         s_replaceCommentBySpace(str);
@@ -419,21 +432,24 @@ void Jsonator::_parseStream(std::istream& stream, bool comment, bool additionalN
     std::size_t i = 0;
     s_stringJumpSpace(str, i);
     try {
+        Jsonator json;
         switch (str[i]) {
             case '{':
-                s_parseObject(info, str, i, _json);
+                s_parseObject(info, str, i, json);
                 break;
             case '[':
-                s_parseArray(info, str, i, _json);
+                s_parseArray(info, str, i, json);
                 break;
             case '\0':
                 return;
             default:
                 throw ParseException(info.filename, info.line(i), info.column(i), "Not a valid start character");
         }
+        json._key = _key;
+        json._filename = _filename;
+        *this = json;
     }
     catch (const ParseException& /*e*/) {
-        _json.clear();
         throw;
     }
 }

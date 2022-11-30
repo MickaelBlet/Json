@@ -30,42 +30,13 @@
 
 namespace mblet {
 
-Jsonator::Json::Json() :
-    std::map<std::string, Json>(),
-    _parent(NULL),
-    _key(""),
-    _string("null"),
-    _number(0),
-    _boolean(false),
-    _type(NONE) {}
-
-Jsonator::Json::Json(const Json* parent, const std::string& key) :
-    std::map<std::string, Json>(),
-    _parent(parent),
-    _key(key),
-    _string("null"),
-    _number(0),
-    _boolean(false),
-    _type(NONE) {}
-
-Jsonator::Json::Json(const Json& rhs) :
-    std::map<std::string, Json>(rhs),
-    _parent(rhs._parent),
-    _key(rhs._key),
-    _string(rhs._string),
-    _number(rhs._number),
-    _boolean(rhs._boolean),
-    _type(rhs._type) {}
-
-Jsonator::Json::~Json() {}
-
-static inline void s_newlineDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent) {
+static inline void s_newlineDump(std::ostream& oss, const Jsonator& json, std::size_t indent) {
     if (!json.empty() && indent != 0) {
         oss << '\n';
     }
 }
 
-static inline void s_indentDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index) {
+static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
     if (!json.empty() && indent != 0) {
         oss << std::string(indent * index, ' ');
     }
@@ -99,13 +70,13 @@ static inline void s_stringDump(std::ostream& oss, const std::string& str) {
     oss << '"';
 }
 
-static void s_typeDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index = 0);
+static void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index = 0);
 
-static void s_objectDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index) {
+static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
     oss << '{';
     s_newlineDump(oss, json, indent);
     ++index;
-    for (Jsonator::Json::const_iterator cit = json.begin(); cit != json.end(); ++cit) {
+    for (Jsonator::const_iterator cit = json.begin(); cit != json.end(); ++cit) {
         if (cit != json.begin()) {
             oss << ',';
             s_newlineDump(oss, json, indent);
@@ -121,7 +92,7 @@ static void s_objectDump(std::ostream& oss, const Jsonator::Json& json, std::siz
     oss << '}';
 }
 
-static void s_arrayDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index) {
+static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
     oss << '[';
     s_newlineDump(oss, json, indent);
     ++index;
@@ -139,30 +110,30 @@ static void s_arrayDump(std::ostream& oss, const Jsonator::Json& json, std::size
     oss << ']';
 }
 
-void s_typeDump(std::ostream& oss, const Jsonator::Json& json, std::size_t indent, std::size_t index) {
+void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
     switch (json.getType()) {
-        case Jsonator::Json::ARRAY:
+        case Jsonator::ARRAY:
             s_arrayDump(oss, json, indent, index);
             break;
-        case Jsonator::Json::OBJECT:
+        case Jsonator::OBJECT:
             s_objectDump(oss, json, indent, index);
             break;
-        case Jsonator::Json::STRING:
+        case Jsonator::STRING:
             s_stringDump(oss, json.getString());
             break;
-        case Jsonator::Json::NUMBER:
+        case Jsonator::NUMBER:
             oss << json.getNumber();
             break;
-        case Jsonator::Json::BOOLEAN:
+        case Jsonator::BOOLEAN:
             oss << ((json.getBoolean()) ? "true" : "false");
             break;
-        case Jsonator::Json::NONE:
+        case Jsonator::NONE:
             oss << "null";
             break;
     }
 }
 
-std::string Jsonator::Json::dump(std::size_t indent) const {
+std::string Jsonator::dump(std::size_t indent) const {
     std::ostringstream oss("");
     oss << std::setprecision(std::numeric_limits<double>::digits10 + 1);
     s_typeDump(oss, *this, indent);

@@ -43,7 +43,7 @@ GTEST_TEST(jsonator, test1) {
     EXPECT_EQ(jsonator["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonator["example"]["bool1"].getBoolean(), false);
     EXPECT_EQ(jsonator["example"]["bool2"].getBoolean(), true);
-    EXPECT_EQ(jsonator["example"]["n\"one"].getType(), mblet::Jsonator::Json::NONE);
+    EXPECT_EQ(jsonator["example"]["n\"one"].getType(), mblet::Jsonator::NONE);
     std::string str(jsonator.dump(0));
     std::cout << str << std::endl;
     jsonator.parseString(str);
@@ -58,7 +58,7 @@ GTEST_TEST(jsonator, test1) {
     EXPECT_EQ(jsonator["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonator["example"]["bool1"].getBoolean(), false);
     EXPECT_EQ(jsonator["example"]["bool2"].getBoolean(), true);
-    EXPECT_EQ(jsonator["example"]["n\"one"].getType(), mblet::Jsonator::Json::NONE);
+    EXPECT_EQ(jsonator["example"]["n\"one"].getType(), mblet::Jsonator::NONE);
     std::cout << jsonator.dump(2) << std::endl;
     std::cout << jsonator.dump() << std::endl;
 }
@@ -99,7 +99,7 @@ GTEST_TEST(jsonator, test2) {
     EXPECT_EQ(jsonator[0]["example"]["string"].getString(), "foo\nbar");
     EXPECT_EQ(jsonator[0]["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonator[0]["example"]["bool"].getBoolean(), false);
-    EXPECT_EQ(jsonator[0]["example"]["n\"one"].getType(), mblet::Jsonator::Json::NONE);
+    EXPECT_EQ(jsonator[0]["example"]["n\"one"].getType(), mblet::Jsonator::NONE);
     std::string str(jsonator.dump(0));
     std::cout << str << std::endl;
     jsonator.parseString(str);
@@ -113,7 +113,7 @@ GTEST_TEST(jsonator, test2) {
     EXPECT_EQ(jsonator[0]["example"]["string"].getString(), "foo\nbar");
     EXPECT_EQ(jsonator[0]["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonator[0]["example"]["bool"].getBoolean(), false);
-    EXPECT_EQ(jsonator[0]["example"]["n\"one"].getType(), mblet::Jsonator::Json::NONE);
+    EXPECT_EQ(jsonator[0]["example"]["n\"one"].getType(), mblet::Jsonator::NONE);
     std::cout << jsonator.dump(2) << std::endl;
     std::cout << jsonator.dump() << std::endl;
 }
