@@ -28,6 +28,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
+#include <limits>
 #include <vector>
 
 namespace mblet {
@@ -39,7 +41,7 @@ Jsonator::Jsonator() :
     _string("null"),
     _number(0),
     _boolean(false),
-    _type(NONE) ,
+    _type(NONE),
     _filename("") {}
 
 Jsonator::Jsonator(const Jsonator* parent, const std::string& key) :
@@ -207,8 +209,8 @@ static inline void s_parseString(const JsonatorParseInfo& info, const std::strin
     json.newString(s_replaceEscapeChar(str.substr(start, end - start)));
 }
 
-static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, const std::string& str,
-                                                       std::size_t& i, Jsonator& json) {
+static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
+                                                 Jsonator& json) {
     // parser key
     ++i; // jump '"'
     std::size_t start = i;
@@ -250,8 +252,7 @@ static inline Jsonator& s_createNewArrayElement(Jsonator& json) {
 static void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json);
 static void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json);
 
-static inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                               Jsonator& json) {
+static inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json) {
     switch (str[i]) {
         case '[':
             s_parseArray(info, str, i, json);
@@ -452,6 +453,116 @@ void Jsonator::_parseStream(std::istream& stream, bool comment, bool additionalN
     catch (const ParseException& /*e*/) {
         throw;
     }
+}
+
+static inline void s_newlineDump(std::ostream& oss, const Jsonator& json, std::size_t indent) {
+    if (!json.empty() && indent != 0) {
+        oss << '\n';
+    }
+}
+
+static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
+    if (!json.empty() && indent != 0) {
+        oss << std::string(indent * index, ' ');
+    }
+}
+
+static inline void s_stringDump(std::ostream& oss, const std::string& str) {
+    static const std::pair<char, std::string> pairChars[] = {
+        std::pair<char, std::string>('\a', "\\a"),  // Alert (bell, alarm)
+        std::pair<char, std::string>('\b', "\\b"),  // Backspace
+        std::pair<char, std::string>('\f', "\\f"),  // Form feed (new page)
+        std::pair<char, std::string>('\n', "\\n"),  // New-line
+        std::pair<char, std::string>('\r', "\\r"),  // Carriage return
+        std::pair<char, std::string>('\t', "\\t"),  // Horizontal tab
+        std::pair<char, std::string>('\v', "\\v"),  // Vertical tab
+        std::pair<char, std::string>('\'', "\\'"),  // Single quotation mark
+        std::pair<char, std::string>('\"', "\\\""), // Double quotation mark
+        std::pair<char, std::string>('\\', "\\\\")  // Backslash
+    };
+    static const std::map<char, std::string> escapeChar(pairChars, pairChars + sizeof(pairChars) / sizeof(*pairChars));
+
+    oss << '"';
+    for (std::size_t i = 0; i < str.size(); ++i) {
+        std::map<char, std::string>::const_iterator cit = escapeChar.find(str[i]);
+        if (cit != escapeChar.end()) {
+            oss << cit->second;
+        }
+        else {
+            oss << str[i];
+        }
+    }
+    oss << '"';
+}
+
+static void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index = 0);
+
+static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
+    oss << '{';
+    s_newlineDump(oss, json, indent);
+    ++index;
+    for (Jsonator::const_iterator cit = json.begin(); cit != json.end(); ++cit) {
+        if (cit != json.begin()) {
+            oss << ',';
+            s_newlineDump(oss, json, indent);
+        }
+        s_indentDump(oss, json, indent, index);
+        s_stringDump(oss, cit->second.getKey()); // key
+        oss << ((indent != 0) ? ": " : ":");
+        s_typeDump(oss, cit->second, indent, index);
+    }
+    s_newlineDump(oss, json, indent);
+    --index;
+    s_indentDump(oss, json, indent, index);
+    oss << '}';
+}
+
+static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
+    oss << '[';
+    s_newlineDump(oss, json, indent);
+    ++index;
+    for (std::size_t i = 0; i < json.size(); ++i) {
+        if (i != 0) {
+            oss << ',';
+            s_newlineDump(oss, json, indent);
+        }
+        s_indentDump(oss, json, indent, index);
+        s_typeDump(oss, json[i], indent, index);
+    }
+    s_newlineDump(oss, json, indent);
+    --index;
+    s_indentDump(oss, json, indent, index);
+    oss << ']';
+}
+
+void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
+    switch (json.getType()) {
+        case Jsonator::ARRAY:
+            s_arrayDump(oss, json, indent, index);
+            break;
+        case Jsonator::OBJECT:
+            s_objectDump(oss, json, indent, index);
+            break;
+        case Jsonator::STRING:
+            s_stringDump(oss, json.getString());
+            break;
+        case Jsonator::NUMBER:
+            oss << json.getNumber();
+            break;
+        case Jsonator::BOOLEAN:
+            oss << ((json.getBoolean()) ? "true" : "false");
+            break;
+        case Jsonator::NONE:
+            oss << "null";
+            break;
+    }
+}
+
+std::string Jsonator::dump(std::size_t indent) const {
+    std::ostringstream oss("");
+    oss << std::setprecision(std::numeric_limits<double>::digits10 + 1);
+    s_typeDump(oss, *this, indent);
+    return oss.str();
 }
 
 } // namespace mblet

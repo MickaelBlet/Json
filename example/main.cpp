@@ -7,8 +7,23 @@ int main(int argc, char* argv[]) {
         std::cerr << "Usage: " << argv[0] << " JSON_FILE1 JSON_FILE2" << std::endl;
         return 1;
     }
+    std::map<int, std::string> mapStr;
+    mapStr[0] = "toto";
+    mapStr[1] = "tata";
+
+    std::map<std::string, std::string> mapStrStr;
+    mapStrStr["titi"] = "toto";
+    mapStrStr["tutu"] = "tata";
+
     mblet::Jsonator jsonator;
     jsonator.parseFile(argv[1]);
+    jsonator["new1"] = mapStr;
+    jsonator["new2"] = mapStrStr;
+
+    std::map<std::string, std::string> retTest = jsonator["new2"];
+    std::vector<std::string> retTest2 = jsonator["new1"];
+    std::cout << "woot !!!" << retTest["titi"] << std::endl;
+    std::cout << "woot !!!" << retTest2[0] << std::endl;
     std::cout << jsonator.dump(2) << std::endl;
     // mblet::Jsonator::Json json;
     // char* test = (char*)"test";

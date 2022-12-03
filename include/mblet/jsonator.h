@@ -27,11 +27,16 @@
 #define _MBLET_JSONATOR_H_
 
 #include <cstdio>
+#include <deque>
 #include <iostream>
+#include <list>
 #include <map>
+#include <queue>
+#include <set>
 #include <sstream>
 #include <stack>
 #include <string>
+#include <vector>
 
 namespace mblet {
 
@@ -152,6 +157,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
         const Jsonator& _json;
     };
 
+    /**
+     * @brief Child exception from AccessException
+     */
     class ChildException : public AccessException {
       public:
         ChildException(const Jsonator& json, unsigned long index) :
@@ -187,6 +195,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
         BOOLEAN
     };
 
+    /**
+     * @brief Get the Str From Type object
+     *
+     * @param type
+     * @return const char*
+     */
     static const char* getStrFromType(const Type& type) {
         switch (type) {
             case NONE:
@@ -282,7 +296,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<size_t Size>
     void operator=(const char (&value)[Size]) {
-        newString(std::string(value, Size - 1));
+        newString(std::string(value));
     }
 
     /**
@@ -292,6 +306,105 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     void operator=(const bool& value) {
         newBoolean(value);
+    }
+
+    /**
+     * @brief overide operator for set value from deque
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    void operator=(const std::deque<T>& value) {
+        typename std::deque<T>::const_iterator it;
+        for (it = value.begin(); it != value.end(); ++it) {
+            push_back(*it);
+        }
+    }
+
+    /**
+     * @brief overide operator for set value from list
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    void operator=(const std::list<T>& value) {
+        typename std::list<T>::const_iterator it;
+        for (it = value.begin(); it != value.end(); ++it) {
+            push_back(*it);
+        }
+    }
+
+    /**
+     * @brief overide operator for set value from map
+     *
+     * @tparam T key
+     * @tparam U value
+     * @param value
+     */
+    template<typename T, typename U>
+    void operator=(const std::map<T, U>& value) {
+        typename std::map<T, U>::const_iterator it;
+        for (it = value.begin(); it != value.end(); ++it) {
+            operator[](it->first) = it->second;
+        }
+    }
+
+    /**
+     * @brief overide operator for set value from queue
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    void operator=(const std::queue<T>& value) {
+        typename std::queue<T>::const_iterator it;
+        for (it = value.begin(); it != value.end(); ++it) {
+            push_back(*it);
+        }
+    }
+
+    /**
+     * @brief overide operator for set value from set
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    void operator=(const std::set<T>& value) {
+        typename std::set<T>::const_iterator it;
+        for (it = value.begin(); it != value.end(); ++it) {
+            push_back(*it);
+        }
+    }
+
+    /**
+     * @brief overide operator for set value from stack
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    void operator=(const std::stack<T>& value) {
+        typename std::stack<T>::const_iterator it;
+        for (it = value.begin(); it != value.end(); ++it) {
+            push_back(*it);
+        }
+    }
+
+    /**
+     * @brief overide operator for set value from vector
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    void operator=(const std::vector<T>& value) {
+        typename std::vector<T>::const_iterator it;
+        for (it = value.begin(); it != value.end(); ++it) {
+            push_back(*it);
+        }
     }
 
     /**
@@ -309,13 +422,26 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return std::map<std::string, Jsonator>::find(str);
     }
 
-    iterator find(const char* str) {
+    const_iterator find(const std::string& str) const {
         return std::map<std::string, Jsonator>::find(str);
+    }
+
+    iterator find(const char* str) {
+        return find(std::string(str));
+    }
+
+    const_iterator find(const char* str) const {
+        return find(std::string(str));
     }
 
     template<size_t Size>
     iterator find(const char (&str)[Size]) {
-        return std::map<std::string, Jsonator>::find(std::string(str, Size - 1));
+        return find(std::string(str));
+    }
+
+    template<size_t Size>
+    const_iterator find(const char (&str)[Size]) const {
+        return find(std::string(str));
     }
 
     template<typename T>
@@ -326,19 +452,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
         else {
             return std::map<std::string, Jsonator>::find(indexToString(index));
         }
-    }
-
-    const_iterator find(const std::string& str) const {
-        return std::map<std::string, Jsonator>::find(str);
-    }
-
-    const_iterator find(const char* str) const {
-        return std::map<std::string, Jsonator>::find(str);
-    }
-
-    template<size_t Size>
-    const_iterator find(const char (&str)[Size]) const {
-        return std::map<std::string, Jsonator>::find(std::string(str, Size - 1));
     }
 
     template<typename T>
@@ -398,12 +511,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     template<size_t Size>
     Jsonator& operator[](const char (&str)[Size]) {
-        return operator[](std::string(str, Size - 1));
+        return operator[](std::string(str));
     }
 
     template<size_t Size>
     const Jsonator& operator[](const char (&str)[Size]) const {
-        return operator[](std::string(str, Size - 1));
+        return operator[](std::string(str));
     }
 
     template<typename T>
@@ -476,12 +589,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     template<size_t Size>
     Jsonator& at(const char (&str)[Size]) {
-        return at(std::string(str, Size - 1));
+        return at(std::string(str));
     }
 
     template<size_t Size>
     const Jsonator& at(const char (&str)[Size]) const {
-        return at(std::string(str, Size - 1));
+        return at(std::string(str));
     }
 
     template<typename T>
@@ -637,6 +750,19 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _type == BOOLEAN;
     }
 
+    bool hasKey(const std::string& str) const {
+        return std::map<std::string, Jsonator>::find(str) != std::map<std::string, Jsonator>::end();
+    }
+
+    bool hasKey(const char* str) const {
+        return std::map<std::string, Jsonator>::find(str) != std::map<std::string, Jsonator>::end();
+    }
+
+    template<size_t Size>
+    bool hasKey(const char (&str)[Size]) const {
+        return std::map<std::string, Jsonator>::find(str) != std::map<std::string, Jsonator>::end();
+    }
+
     std::string dump(std::size_t indent = 0) const;
 
     Jsonator& erase(const std::string& str) {
@@ -662,7 +788,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     template<size_t Size>
     Jsonator& erase(const char (&str)[Size]) {
-        return erase(std::string(str, Size - 1));
+        return erase(std::string(str));
     }
 
     template<typename T>
@@ -766,6 +892,112 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     operator const bool&() const {
         return getBoolean();
+    }
+
+    /**
+     * @brief overide operator for set value from deque
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    operator std::deque<T>() const {
+        std::deque<T> ret;
+        for (const_iterator it = begin(); it != end(); ++it) {
+            ret.push_back(it->second);
+        }
+        return ret;
+    }
+
+    /**
+     * @brief overide operator for set value from list
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    operator std::list<T>() const {
+        std::list<T> ret;
+        for (const_iterator it = begin(); it != end(); ++it) {
+            ret.push_back(it->second);
+        }
+        return ret;
+    }
+
+    /**
+     * @brief overide operator for set value from map
+     *
+     * @tparam T key
+     * @tparam U value
+     * @param value
+     */
+    template<typename T, typename U>
+    operator std::map<T, U>() const {
+        std::map<T, U> ret;
+        for (const_iterator it = begin(); it != end(); ++it) {
+            ret.insert(std::pair<T, U>(it->first, it->second));
+        }
+        return ret;
+    }
+
+    /**
+     * @brief overide operator for set value from queue
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    operator std::queue<T>() const {
+        std::queue<T> ret;
+        for (const_iterator it = begin(); it != end(); ++it) {
+            ret.push_back(it->second);
+        }
+        return ret;
+    }
+
+    /**
+     * @brief overide operator for set value from set
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    operator std::set<T>() const {
+        std::set<T> ret;
+        for (const_iterator it = begin(); it != end(); ++it) {
+            ret.insert(it->second);
+        }
+        return ret;
+    }
+
+    /**
+     * @brief overide operator for set value from stack
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    operator std::stack<T>() const {
+        std::stack<T> ret;
+        for (const_iterator it = begin(); it != end(); ++it) {
+            ret.push(it->second);
+        }
+        return ret;
+    }
+
+    /**
+     * @brief overide operator for set value from vector
+     *
+     * @tparam T
+     * @param value
+     */
+    template<typename T>
+    operator std::vector<T>() const {
+        std::vector<T> ret;
+        for (const_iterator it = begin(); it != end(); ++it) {
+            ret.push_back(it->second);
+        }
+        return ret;
     }
 
     template<typename T>
