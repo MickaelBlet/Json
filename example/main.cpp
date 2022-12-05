@@ -133,5 +133,8 @@ int main(int argc, char* argv[]) {
     json["xxx"] = mblet::Jsonator::parseFile(argv[2]);
     std::cout << 333 << json["xxx"][0].getParent()->getParent()->dump(4) << std::endl;
     std::cout << json["xxx"].getFilename() << std::endl;
+    std::cout << json["array"].dump(2) << std::endl;
+    json["array"].insert(3, json["array"]).insert(3, json["array"]).insert(3, json["array"]);
+    std::cout << json["array"].dump(4) << std::endl;
     return 0;
 }

@@ -88,19 +88,19 @@ class Jsonator : public std::map<std::string, Jsonator> {
         const std::string& message() const throw() {
             return _message;
         }
-        std::size_t line() const throw() {
+        const std::size_t& line() const throw() {
             return _line;
         }
-        std::size_t column() const throw() {
+        const std::size_t& column() const throw() {
             return _column;
         }
 
       protected:
         std::string _what;
-        const std::string _filename;
-        const std::string _message;
-        const std::size_t _line;
-        const std::size_t _column;
+        std::string _filename;
+        std::string _message;
+        std::size_t _line;
+        std::size_t _column;
     };
     /**
      * @brief Access exception from std::exception
@@ -112,8 +112,11 @@ class Jsonator : public std::map<std::string, Jsonator> {
             _message(message),
             _json(json) {
             std::ostringstream oss("");
-            jsonToPath(oss, json);
-            oss << ' ' << message << " (is " << getStrFromType(json._type) << ")" << '.';
+            if (json._parent) {
+                jsonToPath(oss, json);
+                oss << ' ';
+            }
+            oss << message << " (is " << getStrFromType(json._type) << ")" << '.';
             _what = oss.str();
         }
         virtual ~AccessException() throw() {}
@@ -153,7 +156,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
       protected:
         std::string _what;
-        const std::string _message;
+        std::string _message;
         const Jsonator& _json;
     };
 
@@ -163,27 +166,38 @@ class Jsonator : public std::map<std::string, Jsonator> {
     class ChildException : public AccessException {
       public:
         ChildException(const Jsonator& json, unsigned long index) :
-            AccessException(json, "has not a child") {
+            AccessException(json, "out of range"),
+            _index(index) {
             std::ostringstream oss("");
-            jsonToPath(oss, json);
-            oss << " out of range '" << index << "'.";
+            if (json._parent) {
+                jsonToPath(oss, json);
+                oss << ' ';
+            }
+            oss << _message << " '" << index << "'.";
             _what = oss.str();
         }
         ChildException(const Jsonator& json, const std::string& child) :
             AccessException(json, "has not a child"),
             _child(child) {
             std::ostringstream oss("");
-            jsonToPath(oss, json);
-            oss << " has not a child '" << child << "'.";
+            if (json._parent) {
+                jsonToPath(oss, json);
+                oss << ' ';
+            }
+            oss << _message << " '" << child << "'.";
             _what = oss.str();
         }
         virtual ~ChildException() throw() {}
         const std::string& child() const throw() {
             return _child;
         }
+        const unsigned long& index() const throw() {
+            return _index;
+        }
 
       protected:
-        const std::string _child;
+        unsigned long _index;
+        std::string _child;
     };
 
     enum Type {
@@ -196,7 +210,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     };
 
     /**
-     * @brief Get the Str From Type object
+     * @brief Get the Str From Type
      *
      * @param type
      * @return const char*
@@ -221,7 +235,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator stream for print value
+     * @brief override operator stream for print value
      *
      * @param os
      * @param json
@@ -240,6 +254,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     /**
      * @brief Construct a new Jsonator object
      *
+     * @param parent
      * @param key
      */
     Jsonator(const Jsonator* parent, const std::string& key);
@@ -257,14 +272,14 @@ class Jsonator : public std::map<std::string, Jsonator> {
     virtual ~Jsonator();
 
     /**
-     * @brief overide operator for copy json
+     * @brief copy json
      *
      * @param json
      */
     void operator=(const Jsonator& json);
 
     /**
-     * @brief overide operator for set value from str
+     * @brief set value from str
      *
      * @param value : new value
      */
@@ -273,7 +288,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from str
+     * @brief set value from str
      *
      * @param value : new value
      */
@@ -282,17 +297,17 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from str
+     * @brief set value from str
      *
      * @param value : new value
      */
-    template<size_t Size>
+    template<std::size_t Size>
     void operator=(const char (&value)[Size]) {
         newString(std::string(value));
     }
 
     /**
-     * @brief overide operator for set value from bool
+     * @brief set value from bool
      *
      * @param value : new value
      */
@@ -301,7 +316,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from deque
+     * @brief set value from deque
      *
      * @tparam T
      * @param value
@@ -315,7 +330,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from list
+     * @brief set value from list
      *
      * @tparam T
      * @param value
@@ -329,7 +344,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from map
+     * @brief set value from map
      *
      * @tparam T key
      * @tparam U value
@@ -344,21 +359,22 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from queue
+     * @brief set value from queue
      *
      * @tparam T
      * @param value
      */
     template<typename T>
     void operator=(const std::queue<T>& value) {
-        typename std::queue<T>::const_iterator it;
-        for (it = value.begin(); it != value.end(); ++it) {
-            push_back(*it);
+        std::queue<T> copy = value;
+        while (!copy.empty()) {
+            push_back(copy.front());
+            copy.pop();
         }
     }
 
     /**
-     * @brief overide operator for set value from set
+     * @brief set value from set
      *
      * @tparam T
      * @param value
@@ -372,21 +388,22 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from stack
+     * @brief set value from stack
      *
      * @tparam T
      * @param value
      */
     template<typename T>
     void operator=(const std::stack<T>& value) {
-        typename std::stack<T>::const_iterator it;
-        for (it = value.begin(); it != value.end(); ++it) {
-            push_back(*it);
+        std::stack<T> copy = value;
+        while (!copy.empty()) {
+            push_back(copy.top());
+            copy.pop();
         }
     }
 
     /**
-     * @brief overide operator for set value from vector
+     * @brief set value from vector
      *
      * @tparam T
      * @param value
@@ -400,105 +417,167 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from number
+     * @brief set value from number
      *
      * @tparam T
-     * @param value : new value
+     * @param value
      */
     template<typename T>
     void operator=(const T& value) {
         newNumber(value);
     }
 
-    iterator find(const std::string& str) {
-        return std::map<std::string, Jsonator>::find(str);
+    /**
+     * @brief find by key
+     *
+     * @param key
+     * @return iterator
+     */
+    iterator find(const std::string& key) {
+        if (_type != OBJECT) {
+            throw AccessException(*this, "is not a object");
+        }
+        return std::map<std::string, Jsonator>::find(key);
     }
 
-    const_iterator find(const std::string& str) const {
-        return std::map<std::string, Jsonator>::find(str);
+    /**
+     * @brief find by key
+     *
+     * @param key
+     * @return const_iterator
+     */
+    const_iterator find(const std::string& key) const {
+        if (_type != OBJECT) {
+            throw AccessException(*this, "is not a object");
+        }
+        return std::map<std::string, Jsonator>::find(key);
     }
 
-    iterator find(const char* str) {
-        return find(std::string(str));
+    /**
+     * @brief find by key
+     *
+     * @param key
+     * @return iterator
+     */
+    iterator find(const char* key) {
+        return find(std::string(key));
     }
 
-    const_iterator find(const char* str) const {
-        return find(std::string(str));
+    /**
+     * @brief find by key
+     *
+     * @param key
+     * @return const_iterator
+     */
+    const_iterator find(const char* key) const {
+        return find(std::string(key));
     }
 
-    template<size_t Size>
-    iterator find(const char (&str)[Size]) {
-        return find(std::string(str));
+    /**
+     * @brief find by key
+     *
+     * @tparam Size
+     * @return iterator
+     */
+    template<std::size_t Size>
+    iterator find(const char (&key)[Size]) {
+        return find(std::string(key));
     }
 
-    template<size_t Size>
-    const_iterator find(const char (&str)[Size]) const {
-        return find(std::string(str));
+    /**
+     * @brief find by key
+     *
+     * @tparam Size
+     * @return const_iterator
+     */
+    template<std::size_t Size>
+    const_iterator find(const char (&key)[Size]) const {
+        return find(std::string(key));
     }
 
+    /**
+     * @brief find by index
+     *
+     * @tparam T
+     * @param index
+     * @return iterator
+     */
     template<typename T>
     iterator find(const T& index) {
-        return std::map<std::string, Jsonator>::find(indexToString(index));
-    }
-
-    template<typename T>
-    const_iterator find(const T& index) const {
+        if (_type != ARRAY) {
+            throw AccessException(*this, "is not a array");
+        }
         return std::map<std::string, Jsonator>::find(indexToString(index));
     }
 
     /**
-     * @brief overide operator for get json from string
+     * @brief find by index
      *
-     * @param str : at string
+     * @tparam T
+     * @param index
+     * @return const_iterator
+     */
+    template<typename T>
+    const_iterator find(const T& index) const {
+        if (_type != ARRAY) {
+            throw AccessException(*this, "is not a array");
+        }
+        return std::map<std::string, Jsonator>::find(indexToString(index));
+    }
+
+    /**
+     * @brief get json from key
+     *
+     * @param key : at string
      * @return Jsonator& : json from string
      */
-    Jsonator& operator[](const std::string& str) {
+    Jsonator& operator[](const std::string& key) {
         if (_type == NONE) {
             _type = OBJECT;
         }
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        iterator it = find(str);
+        iterator it = find(key);
         if (it != end()) {
             return it->second;
         }
-        return insert(std::pair<std::string, Jsonator>(str, Jsonator(this, str))).first->second;
+        return std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(key, Jsonator(this, key))).first->second;
     }
 
     /**
-     * @brief overide operator for get const json from string
+     * @brief get const json from key
      *
-     * @param str : search string
+     * @param key : search string
      * @return const Jsonator& : json from string
      */
-    const Jsonator& operator[](const std::string& str) const {
+    const Jsonator& operator[](const std::string& key) const {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        const_iterator it = find(str);
+        const_iterator it = find(key);
         if (it != end()) {
             return it->second;
         }
-        throw ChildException(*this, str);
+        throw ChildException(*this, key);
     }
 
-    Jsonator& operator[](const char* str) {
-        return operator[](std::string(str));
+    Jsonator& operator[](const char* key) {
+        return operator[](std::string(key));
     }
 
-    const Jsonator& operator[](const char* str) const {
-        return operator[](std::string(str));
+    const Jsonator& operator[](const char* key) const {
+        return operator[](std::string(key));
     }
 
-    template<size_t Size>
-    Jsonator& operator[](const char (&str)[Size]) {
-        return operator[](std::string(str));
+    template<std::size_t Size>
+    Jsonator& operator[](const char (&key)[Size]) {
+        return operator[](std::string(key));
     }
 
-    template<size_t Size>
-    const Jsonator& operator[](const char (&str)[Size]) const {
-        return operator[](std::string(str));
+    template<std::size_t Size>
+    const Jsonator& operator[](const char (&key)[Size]) const {
+        return operator[](std::string(key));
     }
 
     template<typename T>
@@ -509,16 +588,16 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type != ARRAY) {
             throw AccessException(*this, "is not a array");
         }
-        std::string str(indexToString(index));
-        iterator it = find(str);
+        iterator it = find(index);
         if (it != end()) {
             return it->second;
         }
         while (static_cast<unsigned long>(size()) < static_cast<unsigned long>(index)) {
             std::string strTmp = indexToString(size());
-            insert(std::pair<std::string, Jsonator>(strTmp, Jsonator(this, strTmp)));
+            std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(strTmp, Jsonator(this, strTmp)));
         }
-        return insert(std::pair<std::string, Jsonator>(str, Jsonator(this, str))).first->second;
+        std::string str(indexToString(index));
+        return std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(str, Jsonator(this, str))).first->second;
     }
 
     template<typename T>
@@ -533,44 +612,44 @@ class Jsonator : public std::map<std::string, Jsonator> {
         throw ChildException(*this, index);
     }
 
-    Jsonator& at(const std::string& str) {
+    Jsonator& at(const std::string& key) {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        iterator it = find(str);
+        iterator it = find(key);
         if (it != end()) {
             return it->second;
         }
-        throw ChildException(*this, str);
+        throw ChildException(*this, key);
     }
 
-    const Jsonator& at(const std::string& str) const {
+    const Jsonator& at(const std::string& key) const {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        const_iterator it = find(str);
+        const_iterator it = find(key);
         if (it != end()) {
             return it->second;
         }
-        throw ChildException(*this, str);
+        throw ChildException(*this, key);
     }
 
-    Jsonator& at(const char* str) {
-        return at(std::string(str));
+    Jsonator& at(const char* key) {
+        return at(std::string(key));
     }
 
-    const Jsonator& at(const char* str) const {
-        return at(std::string(str));
+    const Jsonator& at(const char* key) const {
+        return at(std::string(key));
     }
 
-    template<size_t Size>
-    Jsonator& at(const char (&str)[Size]) {
-        return at(std::string(str));
+    template<std::size_t Size>
+    Jsonator& at(const char (&key)[Size]) {
+        return at(std::string(key));
     }
 
-    template<size_t Size>
-    const Jsonator& at(const char (&str)[Size]) const {
-        return at(std::string(str));
+    template<std::size_t Size>
+    const Jsonator& at(const char (&key)[Size]) const {
+        return at(std::string(key));
     }
 
     template<typename T>
@@ -614,31 +693,54 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     template<typename T>
-    void push_front(const T& value) {
-        for (std::size_t i = size(); i > 0; --i) {
-            Jsonator& m = at(i - 1);
-            m._key = indexToString(i);
-            operator[](i)._replace(m);
-        }
-        {
-            // create and replace first value
-            Jsonator m(this, "0");
-            m = value;
-            operator[](0)._replace(m);
-        }
+    Jsonator& insert(const std::string& key, const T& value) {
+        Jsonator& json = operator[](key);
+        json = value;
+        return json;
     }
 
     template<typename T>
-    void push_back(const T& value) {
+    Jsonator& insert(const unsigned long& index, const T& value) {
+        Jsonator newValue(this, indexToString(index));
+        newValue = value;
+        // move elements
+        for (std::size_t i = size(); i > static_cast<std::size_t>(index) ; --i) {
+            Jsonator& e = at(i - 1);
+            e._key = indexToString(i);
+            operator[](i)._replace(e);
+        }
+        operator[](index)._replace(newValue);
+        return *this;
+    }
+
+    template<typename T>
+    Jsonator& push_front(const T& value) {
+        Jsonator newValue(this, "0");
+        newValue = value;
+        // move elements
+        for (std::size_t i = size(); i > 0; --i) {
+            Jsonator& e = at(i - 1);
+            e._key = indexToString(i);
+            operator[](i)._replace(e);
+        }
+        operator[](0)._replace(newValue);
+        return *this;
+    }
+
+    template<typename T>
+    Jsonator& push_back(const T& value) {
         operator[](size()) = value;
+        return *this;
     }
 
-    void pop_front() {
+    Jsonator& pop_front() {
         erase(0);
+        return *this;
     }
 
-    void pop_back() {
+    Jsonator& pop_back() {
         erase(size() - 1);
+        return *this;
     }
 
     /**
@@ -742,45 +844,36 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _type == BOOLEAN;
     }
 
-    bool hasKey(const std::string& str) const {
-        return std::map<std::string, Jsonator>::find(str) != std::map<std::string, Jsonator>::end();
-    }
-
-    bool hasKey(const char* str) const {
-        return std::map<std::string, Jsonator>::find(str) != std::map<std::string, Jsonator>::end();
-    }
-
-    template<size_t Size>
-    bool hasKey(const char (&str)[Size]) const {
-        return std::map<std::string, Jsonator>::find(str) != std::map<std::string, Jsonator>::end();
+    bool hasKey(const std::string& key) const {
+        return std::map<std::string, Jsonator>::find(key) != std::map<std::string, Jsonator>::end();
     }
 
     std::string dump(std::size_t indent = 0) const;
 
-    Jsonator& erase(const std::string& str) {
+    Jsonator& erase(const std::string& key) {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        iterator it = find(str);
+        iterator it = find(key);
         if (it != end()) {
-            std::map<std::string, Jsonator>::erase(str);
+            std::map<std::string, Jsonator>::erase(key);
             if (empty()) {
                 _type = NONE;
             }
         }
         else {
-            throw ChildException(*this, str);
+            throw ChildException(*this, key);
         }
         return *this;
     }
 
-    Jsonator& erase(const char* str) {
-        return erase(std::string(str));
+    Jsonator& erase(const char* key) {
+        return erase(std::string(key));
     }
 
-    template<size_t Size>
-    Jsonator& erase(const char (&str)[Size]) {
-        return erase(std::string(str));
+    template<std::size_t Size>
+    Jsonator& erase(const char (&key)[Size]) {
+        return erase(std::string(key));
     }
 
     template<typename T>
@@ -790,10 +883,11 @@ class Jsonator : public std::map<std::string, Jsonator> {
         }
         iterator it = find(index);
         if (it != end()) {
+            // move elements
             for (std::size_t i = index; i < size() - 1; ++i) {
-                Jsonator& m = at(i + 1);
-                m._key = indexToString(i);
-                operator[](i)._replace(m);
+                Jsonator& e = at(i + 1);
+                e._key = indexToString(i);
+                operator[](i)._replace(e);
             }
             std::map<std::string, Jsonator>::erase(indexToString(size() - 1));
             if (empty()) {
@@ -839,6 +933,10 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _type;
     }
 
+    const Jsonator& getConst() const {
+        return *this;
+    }
+
     template<typename T>
     T get() const {
         return *this;
@@ -862,10 +960,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from deque
+     * @brief get json to deque
      *
      * @tparam T
-     * @param value
      */
     template<typename T>
     operator std::deque<T>() const {
@@ -877,10 +974,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from list
+     * @brief get json to list
      *
      * @tparam T
-     * @param value
      */
     template<typename T>
     operator std::list<T>() const {
@@ -892,11 +988,10 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from map
+     * @brief get json to map
      *
      * @tparam T key
      * @tparam U value
-     * @param value
      */
     template<typename T, typename U>
     operator std::map<T, U>() const {
@@ -908,25 +1003,23 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from queue
+     * @brief get json to queue
      *
      * @tparam T
-     * @param value
      */
     template<typename T>
     operator std::queue<T>() const {
         std::queue<T> ret;
         for (const_iterator it = begin(); it != end(); ++it) {
-            ret.push_back(it->second);
+            ret.push(it->second);
         }
         return ret;
     }
 
     /**
-     * @brief overide operator for set value from set
+     * @brief get json to set
      *
      * @tparam T
-     * @param value
      */
     template<typename T>
     operator std::set<T>() const {
@@ -938,10 +1031,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from stack
+     * @brief get json to stack
      *
      * @tparam T
-     * @param value
      */
     template<typename T>
     operator std::stack<T>() const {
@@ -953,10 +1045,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief overide operator for set value from vector
+     * @brief get json to vector
      *
      * @tparam T
-     * @param value
      */
     template<typename T>
     operator std::vector<T>() const {
@@ -967,6 +1058,11 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return ret;
     }
 
+    /**
+     * @brief get number to T
+     *
+     * @tparam T
+     */
     template<typename T>
     operator T() const {
         return getNumber();
@@ -979,23 +1075,36 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return true
      * @return false
      */
+
+    /**
+     * @brief open and parse @p filename
+     *
+     * @param filename
+     * @param comment active for skip the comment at parse
+     * @param additionalNext active for skip the additional ',' at parse
+     * @return Jsonator object
+     */
     static Jsonator parseFile(const char* filename, bool comment = true, bool additionalNext = true);
 
     /**
-     * @brief read stream and load its config
+     * @brief parse @p stream
      *
      * @param stream
+     * @param comment active for skip the comment at parse
+     * @param additionalNext active for skip the additional ',' at parse
+     * @return Jsonator
      */
     static Jsonator parseStream(std::istream& stream, bool comment = true, bool additionalNext = true) {
-        Jsonator json;
-        _parseStream(json, stream, comment, additionalNext);
-        return json;
+        return _parseStream(stream, std::string(), comment, additionalNext);
     }
 
     /**
-     * @brief read string and load its config
+     * @brief parse @p str
      *
      * @param str
+     * @param comment active for skip the comment at parse
+     * @param additionalNext active for skip the additional ',' at parse
+     * @return Jsonator
      */
     static Jsonator parseString(const std::string& str, bool comment = true, bool additionalNext = true) {
         std::istringstream iss(str);
@@ -1003,10 +1112,13 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief read data and load its config
+     * @brief parse @p data with @p size
      *
      * @param data
      * @param size
+     * @param comment active for skip the comment at parse
+     * @param additionalNext active for skip the additional ',' at parse
+     * @return Jsonator
      */
     static Jsonator parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true) {
         return parseString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
@@ -1016,10 +1128,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _filename;
     }
 
-    const Jsonator& getConst() const {
-        return *this;
-    }
-
   private:
     static std::string indexToString(unsigned long index) {
         char str[32];
@@ -1027,7 +1135,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return str;
     }
 
-    static void _parseStream(Jsonator& json, std::istream& stream, bool comment, bool additionalNext);
+    static Jsonator _parseStream(std::istream& stream, const std::string& filename, bool comment, bool additionalNext);
 
     void _replaceParent(Jsonator& json);
     void _replace(const Jsonator& json);

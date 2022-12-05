@@ -70,7 +70,7 @@ Jsonator::~Jsonator() {}
 
 void Jsonator::operator=(const Jsonator& json) {
     if (_type != NONE) {
-        throw AccessException(*this, "can't assign a not null");
+        throw AccessException(*this, "is not null");
     }
     _string = json._string;
     _number = json._number;
@@ -84,10 +84,9 @@ void Jsonator::operator=(const Jsonator& json) {
 Jsonator Jsonator::parseFile(const char* filename, bool comment, bool next) {
     std::ifstream fileStream(filename); // open file
     if (fileStream.is_open()) {
-        Jsonator json;
-        json._filename = filename;
-        _parseStream(json, fileStream, comment, next); // parse file
+        Jsonator json = _parseStream(fileStream, filename, comment, next); // parse file
         fileStream.close();
+        json._filename = filename;
         return json;
     }
     else {
@@ -362,13 +361,13 @@ static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, 
     if (json.find(key) != json.end()) {
         throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
-    return json.insert(std::pair<std::string, Jsonator>(key, Jsonator(&json, key))).first->second;
+    return json.std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(key, Jsonator(&json, key))).first->second;
 }
 
 static inline Jsonator& s_createNewArrayElement(Jsonator& json) {
     char str[32];
     ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(json.size()));
-    return json.insert(std::pair<std::string, Jsonator>(str, Jsonator(&json, str))).first->second;
+    return json.std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(str, Jsonator(&json, str))).first->second;
 }
 
 static bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json);
@@ -548,8 +547,8 @@ static std::string s_streamToStr(JsonatorParseInfo& info, std::istream& stream) 
     return oss.str();
 }
 
-void Jsonator::_parseStream(Jsonator& json, std::istream& stream, bool comment, bool additionalNext) {
-    JsonatorParseInfo info(json._filename, additionalNext);
+Jsonator Jsonator::_parseStream(std::istream& stream, const std::string& filename, bool comment, bool additionalNext) {
+    JsonatorParseInfo info(filename, additionalNext);
     std::string str = s_streamToStr(info, stream);
     if (comment) {
         s_replaceCommentBySpace(str);
@@ -557,6 +556,7 @@ void Jsonator::_parseStream(Jsonator& json, std::istream& stream, bool comment, 
     std::size_t i = 0;
     s_stringJumpSpace(str, i);
     try {
+        Jsonator json;
         switch (str[i]) {
             case '{':
                 s_parseObject(info, str, i, json);
@@ -565,10 +565,11 @@ void Jsonator::_parseStream(Jsonator& json, std::istream& stream, bool comment, 
                 s_parseArray(info, str, i, json);
                 break;
             case '\0':
-                return;
+                return json;
             default:
                 throw ParseException(info.filename, info.line(i), info.column(i), "Not a valid start character");
         }
+        return json;
     }
     catch (const ParseException& /*e*/) {
         throw;
