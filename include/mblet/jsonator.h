@@ -261,15 +261,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param json
      */
-    void operator=(const Jsonator& json) {
-        _key = json._key;
-        _string = json._string;
-        _number = json._number;
-        _boolean = json._boolean;
-        _type = json._type;
-        _filename = json._filename;
-        std::map<std::string, Jsonator>::operator=(json);
-    }
+    void operator=(const Jsonator& json);
 
     /**
      * @brief overide operator for set value from str
@@ -446,22 +438,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     template<typename T>
     iterator find(const T& index) {
-        if (index < 0) {
-            return std::map<std::string, Jsonator>::find(indexToString(size() + index));
-        }
-        else {
-            return std::map<std::string, Jsonator>::find(indexToString(index));
-        }
+        return std::map<std::string, Jsonator>::find(indexToString(index));
     }
 
     template<typename T>
     const_iterator find(const T& index) const {
-        if (index < 0) {
-            return std::map<std::string, Jsonator>::find(indexToString(size() + index));
-        }
-        else {
-            return std::map<std::string, Jsonator>::find(indexToString(index));
-        }
+        return std::map<std::string, Jsonator>::find(indexToString(index));
     }
 
     /**
@@ -527,13 +509,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type != ARRAY) {
             throw AccessException(*this, "is not a array");
         }
-        std::string str;
-        if (index < 0) {
-            str = indexToString(size() + index);
-        }
-        else {
-            str = indexToString(index);
-        }
+        std::string str(indexToString(index));
         iterator it = find(str);
         if (it != end()) {
             return it->second;
@@ -621,18 +597,34 @@ class Jsonator : public std::map<std::string, Jsonator> {
         throw ChildException(*this, index);
     }
 
+    Jsonator& front() {
+        return at(0);
+    }
+
+    const Jsonator& front() const {
+        return at(0);
+    }
+
+    Jsonator& back() {
+        return at(size() - 1);
+    }
+
+    const Jsonator& back() const {
+        return at(size() - 1);
+    }
+
     template<typename T>
     void push_front(const T& value) {
         for (std::size_t i = size(); i > 0; --i) {
             Jsonator& m = at(i - 1);
             m._key = indexToString(i);
-            operator[](i) = m;
+            operator[](i)._replace(m);
         }
         {
             // create and replace first value
             Jsonator m(this, "0");
             m = value;
-            operator[](0) = m;
+            operator[](0)._replace(m);
         }
     }
 
@@ -801,7 +793,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
             for (std::size_t i = index; i < size() - 1; ++i) {
                 Jsonator& m = at(i + 1);
                 m._key = indexToString(i);
-                operator[](i) = m;
+                operator[](i)._replace(m);
             }
             std::map<std::string, Jsonator>::erase(indexToString(size() - 1));
             if (empty()) {
@@ -849,32 +841,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     template<typename T>
     T get() const {
-        T ret;
-        std::stringstream ss("");
-        switch (_type) {
-            case NONE:
-                ss << static_cast<void*>(0);
-                break;
-            case OBJECT:
-            case ARRAY:
-                ss << *this;
-                break;
-            case STRING:
-                ss << _string;
-                break;
-            case NUMBER:
-                ss << _number;
-                break;
-            case BOOLEAN:
-                ss << _boolean;
-                break;
-        }
-        if (ss >> ret) {
-            return ret;
-        }
-        else {
-            throw AccessException(*this, "bad convertion to other type");
-        }
+        return *this;
     }
 
     template<typename T>
@@ -1012,15 +979,17 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return true
      * @return false
      */
-    void parseFile(const char* filename, bool comment = true, bool additionalNext = true);
+    static Jsonator parseFile(const char* filename, bool comment = true, bool additionalNext = true);
 
     /**
      * @brief read stream and load its config
      *
      * @param stream
      */
-    void parseStream(std::istream& stream, bool comment = true, bool additionalNext = true) {
-        _parseStream(stream, comment, additionalNext);
+    static Jsonator parseStream(std::istream& stream, bool comment = true, bool additionalNext = true) {
+        Jsonator json;
+        _parseStream(json, stream, comment, additionalNext);
+        return json;
     }
 
     /**
@@ -1028,9 +997,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param str
      */
-    void parseString(const std::string& str, bool comment = true, bool additionalNext = true) {
+    static Jsonator parseString(const std::string& str, bool comment = true, bool additionalNext = true) {
         std::istringstream iss(str);
-        parseStream(iss, comment, additionalNext);
+        return parseStream(iss, comment, additionalNext);
     }
 
     /**
@@ -1039,8 +1008,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @param data
      * @param size
      */
-    void parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true) {
-        parseString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
+    static Jsonator parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true) {
+        return parseString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
     }
 
     const std::string& getFilename() const {
@@ -1057,7 +1026,11 @@ class Jsonator : public std::map<std::string, Jsonator> {
         ::snprintf(str, sizeof(str), "%lu", index);
         return str;
     }
-    void _parseStream(std::istream& stream, bool comment, bool additionalNext);
+
+    static void _parseStream(Jsonator& json, std::istream& stream, bool comment, bool additionalNext);
+
+    void _replaceParent(Jsonator& json);
+    void _replace(const Jsonator& json);
 
     const Jsonator* _parent;
     std::string _key;

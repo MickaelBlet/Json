@@ -11,18 +11,29 @@ int main(int argc, char* argv[]) {
     mapStr[0] = "toto";
     mapStr[1] = "tata";
 
-    std::map<std::string, std::string> mapStrStr;
-    mapStrStr["titi"] = "toto";
-    mapStrStr["tutu"] = "tata";
+    std::map<std::string, std::vector<std::string> > mapStrStr;
+    mapStrStr["titi"].push_back("toto");
+    mapStrStr["tutu"].push_back("tata");
 
-    mblet::Jsonator jsonator;
-    jsonator.parseFile(argv[1]);
+    mblet::Jsonator jsonator = mblet::Jsonator::parseFile(argv[1]);
+
+    std::cout << jsonator["array"][2] << std::endl;
+    std::cout << jsonator["array"][0].getParent() << std::endl;
+    std::cout << jsonator["array"][1].getParent() << std::endl;
+    std::cout << jsonator["array"][2].getParent()->getParent() << std::endl;
+
+    // return 0;
+
+    const mblet::Jsonator json2 = mblet::Jsonator::parseFile(argv[1]);
     jsonator["new1"] = mapStr;
     jsonator["new2"] = mapStrStr;
 
-    std::map<std::string, std::string> retTest = jsonator["new2"];
+    jsonator["new3"].push_back(mapStr);
+    jsonator["new3"].push_back(mapStrStr);
+
+    std::map<std::string, std::vector<std::string> > retTest = jsonator["new2"].get<std::map<std::string, std::vector<std::string> > >();
     std::vector<std::string> retTest2 = jsonator["new1"];
-    std::cout << "woot !!!" << retTest["titi"] << std::endl;
+    std::cout << "woot !!!" << retTest["titi"][0] << std::endl;
     std::cout << "woot !!!" << retTest2[0] << std::endl;
     std::cout << jsonator.dump(2) << std::endl;
     // mblet::Jsonator::Json json;
@@ -67,7 +78,7 @@ int main(int argc, char* argv[]) {
     std::cout << testai << std::endl;
     testai.push_front(4);
     std::cout << testai << std::endl;
-    std::cout << testai[-1] << std::endl;
+    std::cout << testai[4] << std::endl;
     testai.erase(3);
     testai.erase(3);
     std::cout << testai << std::endl;
@@ -79,7 +90,17 @@ int main(int argc, char* argv[]) {
     std::cout << testai << std::endl;
     mblet::Jsonator testas;
     testas.push_front(42);
-    // testas.erase(0)[0];
+
+    std::cout << json["array"][2] << std::endl;
+    std::cout << json["array"][0].getParent() << std::endl;
+    std::cout << json["array"][1].getParent() << std::endl;
+    std::cout << json["array"][2].getParent()->getParent() << std::endl;
+    mblet::Jsonator* j = &(json["array"]);
+    std::cout << j << std::endl;
+
+    std::cout << json["array"][1].getParent()->getParent() << std::endl;
+
+    json["array"].erase(2);
     json["array"][2] = testai;
     json["array"][3] = testas;
     std::cout << json.at("object").getKey() << std::endl;
@@ -109,8 +130,8 @@ int main(int argc, char* argv[]) {
     std::cout << json.dump(2) << std::endl;
     json["array"][json["array"].size() - 1].push_back("24");
     std::cout << json.dump(2) << std::endl;
-    json["xxx"].parseFile(argv[2]);
-    std::cout << json["xxx"].getParent()->dump(2) << std::endl;
-    std::cout << json["array"].getFilename() << std::endl;
+    json["xxx"] = mblet::Jsonator::parseFile(argv[2]);
+    std::cout << 333 << json["xxx"][0].getParent()->getParent()->dump(4) << std::endl;
+    std::cout << json["xxx"].getFilename() << std::endl;
     return 0;
 }
