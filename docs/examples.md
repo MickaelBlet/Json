@@ -124,7 +124,7 @@ world
 ```cpp
 #include "mblet/jsonator.h"
 
-int main(int /*argc*/, char */*argv*/[]) {
+int main(int /*argc*/, char* /*argv*/[]) {
     mblet::Jsonator json;
     // construct json
     json["foo"] = "bar";

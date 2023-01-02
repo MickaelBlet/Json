@@ -213,6 +213,8 @@ json["array"][2]["null"].newNull();
 
 ### From std container
 
+`deque`, `list`, `map`, `queue`, `set`, `stack`, `vector`
+
 ```cpp
 std::vector<double> vDouble;
 vDouble.reserve(3);
@@ -278,7 +280,7 @@ std::cout << json.hasKey("string") << '\n'  // 1
 
 Get type of value.  
 
-`getString`, `getBoolean`, `getNumber`, `getParent`, `getKey`, `getType`, `getConst`, `get`
+`getString`, `getBoolean`, `getNumber`, `getParent`, `getKey`, `getType`, `get`
 
 ```cpp
 json["string"] = "value";
@@ -286,8 +288,6 @@ json["boolean"] = true;
 json["number"] = 42;
 json["array"][0] = "array0";
 json["array"][1] = "array1";
-
-mblet::Jsonator cjson = json.getConst();
 
 std::cout << json["string"].getString() << '\n'   // value
           << json["boolean"].getBoolean() << '\n' // true

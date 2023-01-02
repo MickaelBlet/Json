@@ -534,9 +534,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type == NONE) {
             _type = OBJECT;
         }
-        if (_type != OBJECT) {
-            throw AccessException(*this, "is not a object");
-        }
         iterator it = find(key);
         if (it != end()) {
             return it->second;
@@ -552,9 +549,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return const Jsonator&
      */
     const Jsonator& operator[](const std::string& key) const {
-        if (_type != OBJECT) {
-            throw AccessException(*this, "is not a object");
-        }
         const_iterator it = find(key);
         if (it != end()) {
             return it->second;
@@ -615,9 +609,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type == NONE) {
             _type = ARRAY;
         }
-        if (_type != ARRAY) {
-            throw AccessException(*this, "is not a array");
-        }
         iterator it = find(index);
         if (it != end()) {
             return it->second;
@@ -639,9 +630,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     const Jsonator& operator[](const T& index) const {
-        if (_type != ARRAY) {
-            throw AccessException(*this, "is not a array");
-        }
         const_iterator it = find(index);
         if (it != end()) {
             return it->second;
@@ -656,9 +644,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return Jsonator&
      */
     Jsonator& at(const std::string& key) {
-        if (_type != OBJECT) {
-            throw AccessException(*this, "is not a object");
-        }
         iterator it = find(key);
         if (it != end()) {
             return it->second;
@@ -673,9 +658,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return const Jsonator&
      */
     const Jsonator& at(const std::string& key) const {
-        if (_type != OBJECT) {
-            throw AccessException(*this, "is not a object");
-        }
         const_iterator it = find(key);
         if (it != end()) {
             return it->second;
@@ -733,9 +715,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     Jsonator& at(const T& index) {
-        if (_type != ARRAY) {
-            throw AccessException(*this, "is not a array");
-        }
         iterator it = find(index);
         if (it != end()) {
             return it->second;
@@ -751,9 +730,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     const Jsonator& at(const T& index) const {
-        if (_type != ARRAY) {
-            throw AccessException(*this, "is not a array");
-        }
         const_iterator it = find(index);
         if (it != end()) {
             return it->second;
@@ -1100,10 +1076,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _type;
     }
 
-    const Jsonator& getConst() const {
-        return *this;
-    }
-
     template<typename T>
     T get() const {
         return *this;
@@ -1311,8 +1283,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
             "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
             "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67",
             "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84",
-            "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99",
-        };
+            "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99"};
         if (index < 10) {
             return std::string(numbers[index], 1);
         }
@@ -1323,8 +1294,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
             char str[32];
             char* tmp = str;
             ultostr(&tmp, index);
-            str[tmp - str] = '\0';
-            return str;
+            return std::string(str, tmp - str);
         }
     }
 
@@ -1495,7 +1465,10 @@ inline static void s_objectDump(std::ostream& oss, const Jsonator& json, std::si
         }
         s_indentDump(oss, json, indent, index);
         s_stringDump(oss, cit->second.getKey()); // key
-        oss << ((indent != 0) ? ": " : ":");
+        oss << ':';
+        if (indent != 0) {
+            oss << ' ';
+        }
         s_typeDump(oss, cit->second, indent, index);
     }
     s_newlineDump(oss, json, indent);
@@ -1537,7 +1510,12 @@ void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std
             oss << json.getNumber();
             break;
         case Jsonator::BOOLEAN:
-            oss << ((json.getBoolean()) ? "true" : "false");
+            if (json.getBoolean()) {
+                oss << "true";
+            }
+            else {
+                oss << "false";
+            }
             break;
         case Jsonator::NONE:
             oss << "null";
@@ -1732,8 +1710,7 @@ static inline std::string s_indexToString(unsigned long index) {
         "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
         "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67",
         "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84",
-        "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99",
-    };
+        "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99"};
     if (index < 10) {
         return std::string(numbers[index], 1);
     }
@@ -1744,8 +1721,7 @@ static inline std::string s_indexToString(unsigned long index) {
         char str[32];
         char* tmp = str;
         s_ultostr(&tmp, index);
-        str[tmp - str] = '\0';
-        return str;
+        return std::string(str, tmp - str);
     }
 }
 
