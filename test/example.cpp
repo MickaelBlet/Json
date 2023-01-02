@@ -1,13 +1,12 @@
 #include <gtest/gtest.h>
 
 #include "mblet/jsonator.h"
-
-#define JSON_TO_STRING(...) #__VA_ARGS__
+#include "mock/jsonToString.h"
 
 GTEST_TEST(jsonator, test1) {
     // clang-format off
     // create example string
-    std::string strConf(JSON_TO_STRING(
+    std::string jsonStr = JSON_TO_STRING((
         {
             "example": {
                 "array": [
@@ -29,7 +28,7 @@ GTEST_TEST(jsonator, test1) {
     ));
     // clang-format on
 
-    mblet::Jsonator jsonator = mblet::Jsonator::parseString(strConf);
+    mblet::Jsonator jsonator = mblet::Jsonator::parseString(jsonStr);
     char test[] = "example";
     const char* const test2 = "example";
     char test3[] = "array";
@@ -50,9 +49,7 @@ GTEST_TEST(jsonator, test1) {
     EXPECT_EQ(jsonator["example"]["bool1"].getBoolean(), false);
     EXPECT_EQ(jsonator["example"]["bool2"].getBoolean(), true);
     EXPECT_EQ(jsonator["example"]["n\"one"].getType(), mblet::Jsonator::NONE);
-    std::string str(jsonator.dump(0));
-    std::cout << str << std::endl;
-    mblet::Jsonator jsonatorCpy = mblet::Jsonator::parseString(str);
+    mblet::Jsonator jsonatorCpy = mblet::Jsonator::parseString(jsonator.dump(0));
     EXPECT_EQ(jsonatorCpy["example"].getKey(), "example");
     EXPECT_EQ(jsonatorCpy["example"]["array"].getKey(), "array");
     EXPECT_EQ(jsonatorCpy["example"]["array"][0].getKey(), "0");
@@ -72,7 +69,7 @@ GTEST_TEST(jsonator, test1) {
 GTEST_TEST(jsonator, test2) {
     // clang-format off
     // create example string
-    std::string strConf(JSON_TO_STRING(
+    std::string jsonStr = JSON_TO_STRING((
         [
             {
                 "example": {
@@ -95,7 +92,7 @@ GTEST_TEST(jsonator, test2) {
     ));
     // clang-format on
 
-    mblet::Jsonator jsonator = mblet::Jsonator::parseString(strConf);
+    mblet::Jsonator jsonator = mblet::Jsonator::parseString(jsonStr);
     EXPECT_EQ(jsonator[0]["example"]["array"][0][0].getNumber(), 0);
     EXPECT_EQ(jsonator[0]["example"]["array"][0][1].getNumber(), 1);
     EXPECT_EQ(jsonator[0]["example"]["array"][0][2].getNumber(), 2);
@@ -105,9 +102,7 @@ GTEST_TEST(jsonator, test2) {
     EXPECT_EQ(jsonator[0]["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonator[0]["example"]["bool"].getBoolean(), false);
     EXPECT_EQ(jsonator[0]["example"]["n\"one"].getType(), mblet::Jsonator::NONE);
-    std::string str(jsonator.dump(0));
-    std::cout << str << std::endl;
-    mblet::Jsonator jsonatorCpy = mblet::Jsonator::parseString(str);
+    mblet::Jsonator jsonatorCpy = mblet::Jsonator::parseString(jsonator.dump(0));
     EXPECT_EQ(jsonatorCpy[0]["example"].getKey(), "example");
     EXPECT_EQ(jsonatorCpy[0]["example"]["array"].getKey(), "array");
     EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0].getKey(), "0");

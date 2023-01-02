@@ -25,12 +25,12 @@
 
 #include "mblet/jsonator.h"
 
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <iomanip>
-#include <limits>
-#include <vector>
+#include <cctype>  // ::isdigit, ::isspace
+#include <cstdlib> // ::strtod
+#include <cstring> // ::strncmp
+#include <fstream> // std::ifstream
+#include <iomanip> // std::setprecision
+#include <limits>  // std::numeric_limits
 
 namespace mblet {
 
@@ -222,7 +222,7 @@ struct JsonatorParseInfo {
     }
 
     std::size_t column(std::size_t i) const {
-        return i - lineToIndex[indexToLine[i] - 1];
+        return i - lineToIndex[indexToLine[i] - 1] + 1;
     }
 
     std::size_t lastLine(std::size_t /*i*/) const {
@@ -361,13 +361,50 @@ static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, 
     if (json.find(key) != json.end()) {
         throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
-    return json.std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(key, Jsonator(&json, key))).first->second;
+    return json.std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(key, Jsonator(&json, key)))
+        .first->second;
+}
+
+static inline void s_ultostr(char** pstr, unsigned long l) {
+    if (l < 10UL) {
+        **pstr = '0' + l;
+        ++(*pstr);
+    }
+    else {
+        s_ultostr(pstr, l / 10UL);
+        **pstr = '0' + (l % 10UL);
+        ++(*pstr);
+    }
+}
+
+static inline std::string s_indexToString(unsigned long index) {
+    static const char* numbers[] = {
+        "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9",  "10", "11", "12", "13", "14", "15", "16",
+        "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33",
+        "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+        "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67",
+        "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84",
+        "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99",
+    };
+    if (index < 10) {
+        return std::string(numbers[index], 1);
+    }
+    else if (index < 100) {
+        return std::string(numbers[index], 2);
+    }
+    else {
+        char str[32];
+        char* tmp = str;
+        s_ultostr(&tmp, index);
+        str[tmp - str] = '\0';
+        return str;
+    }
 }
 
 static inline Jsonator& s_createNewArrayElement(Jsonator& json) {
-    char str[32];
-    ::snprintf(str, sizeof(str), "%lu", static_cast<unsigned long>(json.size()));
-    return json.std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(str, Jsonator(&json, str))).first->second;
+    std::string str = s_indexToString(json.size());
+    return json.std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(str, Jsonator(&json, str)))
+        .first->second;
 }
 
 static bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json);
@@ -560,14 +597,19 @@ Jsonator Jsonator::_parseStream(std::istream& stream, const std::string& filenam
         switch (str[i]) {
             case '{':
                 s_parseObject(info, str, i, json);
+                s_stringJumpSpace(str, i);
                 break;
             case '[':
                 s_parseArray(info, str, i, json);
+                s_stringJumpSpace(str, i);
                 break;
             case '\0':
                 return json;
             default:
                 throw ParseException(info.filename, info.line(i), info.column(i), "Not a valid start character");
+        }
+        if (str[i] != '\0') {
+            throw ParseException(info.filename, info.line(i), info.column(i), "Not a valid end character");
         }
         return json;
     }

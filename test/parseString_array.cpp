@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "mblet/jsonator.h"
-
-#define JSON_TO_STRING(...) #__VA_ARGS__
+#include "mock/jsonToString.h"
 
 GTEST_TEST(parseString_array, empty) {
     mblet::Jsonator json = mblet::Jsonator::parseString("[]");
@@ -22,14 +21,14 @@ GTEST_TEST(parseString_array, empty) {
 GTEST_TEST(parseString_array, null) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 null
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NONE);
@@ -37,15 +36,15 @@ GTEST_TEST(parseString_array, null) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 null,
                 null
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 2);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NONE);
@@ -58,14 +57,14 @@ GTEST_TEST(parseString_array, null) {
 GTEST_TEST(parseString_array, boolean) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 true
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::BOOLEAN);
@@ -74,14 +73,14 @@ GTEST_TEST(parseString_array, boolean) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 false
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::BOOLEAN);
@@ -90,15 +89,15 @@ GTEST_TEST(parseString_array, boolean) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 true,
                 false
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 2);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::BOOLEAN);
@@ -113,14 +112,14 @@ GTEST_TEST(parseString_array, boolean) {
 GTEST_TEST(parseString_array, number) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 42
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NUMBER);
@@ -129,14 +128,14 @@ GTEST_TEST(parseString_array, number) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 42.42
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NUMBER);
@@ -145,14 +144,14 @@ GTEST_TEST(parseString_array, number) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 1e6
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NUMBER);
@@ -161,16 +160,16 @@ GTEST_TEST(parseString_array, number) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 42,
                 42.42,
                 1e6
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 3);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NUMBER);
@@ -188,14 +187,14 @@ GTEST_TEST(parseString_array, number) {
 GTEST_TEST(parseString_array, string) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 "42"
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::STRING);
@@ -204,14 +203,14 @@ GTEST_TEST(parseString_array, string) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 "42\n42"
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::STRING);
@@ -220,15 +219,15 @@ GTEST_TEST(parseString_array, string) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 "42",
                 "42\n42"
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 2);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::STRING);
@@ -243,14 +242,14 @@ GTEST_TEST(parseString_array, string) {
 GTEST_TEST(parseString_array, array) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 []
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::ARRAY);
@@ -259,16 +258,16 @@ GTEST_TEST(parseString_array, array) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 [
                     42
                 ]
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::ARRAY);
@@ -278,17 +277,17 @@ GTEST_TEST(parseString_array, array) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 [],
                 [
                     42
                 ]
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 2);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::ARRAY);
@@ -304,14 +303,14 @@ GTEST_TEST(parseString_array, array) {
 GTEST_TEST(parseString_array, object) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 {}
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::OBJECT);
@@ -320,16 +319,16 @@ GTEST_TEST(parseString_array, object) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 {
                     "child": 42
                 }
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::OBJECT);
@@ -340,17 +339,17 @@ GTEST_TEST(parseString_array, object) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             [
                 {},
                 {
                     "child": 42
                 }
             ]
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.size(), 2);
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::OBJECT);
@@ -367,9 +366,9 @@ GTEST_TEST(parseString_array, object) {
 GTEST_TEST(parseString_array, recurse) {
     const unsigned int numberOfRecurse = 1000;
 
-    std::string str = std::string(numberOfRecurse, '[') + "42" + std::string(numberOfRecurse, ']');
+    std::string jsonStr = std::string(numberOfRecurse, '[') + "42" + std::string(numberOfRecurse, ']');
 
-    mblet::Jsonator json = mblet::Jsonator::parseString(str);
+    mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
     const mblet::Jsonator* jsonRecurse = &json;
     for (unsigned int i = 0; i < numberOfRecurse - 1; ++i) {
         EXPECT_EQ(jsonRecurse->getType(), mblet::Jsonator::ARRAY);
@@ -379,4 +378,30 @@ GTEST_TEST(parseString_array, recurse) {
     EXPECT_EQ(jsonRecurse->at(0).getType(), mblet::Jsonator::NUMBER);
     EXPECT_EQ(jsonRecurse->at(0).isNumber(), true);
     EXPECT_EQ(jsonRecurse->at(0).getNumber(), 42);
+}
+
+GTEST_TEST(parseString_array, multivalues) {
+    // clang-format off
+    std::string jsonStr = JSON_TO_STRING((
+        [
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            0,1,2,3,4,5,6,7,8,9,
+            100
+        ]
+    ));
+    // clang-format on
+
+    mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
+    for (unsigned int i = 0; i < 100; ++i) {
+        EXPECT_EQ(json[i].getNumber(), i % 10);
+    }
+    EXPECT_EQ(json[100].getNumber(), 100);
 }

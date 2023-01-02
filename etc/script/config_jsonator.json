@@ -1,0 +1,27 @@
+{
+    "project": "JSON for Modern C++",
+    "target": "single_include/mblet/jsonator.h",
+    "sources": [
+        "include/mblet/jsonator.h",
+        "src/jsonator.cpp"
+    ],
+    "include_paths": ["include"],
+    "add_inlines": [
+        "Jsonator::Jsonator(",
+        "Jsonator::~Jsonator(",
+        "void Jsonator::operator=(",
+        "Jsonator Jsonator::parseFile(",
+        "static void s_typeDump(",
+        "static void s_objectDump(",
+        "static void s_arrayDump(",
+        "std::string Jsonator::dump(",
+        "static bool s_parseType(",
+        "static void s_parseArray(",
+        "static void s_parseObject(",
+        "static void s_replaceCommentBySpace(",
+        "static std::string s_streamToStr(",
+        "Jsonator Jsonator::_parseStream(",
+        "void Jsonator::_replaceParent(",
+        "void Jsonator::_replace("
+    ]
+}

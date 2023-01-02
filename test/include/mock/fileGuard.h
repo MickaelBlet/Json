@@ -1,5 +1,5 @@
 #ifndef _MBLET_FILE_GUARD_H_
-#define _MBLET__FILE_GUARD_H_
+#define _MBLET_FILE_GUARD_H_
 
 #include <cstdio>
 #include <fstream>

@@ -1,14 +1,17 @@
 {
-    /* comment */
-    "key": "string",
+    /*
+        multiline
+        comment
+    */
+    "string": "foobar", // inline comment
+    "number": 42,
+    "boolean": true,
+    "null": null,
     "array": [
-        0,
-        [],
-        2
+        1337,
+        0.07
     ],
-    "number": 0.42,
     "object": {
-        "null": null,
-    },
-    "bool": false, // test
+        "key": "value", // extra useless next
+    }
 }

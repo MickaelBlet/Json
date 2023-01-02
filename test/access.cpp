@@ -1,30 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "mblet/jsonator.h"
-
-#define JSON_TO_STRING(...) #__VA_ARGS__
-
-// static std::string removeSpace(const std::string& str) {
-//     std::string ret("");
-//     for (std::size_t i = 0; i < str.size(); ++i) {
-//         if (str[i] == '"') {
-//             ret.push_back(str[i]);
-//             ++i;
-//             while (str[i] != '\n' && str[i] != '\0' && str[i] != '"') {
-//                 if (str[i] == '\\' && (str[i + 1] == '"' || str[i + 1] == '\\')) {
-//                     ret.push_back(str[i]);
-//                     ++i; // escape character
-//                 }
-//                 ret.push_back(str[i]);
-//                 ++i;
-//             }
-//         }
-//         if (!::isspace(str[i])) {
-//             ret.push_back(str[i]);
-//         }
-//     }
-//     return ret;
-// }
+#include "mock/jsonToString.h"
 
 GTEST_TEST(jsonator, find) {
     EXPECT_THROW(
@@ -350,9 +327,415 @@ GTEST_TEST(jsonator, at) {
 }
 
 GTEST_TEST(jsonator, front) {
-
+    {
+        mblet::Jsonator json;
+        json.push_back(42);
+        json.push_back(24);
+        json.push_back(84);
+        EXPECT_EQ(json.front(), 42);
+    }
+    {
+        mblet::Jsonator json;
+        json.push_back(42);
+        json.push_back(24);
+        json.push_back(84);
+        const mblet::Jsonator& cjson = json;
+        EXPECT_EQ(cjson.front(), 42);
+    }
 }
 
 GTEST_TEST(jsonator, back) {
+    {
+        mblet::Jsonator json;
+        json.push_back(42);
+        json.push_back(24);
+        json.push_back(84);
+        EXPECT_EQ(json.back(), 84);
+    }
+    {
+        mblet::Jsonator json;
+        json.push_back(42);
+        json.push_back(24);
+        json.push_back(84);
+        const mblet::Jsonator& cjson = json;
+        EXPECT_EQ(cjson.back(), 84);
+    }
+}
 
+GTEST_TEST(jsonator, isNull) {
+    {
+        mblet::Jsonator json;
+        json.newNull();
+        EXPECT_EQ(json.isNull(), true);
+    }
+    {
+        mblet::Jsonator json;
+        json.newNumber(42);
+        EXPECT_EQ(json.isNull(), false);
+    }
+}
+
+GTEST_TEST(jsonator, isObject) {
+    {
+        mblet::Jsonator json;
+        json.newObject();
+        EXPECT_EQ(json.isObject(), true);
+    }
+    {
+        mblet::Jsonator json;
+        json.newNumber(42);
+        EXPECT_EQ(json.isObject(), false);
+    }
+}
+
+GTEST_TEST(jsonator, isArray) {
+    {
+        mblet::Jsonator json;
+        json.newArray();
+        EXPECT_EQ(json.isArray(), true);
+    }
+    {
+        mblet::Jsonator json;
+        json.newNumber(42);
+        EXPECT_EQ(json.isArray(), false);
+    }
+}
+
+GTEST_TEST(jsonator, isString) {
+    {
+        mblet::Jsonator json;
+        json.newString("foo");
+        EXPECT_EQ(json.isString(), true);
+    }
+    {
+        mblet::Jsonator json;
+        json.newNumber(42);
+        EXPECT_EQ(json.isString(), false);
+    }
+}
+
+GTEST_TEST(jsonator, isNumber) {
+    {
+        mblet::Jsonator json;
+        json.newNumber(42);
+        EXPECT_EQ(json.isNumber(), true);
+    }
+    {
+        mblet::Jsonator json;
+        json.newNull();
+        EXPECT_EQ(json.isNumber(), false);
+    }
+}
+
+GTEST_TEST(jsonator, isBoolean) {
+    {
+        mblet::Jsonator json;
+        json.newBoolean(true);
+        EXPECT_EQ(json.isBoolean(), true);
+    }
+    {
+        mblet::Jsonator json;
+        json.newNumber(42);
+        EXPECT_EQ(json.isBoolean(), false);
+    }
+}
+
+GTEST_TEST(jsonator, hasKey) {
+    {
+        mblet::Jsonator json;
+        json["foo"] = 1;
+        json["bar"] = 2;
+        EXPECT_EQ(json.hasKey("foo"), true);
+        EXPECT_EQ(json.hasKey("bar"), true);
+        EXPECT_EQ(json.hasKey("toto"), false);
+    }
+}
+
+GTEST_TEST(jsonator, dump) {
+    // clang-format off
+    std::string jsonStr = JSON_TO_STRING((
+        {
+            "foo": [
+                "bar"
+            ],
+            "bar": {
+                "foo": 42
+            }
+        }
+    ));
+    // clang-format on
+    mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
+    for (unsigned int i = 0; i < 1000; ++i) {
+        std::ostringstream oss("");
+        oss << '{';
+        if (i > 0) {
+            oss << '\n';
+            oss << std::string(i, ' ');
+        }
+        oss << "\"bar\":";
+        if (i > 0) {
+            oss << ' ';
+        }
+        oss << '{';
+        if (i > 0) {
+            oss << '\n';
+            oss << std::string(i * 2, ' ');
+        }
+        oss << "\"foo\":";
+        if (i > 0) {
+            oss << ' ';
+        }
+        oss << 42;
+        if (i > 0) {
+            oss << '\n';
+            oss << std::string(i, ' ');
+        }
+        oss << "},";
+        if (i > 0) {
+            oss << '\n';
+            oss << std::string(i, ' ');
+        }
+        oss << "\"foo\":";
+        if (i > 0) {
+            oss << ' ';
+        }
+        oss << '[';
+        if (i > 0) {
+            oss << '\n';
+            oss << std::string(i * 2, ' ');
+        }
+        oss << "\"bar\"";
+        if (i > 0) {
+            oss << '\n';
+            oss << std::string(i, ' ');
+        }
+        oss << ']';
+        if (i > 0) {
+            oss << '\n';
+        }
+        oss << '}';
+        EXPECT_EQ(json.dump(i), oss.str());
+    }
+}
+
+GTEST_TEST(jsonator, getParent) {
+    {
+        mblet::Jsonator json;
+        mblet::Jsonator* constructJson = json;
+        for (unsigned int i = 0; i < 100; ++i) {
+            std::ostringstream oss("");
+            oss << "test" << i;
+            constructJson = &((*constructJson)[oss.str()]);
+        }
+        const mblet::Jsonator* constJson = constructJson;
+        for (unsigned int i = 100; i > 0; --i) {
+            std::ostringstream oss("");
+            oss << "test" << i - 1;
+            constJson = constJson->getParent();
+            EXPECT_EQ(constJson->hasKey(oss.str()), true);
+        }
+        EXPECT_EQ(&json, constJson);
+    }
+}
+
+GTEST_TEST(jsonator, getKey) {
+    mblet::Jsonator json;
+    EXPECT_EQ(json["foo"].getKey(), "foo");
+}
+
+GTEST_TEST(jsonator, getString) {
+    EXPECT_THROW(
+        {
+            try {
+                mblet::Jsonator json;
+                json = 42;
+                json.getString();
+            }
+            catch (const mblet::Jsonator::AccessException& e) {
+                EXPECT_STREQ(e.what(), "is not a string (is NUMBER).");
+                EXPECT_EQ(e.message(), "is not a string");
+                throw;
+            }
+        },
+        mblet::Jsonator::AccessException);
+    {
+        mblet::Jsonator json;
+        json = "foo";
+        std::string str = json.getString();
+        EXPECT_EQ(str, "foo");
+    }
+}
+
+GTEST_TEST(jsonator, getNumber) {
+    EXPECT_THROW(
+        {
+            try {
+                mblet::Jsonator json;
+                json = "42";
+                json.getNumber();
+            }
+            catch (const mblet::Jsonator::AccessException& e) {
+                EXPECT_STREQ(e.what(), "is not a number (is STRING).");
+                EXPECT_EQ(e.message(), "is not a number");
+                throw;
+            }
+        },
+        mblet::Jsonator::AccessException);
+    {
+        mblet::Jsonator json;
+        json = 42.42;
+        double d = json.getNumber();
+        EXPECT_EQ(d, 42.42);
+    }
+}
+
+GTEST_TEST(jsonator, getBoolean) {
+    EXPECT_THROW(
+        {
+            try {
+                mblet::Jsonator json;
+                json = "42";
+                json.getBoolean();
+            }
+            catch (const mblet::Jsonator::AccessException& e) {
+                EXPECT_STREQ(e.what(), "is not a boolean (is STRING).");
+                EXPECT_EQ(e.message(), "is not a boolean");
+                throw;
+            }
+        },
+        mblet::Jsonator::AccessException);
+    {
+        mblet::Jsonator json;
+        json = true;
+        bool b = json.getBoolean();
+        EXPECT_EQ(b, true);
+    }
+}
+
+GTEST_TEST(jsonator, getType) {
+    {
+        mblet::Jsonator json;
+        json["object"].newObject();
+        json["array"].newArray();
+        json["null"].newNull();
+        json["boolean"].newBoolean(true);
+        json["number"].newNumber(42);
+        json["string"].newString("foo");
+        EXPECT_EQ(json["object"].getType(), mblet::Jsonator::OBJECT);
+        EXPECT_EQ(json["array"].getType(), mblet::Jsonator::ARRAY);
+        EXPECT_EQ(json["null"].getType(), mblet::Jsonator::NONE);
+        EXPECT_EQ(json["boolean"].getType(), mblet::Jsonator::BOOLEAN);
+        EXPECT_EQ(json["number"].getType(), mblet::Jsonator::NUMBER);
+        EXPECT_EQ(json["string"].getType(), mblet::Jsonator::STRING);
+    }
+}
+
+GTEST_TEST(jsonator, castOperator) {
+    // clang-format off
+    std::string jsonStr = JSON_TO_STRING((
+        {
+            "arrayChar": "string",
+            "boolean": true,
+            "c": 42,
+            "d": 42,
+            "deque": [ 1337, 42 ],
+            "f": 42,
+            "i": 42,
+            "jsonator": null,
+            "l": 42,
+            "list": [ 1337, 42 ],
+            "map": { "bar": 42, "foo": 1337 },
+            "queue": [ 1337, 42 ],
+            "s": 42,
+            "set": [ 42, 1337 ],
+            "stack": [ 42, 1337 ],
+            "starChar": "string",
+            "string": "string",
+            "uc": 42,
+            "ui": 42,
+            "ul": 42,
+            "us": 42,
+            "vector": [ 1337, 42 ]
+        }
+    ));
+    // clang-format on
+
+    mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
+
+    std::string string = json.at("string");
+    const char* starChar = json.at("starChar");
+    bool boolean = json.at("boolean");
+    std::deque<int> deque = json.at("deque");
+    std::list<int> list = json.at("list");
+    std::map<std::string, int> map = json.at("map");
+    std::queue<int> queue = json.at("queue");
+    std::set<int> set = json.at("set");
+    std::stack<int> stack = json.at("stack");
+    std::vector<int> vector = json.at("vector");
+    char c = json.at("c");
+    unsigned char uc = json.at("uc");
+    short s = json.at("s");
+    unsigned short us = json.at("us");
+    int i = json.at("i");
+    unsigned int ui = json.at("ui");
+    long l = json.at("l");
+    unsigned long ul = json.at("ul");
+    float f = json.at("f");
+    double d = json.at("d");
+
+    EXPECT_EQ(string, "string");
+    EXPECT_STREQ(starChar, "string");
+    EXPECT_EQ(boolean, true);
+    {
+        std::deque<int>::iterator it = deque.begin();
+        EXPECT_EQ(*it, 1337);
+        ++it;
+        EXPECT_EQ(*it, 42);
+    }
+    {
+        std::list<int>::iterator it = list.begin();
+        EXPECT_EQ(*it, 1337);
+        ++it;
+        EXPECT_EQ(*it, 42);
+    }
+    {
+        std::map<std::string, int>::iterator it = map.begin();
+        EXPECT_EQ(it->first, "bar");
+        EXPECT_EQ(it->second, 42);
+        ++it;
+        EXPECT_EQ(it->first, "foo");
+        EXPECT_EQ(it->second, 1337);
+    }
+    {
+        EXPECT_EQ(queue.front(), 1337);
+        queue.pop();
+        EXPECT_EQ(queue.front(), 42);
+    }
+    {
+        std::set<int>::iterator it = set.begin();
+        EXPECT_EQ(*it, 42);
+        ++it;
+        EXPECT_EQ(*it, 1337);
+    }
+    {
+        EXPECT_EQ(stack.top(), 1337);
+        stack.pop();
+        EXPECT_EQ(stack.top(), 42);
+    }
+    {
+        std::vector<int>::iterator it = vector.begin();
+        EXPECT_EQ(*it, 1337);
+        ++it;
+        EXPECT_EQ(*it, 42);
+    }
+    EXPECT_EQ(c, 42);
+    EXPECT_EQ(uc, 42);
+    EXPECT_EQ(s, 42);
+    EXPECT_EQ(us, 42);
+    EXPECT_EQ(i, 42);
+    EXPECT_EQ(ui, 42);
+    EXPECT_EQ(l, 42);
+    EXPECT_EQ(ul, 42);
+    EXPECT_EQ(f, 42);
+    EXPECT_EQ(d, 42);
 }

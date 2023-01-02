@@ -2,8 +2,7 @@
 
 #include "mblet/jsonator.h"
 #include "mock/fileGuard.h"
-
-#define JSON_TO_STRING(...) #__VA_ARGS__
+#include "mock/jsonToString.h"
 
 GTEST_TEST(parseFile, except) {
     const char* testFile = "/tmp/mblet_test_parseFile_except.json";
@@ -31,21 +30,36 @@ GTEST_TEST(parseFile, except) {
 
 GTEST_TEST(parseFile, success) {
     // clang-format off
-    const char str[] = JSON_TO_STRING(
+    std::string jsonStr = JSON_TO_STRING((
         {
-            "key" : "value"
+            "key" : "value",
+            "array": [
+                0,1,2,3,4,5,6,7,8,9,10
+            ]
         }
-    );
+    ));
     // clang-format on
 
     // create example file
     const char* testFile = "/tmp/mblet_test_parsefile_success.json";
     mblet::FileGuard fileGuard(testFile, std::ofstream::out | std::ofstream::trunc);
-    fileGuard << str << std::flush;
+    fileGuard << jsonStr << std::flush;
     fileGuard.close();
 
     mblet::Jsonator json = mblet::Jsonator::parseFile(testFile);
     EXPECT_EQ(json.getFilename(), "/tmp/mblet_test_parsefile_success.json");
     EXPECT_EQ(json.hasKey("key"), true);
     EXPECT_EQ(json.at("key").getString(), "value");
+    EXPECT_EQ(json.hasKey("array"), true);
+    EXPECT_EQ(json.at("array").at(0).getNumber(), 0);
+    EXPECT_EQ(json.at("array").at(1).getNumber(), 1);
+    EXPECT_EQ(json.at("array").at(2).getNumber(), 2);
+    EXPECT_EQ(json.at("array").at(3).getNumber(), 3);
+    EXPECT_EQ(json.at("array").at(4).getNumber(), 4);
+    EXPECT_EQ(json.at("array").at(5).getNumber(), 5);
+    EXPECT_EQ(json.at("array").at(6).getNumber(), 6);
+    EXPECT_EQ(json.at("array").at(7).getNumber(), 7);
+    EXPECT_EQ(json.at("array").at(8).getNumber(), 8);
+    EXPECT_EQ(json.at("array").at(9).getNumber(), 9);
+    EXPECT_EQ(json.at("array").at(10).getNumber(), 10);
 }

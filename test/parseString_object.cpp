@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "mblet/jsonator.h"
-
-#define JSON_TO_STRING(...) #__VA_ARGS__
+#include "mock/jsonToString.h"
 
 GTEST_TEST(parseString_object, empty) {
     mblet::Jsonator json = mblet::Jsonator::parseString("{}");
@@ -21,14 +20,14 @@ GTEST_TEST(parseString_object, empty) {
 
 GTEST_TEST(parseString_object, null) {
     // clang-format off
-    const char str[]=JSON_TO_STRING(
+    std::string jsonStr = JSON_TO_STRING((
         {
             "": null
         }
-    );
+    ));
     // clang-format on
 
-    mblet::Jsonator json = mblet::Jsonator::parseString(str);
+    mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
     EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
     EXPECT_EQ(json.size(), 1);
     EXPECT_EQ(json.hasKey(""), true);
@@ -39,14 +38,14 @@ GTEST_TEST(parseString_object, null) {
 GTEST_TEST(parseString_object, boolean) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "": true
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey(""), true);
@@ -56,14 +55,14 @@ GTEST_TEST(parseString_object, boolean) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "": false
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey(""), true);
@@ -76,14 +75,14 @@ GTEST_TEST(parseString_object, boolean) {
 GTEST_TEST(parseString_object, number) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": 42
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);
@@ -93,14 +92,14 @@ GTEST_TEST(parseString_object, number) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": 42.42
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);
@@ -110,14 +109,14 @@ GTEST_TEST(parseString_object, number) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": 1e6
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);
@@ -130,14 +129,14 @@ GTEST_TEST(parseString_object, number) {
 GTEST_TEST(parseString_object, string) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": "42"
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);
@@ -147,14 +146,14 @@ GTEST_TEST(parseString_object, string) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": "42\\\n\"42"
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);
@@ -167,14 +166,14 @@ GTEST_TEST(parseString_object, string) {
 GTEST_TEST(parseString_object, array) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": []
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);
@@ -184,16 +183,16 @@ GTEST_TEST(parseString_object, array) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": [
                     42
                 ]
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);
@@ -207,14 +206,14 @@ GTEST_TEST(parseString_object, array) {
 GTEST_TEST(parseString_object, object) {
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": {}
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);
@@ -224,16 +223,16 @@ GTEST_TEST(parseString_object, object) {
     }
     {
         // clang-format off
-        const char str[]=JSON_TO_STRING(
+        std::string jsonStr = JSON_TO_STRING((
             {
                 "key": {
                     "child": 42
                 }
             }
-        );
+        ));
         // clang-format on
 
-        mblet::Jsonator json = mblet::Jsonator::parseString(str);
+        mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
         EXPECT_EQ(json.hasKey("key"), true);

@@ -1,30 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "mblet/jsonator.h"
-
-#define JSON_TO_STRING(...) #__VA_ARGS__
-
-static std::string removeSpace(const std::string& str) {
-    std::string ret("");
-    for (std::size_t i = 0; i < str.size(); ++i) {
-        if (str[i] == '"') {
-            ret.push_back(str[i]);
-            ++i;
-            while (str[i] != '\n' && str[i] != '\0' && str[i] != '"') {
-                if (str[i] == '\\' && (str[i + 1] == '"' || str[i + 1] == '\\')) {
-                    ret.push_back(str[i]);
-                    ++i; // escape character
-                }
-                ret.push_back(str[i]);
-                ++i;
-            }
-        }
-        if (!::isspace(str[i])) {
-            ret.push_back(str[i]);
-        }
-    }
-    return ret;
-}
+#include "mock/jsonToString.h"
 
 GTEST_TEST(jsonator, not_null) {
     EXPECT_THROW(
@@ -44,35 +21,31 @@ GTEST_TEST(jsonator, not_null) {
 }
 
 GTEST_TEST(jsonator, equal_operator) {
-    // clang-format off
-    const char jsonStr[] = JSON_TO_STRING(
-        {
-            "arrayChar": "string",
-            "boolean": true,
-            "c": 42,
-            "d": 42,
-            "deque": [ 1337, 42 ],
-            "f": 42,
-            "i": 42,
-            "jsonator": null,
-            "l": 42,
-            "list": [ 1337, 42 ],
-            "map": { "bar": 42, "foo": 1337 },
-            "queue": [ 1337, 42 ],
-            "s": 42,
-            "set": [ 42, 1337 ],
-            "stack": [ 42, 1337 ],
-            "starChar": "string",
-            "string": "string",
-            "uc": 42,
-            "ui": 42,
-            "ul": 42,
-            "us": 42,
-            "vector": [ 1337, 42 ]
-        }
-    );
+    std::string jsonStr = JSON_TO_STRING(({
+        "arrayChar" : "string",
+        "boolean" : true,
+        "c" : 42,
+        "d" : 42,
+        "deque" : [ 1337, 42 ],
+        "f" : 42,
+        "i" : 42,
+        "jsonator" : null,
+        "l" : 42,
+        "list" : [ 1337, 42 ],
+        "map" : {"bar" : 42, "foo" : 1337},
+        "queue" : [ 1337, 42 ],
+        "s" : 42,
+        "set" : [ 42, 1337 ],
+        "stack" : [ 42, 1337 ],
+        "starChar" : "string",
+        "string" : "string",
+        "uc" : 42,
+        "ui" : 42,
+        "ul" : 42,
+        "us" : 42,
+        "vector" : [ 1337, 42 ]
+    }));
     // clang-format on
-    const std::string jsonStrZip(removeSpace(jsonStr));
 
     mblet::Jsonator jsonator;
 
@@ -139,12 +112,74 @@ GTEST_TEST(jsonator, equal_operator) {
     json["f"] = f;
     json["d"] = d;
 
-    EXPECT_EQ(jsonStrZip, json.dump());
+    EXPECT_EQ(jsonStr, json.dump());
 }
+
+GTEST_TEST(jsonator, insert) {
+    mblet::Jsonator json;
+    json.insert("foo", "bar");
+    json["bar"].insert(0, "bar");
+    json["bar"].insert(0, "foo");
+    EXPECT_EQ(json["foo"].getString(), "bar");
+    EXPECT_EQ(json["bar"][0].getString(), "foo");
+    EXPECT_EQ(json["bar"][1].getString(), "bar");
+}
+
+GTEST_TEST(jsonator, push_front) {
+    mblet::Jsonator json;
+    json.push_front("foo");
+    json.push_front("bar");
+    EXPECT_EQ(json.size(), 2);
+    EXPECT_EQ(json[0].getString(), "bar");
+    EXPECT_EQ(json[1].getString(), "foo");
+}
+
+GTEST_TEST(jsonator, push_back) {
+    mblet::Jsonator json;
+    json.push_back("foo");
+    json.push_back("bar");
+    EXPECT_EQ(json.size(), 2);
+    EXPECT_EQ(json[0].getString(), "foo");
+    EXPECT_EQ(json[1].getString(), "bar");
+}
+
+GTEST_TEST(jsonator, pop_front) {
+    mblet::Jsonator json;
+    json.push_back("foo");
+    json.push_back("bar");
+    json.pop_front();
+    EXPECT_EQ(json.size(), 1);
+    EXPECT_EQ(json.front().getString(), "bar");
+}
+
+GTEST_TEST(jsonator, pop_back) {
+    mblet::Jsonator json;
+    json.push_back("foo");
+    json.push_back("bar");
+    json.pop_back();
+    EXPECT_EQ(json.size(), 1);
+    EXPECT_EQ(json.front().getString(), "foo");
+}
+
+GTEST_TEST(jsonator, newObject) {}
+
+GTEST_TEST(jsonator, newArray) {}
+
+GTEST_TEST(jsonator, newString) {}
+
+GTEST_TEST(jsonator, newNumber) {}
+
+GTEST_TEST(jsonator, newBoolean) {}
+
+GTEST_TEST(jsonator, newNull) {}
+
+GTEST_TEST(jsonator, erase) {}
+
+GTEST_TEST(jsonator, clear) {}
 
 GTEST_TEST(jsonator, generate) {
     // clang-format off
-    const char jsonStr[] = JSON_TO_STRING(
+    std::string jsonStr = JSON_TO_STRING((
         {
             "root" : {
                 "1": [
@@ -162,9 +197,8 @@ GTEST_TEST(jsonator, generate) {
                 "6": "42"
             }
         }
-    );
+    ));
     // clang-format on
-    const std::string jsonStrZip(removeSpace(jsonStr));
 
     {
         mblet::Jsonator json;
@@ -180,7 +214,7 @@ GTEST_TEST(jsonator, generate) {
         json["root"]["5"]["1"].newNumber(1);
         json["root"]["6"].newString("42");
 
-        EXPECT_EQ(jsonStrZip, json.dump());
+        EXPECT_EQ(jsonStr, json.dump());
     }
     {
         mblet::Jsonator json;
@@ -194,7 +228,7 @@ GTEST_TEST(jsonator, generate) {
         json["root"]["5"]["1"] = 1;
         json["root"]["6"] = "42";
 
-        EXPECT_EQ(jsonStrZip, json.dump());
+        EXPECT_EQ(jsonStr, json.dump());
     }
     {
         mblet::Jsonator json;
@@ -212,7 +246,7 @@ GTEST_TEST(jsonator, generate) {
         json["root"]["5"] = mapInt;
         json["root"]["6"] = "42";
 
-        EXPECT_EQ(jsonStrZip, json.dump());
+        EXPECT_EQ(jsonStr, json.dump());
     }
     {
         mblet::Jsonator json;
@@ -226,6 +260,6 @@ GTEST_TEST(jsonator, generate) {
         json["root"]["5"]["1"] = 1;
         json["root"]["6"] = "42";
 
-        EXPECT_EQ(jsonStrZip, json.dump());
+        EXPECT_EQ(jsonStr, json.dump());
     }
 }
