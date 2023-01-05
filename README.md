@@ -3,26 +3,6 @@
 Json parse and dump library  
 Examples at [docs/examples.md](docs/examples.md)
 
-## Build
-
-```bash
-# Static Release
-mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=0 .. && make -j && make install; popd
-# Dynamic Release
-mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 .. && make -j && make install; popd
-
-# Static Release C++98
-mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=98 -DBUILD_SHARED_LIBS=0 .. && make -j && make install; popd
-# Dynamic Release C++98
-mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=98 -DBUILD_SHARED_LIBS=1 .. && make -j && make install; popd
-
-# Install with custom directory
-mkdir build; pushd build; cmake -DCMAKE_INSTALL_PREFIX="YOUR_INSTALL_PATH" .. && make -j && make install; popd
-
-# Example + Tests + Coverage
-mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_EXAMPLE=1 -DBUILD_TESTING=1 -DBUILD_COVERAGE=1 -DCMAKE_CXX_STANDARD=98 .. && make -j && make test -j; popd
-```
-
 ## Quick start
 
 ```cpp
@@ -113,6 +93,26 @@ std::cout << newJson.dump(4) << '\n';
 //         42
 //     ]
 // }
+```
+
+## Build
+
+```bash
+# Static Release
+mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=0 .. && make -j && make install; popd
+# Dynamic Release
+mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 .. && make -j && make install; popd
+
+# Static Release C++98
+mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=98 -DBUILD_SHARED_LIBS=0 .. && make -j && make install; popd
+# Dynamic Release C++98
+mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=98 -DBUILD_SHARED_LIBS=1 .. && make -j && make install; popd
+
+# Install with custom directory
+mkdir build; pushd build; cmake -DCMAKE_INSTALL_PREFIX="YOUR_INSTALL_PATH" .. && make -j && make install; popd
+
+# Example + Tests + Coverage
+mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_EXAMPLE=1 -DBUILD_TESTING=1 -DBUILD_COVERAGE=1 -DCMAKE_CXX_STANDARD=98 .. && make -j && make test -j; popd
 ```
 
 ## Parse Methods
@@ -260,19 +260,19 @@ const mblet::Jsonator json = mblet::Jsonator::parseFile("./example.json");
 std::cout << json.getFilename() << std::endl;
 ```
 
-### HasKey
+### Contains
 
-Check if json object `hasKey`.  
+Check if json object has key.  
 
 ```cpp
 json["string"] = "value";
 json["boolean"] = true;
 json["number"] = 42;
 
-std::cout << json.hasKey("string") << '\n'  // 1
-          << json.hasKey("boolean") << '\n' // 1
-          << json.hasKey("number") << '\n'  // 1
-          << json.hasKey("foo")             // 0
+std::cout << json.contains("string") << '\n'  // 1
+          << json.contains("boolean") << '\n' // 1
+          << json.contains("number") << '\n'  // 1
+          << json.contains("foo")             // 0
           << std::endl;
 ```
 

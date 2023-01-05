@@ -334,7 +334,7 @@ GTEST_TEST(parseString_array, object) {
         EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.at(0).isObject(), true);
         EXPECT_EQ(json.at(0).size(), 1);
-        EXPECT_EQ(json.at(0).hasKey("child"), true);
+        EXPECT_EQ(json.at(0).contains("child"), true);
         EXPECT_EQ(json.at(0).at("child"), 42);
     }
     {
@@ -358,7 +358,7 @@ GTEST_TEST(parseString_array, object) {
         EXPECT_EQ(json.at(1).getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.at(1).isObject(), true);
         EXPECT_EQ(json.at(1).size(), 1);
-        EXPECT_EQ(json.at(1).hasKey("child"), true);
+        EXPECT_EQ(json.at(1).contains("child"), true);
         EXPECT_EQ(json.at(1).at("child"), 42);
     }
 }

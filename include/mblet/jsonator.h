@@ -101,6 +101,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
         std::size_t _line;
         std::size_t _column;
     };
+
     /**
      * @brief Access exception from std::exception
      */
@@ -199,6 +200,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
         std::string _child;
     };
 
+    /**
+     * @brief type of jsonator
+     */
     enum Type {
         NONE = 0,
         OBJECT,
@@ -268,7 +272,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     /**
      * @brief Destroy the Jsonator object
      */
-    virtual ~Jsonator();
+    ~Jsonator();
 
     /**
      * @brief copy json
@@ -948,35 +952,116 @@ class Jsonator : public std::map<std::string, Jsonator> {
         _type = NONE;
     }
 
+    /**
+     * @brief check if type of jsonator is null
+     *
+     * @return true if type is null else false
+     */
     bool isNull() const {
         return _type == NONE;
     }
 
+    /**
+     * @brief check if type of jsonator is a object
+     *
+     * @return true if type is a object else false
+     */
     bool isObject() const {
         return _type == OBJECT;
     }
 
+    /**
+     * @brief check if type of jsonator is a array
+     *
+     * @return true if type is a array else false
+     */
     bool isArray() const {
         return _type == ARRAY;
     }
 
+    /**
+     * @brief check if type of jsonator is a string
+     *
+     * @return true if type is a string else false
+     */
     bool isString() const {
         return _type == STRING;
     }
 
+    /**
+     * @brief check if type of jsonator is a number
+     *
+     * @return true if type is a number else false
+     */
     bool isNumber() const {
         return _type == NUMBER;
     }
 
+    /**
+     * @brief check if type of jsonator is a boolean
+     *
+     * @return true if type is a boolean else false
+     */
     bool isBoolean() const {
         return _type == BOOLEAN;
     }
 
-    bool hasKey(const std::string& key) const {
+    /**
+     * @brief check if object contains a @p key
+     *
+     * @param key
+     * @return true if object has key else false
+     */
+    bool contains(const std::string& key) const {
+        if (_type != OBJECT) {
+            throw AccessException(*this, "is not a object");
+        }
         return std::map<std::string, Jsonator>::find(key) != std::map<std::string, Jsonator>::end();
     }
 
-    std::string dump(std::size_t indent = 0) const;
+    /**
+     * @brief check if object contains a @p key
+     *
+     * @param key
+     * @return true if object has key else false
+     */
+    bool contains(const char* key) const {
+        return contains(std::string(key));
+    }
+
+    /**
+     * @brief check if object contains a @p key
+     *
+     * @param key
+     * @return true if object has key else false
+     */
+    template<std::size_t Size>
+    bool contains(const char (&key)[Size]) const {
+        return contains(std::string(key));
+    }
+
+    /**
+     * @brief check if array contains a @p index
+     *
+     * @param index
+     * @return true if array has index else false
+     */
+    template<typename T>
+    bool contains(const T& index) const {
+        if (_type != ARRAY) {
+            throw AccessException(*this, "is not a array");
+        }
+        return static_cast<std::size_t>(index) < size();
+    }
+
+    /**
+     * @brief serialize jsonator to string
+     *
+     * @param indent
+     * @param indentCharacter
+     * @return std::string
+     */
+    std::string dump(std::size_t indent = 0, char indentCharacter = ' ') const;
 
     Jsonator& erase(const std::string& key) {
         if (_type != OBJECT) {

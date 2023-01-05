@@ -30,7 +30,7 @@ GTEST_TEST(parseString_object, null) {
     mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
     EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
     EXPECT_EQ(json.size(), 1);
-    EXPECT_EQ(json.hasKey(""), true);
+    EXPECT_EQ(json.contains(""), true);
     EXPECT_EQ(json.at("").getType(), mblet::Jsonator::NONE);
     EXPECT_EQ(json.at("").isNull(), true);
 }
@@ -48,7 +48,7 @@ GTEST_TEST(parseString_object, boolean) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey(""), true);
+        EXPECT_EQ(json.contains(""), true);
         EXPECT_EQ(json.at("").getType(), mblet::Jsonator::BOOLEAN);
         EXPECT_EQ(json.at("").isBoolean(), true);
         EXPECT_EQ(json.at("").getBoolean(), true);
@@ -65,7 +65,7 @@ GTEST_TEST(parseString_object, boolean) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey(""), true);
+        EXPECT_EQ(json.contains(""), true);
         EXPECT_EQ(json.at("").getType(), mblet::Jsonator::BOOLEAN);
         EXPECT_EQ(json.at("").isBoolean(), true);
         EXPECT_EQ(json.at("").getBoolean(), false);
@@ -85,7 +85,7 @@ GTEST_TEST(parseString_object, number) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::NUMBER);
         EXPECT_EQ(json.at("key").isNumber(), true);
         EXPECT_EQ(json.at("key").getNumber(), 42);
@@ -102,7 +102,7 @@ GTEST_TEST(parseString_object, number) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::NUMBER);
         EXPECT_EQ(json.at("key").isNumber(), true);
         EXPECT_EQ(json.at("key").getNumber(), 42.42);
@@ -119,7 +119,7 @@ GTEST_TEST(parseString_object, number) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::NUMBER);
         EXPECT_EQ(json.at("key").isNumber(), true);
         EXPECT_EQ(json.at("key").getNumber(), 1e6);
@@ -139,7 +139,7 @@ GTEST_TEST(parseString_object, string) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::STRING);
         EXPECT_EQ(json.at("key").isString(), true);
         EXPECT_EQ(json.at("key").getString(), "42");
@@ -156,7 +156,7 @@ GTEST_TEST(parseString_object, string) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::STRING);
         EXPECT_EQ(json.at("key").isString(), true);
         EXPECT_EQ(json.at("key").getString(), "42\\\n\"42");
@@ -176,7 +176,7 @@ GTEST_TEST(parseString_object, array) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.at("key").isArray(), true);
         EXPECT_EQ(json.at("key").size(), 0);
@@ -195,7 +195,7 @@ GTEST_TEST(parseString_object, array) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::ARRAY);
         EXPECT_EQ(json.at("key").isArray(), true);
         EXPECT_EQ(json.at("key").size(), 1);
@@ -216,7 +216,7 @@ GTEST_TEST(parseString_object, object) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.at("key").isObject(), true);
         EXPECT_EQ(json.at("key").size(), 0);
@@ -235,11 +235,11 @@ GTEST_TEST(parseString_object, object) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.hasKey("key"), true);
+        EXPECT_EQ(json.contains("key"), true);
         EXPECT_EQ(json.at("key").getType(), mblet::Jsonator::OBJECT);
         EXPECT_EQ(json.at("key").isObject(), true);
         EXPECT_EQ(json.at("key").size(), 1);
-        EXPECT_EQ(json.at("key").hasKey("child"), true);
+        EXPECT_EQ(json.at("key").contains("child"), true);
         EXPECT_EQ(json.at("key").at("child"), 42);
     }
 }

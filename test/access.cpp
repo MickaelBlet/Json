@@ -440,14 +440,14 @@ GTEST_TEST(jsonator, isBoolean) {
     }
 }
 
-GTEST_TEST(jsonator, hasKey) {
+GTEST_TEST(jsonator, contains) {
     {
         mblet::Jsonator json;
         json["foo"] = 1;
         json["bar"] = 2;
-        EXPECT_EQ(json.hasKey("foo"), true);
-        EXPECT_EQ(json.hasKey("bar"), true);
-        EXPECT_EQ(json.hasKey("toto"), false);
+        EXPECT_EQ(json.contains("foo"), true);
+        EXPECT_EQ(json.contains("bar"), true);
+        EXPECT_EQ(json.contains("toto"), false);
     }
 }
 
@@ -470,7 +470,7 @@ GTEST_TEST(jsonator, dump) {
         oss << '{';
         if (i > 0) {
             oss << '\n';
-            oss << std::string(i, ' ');
+            oss << std::string(i, '\t');
         }
         oss << "\"bar\":";
         if (i > 0) {
@@ -479,7 +479,7 @@ GTEST_TEST(jsonator, dump) {
         oss << '{';
         if (i > 0) {
             oss << '\n';
-            oss << std::string(i * 2, ' ');
+            oss << std::string(i * 2, '\t');
         }
         oss << "\"foo\":";
         if (i > 0) {
@@ -488,12 +488,12 @@ GTEST_TEST(jsonator, dump) {
         oss << 42;
         if (i > 0) {
             oss << '\n';
-            oss << std::string(i, ' ');
+            oss << std::string(i, '\t');
         }
         oss << "},";
         if (i > 0) {
             oss << '\n';
-            oss << std::string(i, ' ');
+            oss << std::string(i, '\t');
         }
         oss << "\"foo\":";
         if (i > 0) {
@@ -502,19 +502,19 @@ GTEST_TEST(jsonator, dump) {
         oss << '[';
         if (i > 0) {
             oss << '\n';
-            oss << std::string(i * 2, ' ');
+            oss << std::string(i * 2, '\t');
         }
         oss << "\"bar\"";
         if (i > 0) {
             oss << '\n';
-            oss << std::string(i, ' ');
+            oss << std::string(i, '\t');
         }
         oss << ']';
         if (i > 0) {
             oss << '\n';
         }
         oss << '}';
-        EXPECT_EQ(json.dump(i), oss.str());
+        EXPECT_EQ(json.dump(i, '\t'), oss.str());
     }
 }
 
@@ -532,7 +532,7 @@ GTEST_TEST(jsonator, getParent) {
             std::ostringstream oss("");
             oss << "test" << i - 1;
             constJson = constJson->getParent();
-            EXPECT_EQ(constJson->hasKey(oss.str()), true);
+            EXPECT_EQ(constJson->contains(oss.str()), true);
         }
         EXPECT_EQ(&json, constJson);
     }

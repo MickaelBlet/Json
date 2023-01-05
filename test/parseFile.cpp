@@ -48,9 +48,9 @@ GTEST_TEST(parseFile, success) {
 
     mblet::Jsonator json = mblet::Jsonator::parseFile(testFile);
     EXPECT_EQ(json.getFilename(), "/tmp/mblet_test_parsefile_success.json");
-    EXPECT_EQ(json.hasKey("key"), true);
+    EXPECT_EQ(json.contains("key"), true);
     EXPECT_EQ(json.at("key").getString(), "value");
-    EXPECT_EQ(json.hasKey("array"), true);
+    EXPECT_EQ(json.contains("array"), true);
     EXPECT_EQ(json.at("array").at(0).getNumber(), 0);
     EXPECT_EQ(json.at("array").at(1).getNumber(), 1);
     EXPECT_EQ(json.at("array").at(2).getNumber(), 2);

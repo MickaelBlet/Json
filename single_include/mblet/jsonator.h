@@ -101,6 +101,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
         std::size_t _line;
         std::size_t _column;
     };
+
     /**
      * @brief Access exception from std::exception
      */
@@ -199,6 +200,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
         std::string _child;
     };
 
+    /**
+     * @brief type of jsonator
+     */
     enum Type {
         NONE = 0,
         OBJECT,
@@ -268,7 +272,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     /**
      * @brief Destroy the Jsonator object
      */
-    virtual ~Jsonator();
+    ~Jsonator();
 
     /**
      * @brief copy json
@@ -948,35 +952,116 @@ class Jsonator : public std::map<std::string, Jsonator> {
         _type = NONE;
     }
 
+    /**
+     * @brief check if type of jsonator is null
+     *
+     * @return true if type is null else false
+     */
     bool isNull() const {
         return _type == NONE;
     }
 
+    /**
+     * @brief check if type of jsonator is a object
+     *
+     * @return true if type is a object else false
+     */
     bool isObject() const {
         return _type == OBJECT;
     }
 
+    /**
+     * @brief check if type of jsonator is a array
+     *
+     * @return true if type is a array else false
+     */
     bool isArray() const {
         return _type == ARRAY;
     }
 
+    /**
+     * @brief check if type of jsonator is a string
+     *
+     * @return true if type is a string else false
+     */
     bool isString() const {
         return _type == STRING;
     }
 
+    /**
+     * @brief check if type of jsonator is a number
+     *
+     * @return true if type is a number else false
+     */
     bool isNumber() const {
         return _type == NUMBER;
     }
 
+    /**
+     * @brief check if type of jsonator is a boolean
+     *
+     * @return true if type is a boolean else false
+     */
     bool isBoolean() const {
         return _type == BOOLEAN;
     }
 
-    bool hasKey(const std::string& key) const {
+    /**
+     * @brief check if object contains a @p key
+     *
+     * @param key
+     * @return true if object has key else false
+     */
+    bool contains(const std::string& key) const {
+        if (_type != OBJECT) {
+            throw AccessException(*this, "is not a object");
+        }
         return std::map<std::string, Jsonator>::find(key) != std::map<std::string, Jsonator>::end();
     }
 
-    std::string dump(std::size_t indent = 0) const;
+    /**
+     * @brief check if object contains a @p key
+     *
+     * @param key
+     * @return true if object has key else false
+     */
+    bool contains(const char* key) const {
+        return contains(std::string(key));
+    }
+
+    /**
+     * @brief check if object contains a @p key
+     *
+     * @param key
+     * @return true if object has key else false
+     */
+    template<std::size_t Size>
+    bool contains(const char (&key)[Size]) const {
+        return contains(std::string(key));
+    }
+
+    /**
+     * @brief check if array contains a @p index
+     *
+     * @param index
+     * @return true if array has index else false
+     */
+    template<typename T>
+    bool contains(const T& index) const {
+        if (_type != ARRAY) {
+            throw AccessException(*this, "is not a array");
+        }
+        return static_cast<std::size_t>(index) < size();
+    }
+
+    /**
+     * @brief serialize jsonator to string
+     *
+     * @param indent
+     * @param indentCharacter
+     * @return std::string
+     */
+    std::string dump(std::size_t indent = 0, char indentCharacter = ' ') const;
 
     Jsonator& erase(const std::string& key) {
         if (_type != OBJECT) {
@@ -1418,9 +1503,9 @@ static inline void s_newlineDump(std::ostream& oss, const Jsonator& json, std::s
     }
 }
 
-static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
+static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
     if (!json.empty() && indent != 0) {
-        oss << std::string(indent * index, ' ');
+        oss << std::string(indent * index, indentCharacter);
     }
 }
 
@@ -1452,9 +1537,9 @@ static inline void s_stringDump(std::ostream& oss, const std::string& str) {
     oss << '"';
 }
 
-inline static void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index = 0);
+inline static void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index = 0);
 
-inline static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
+inline static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
     oss << '{';
     s_newlineDump(oss, json, indent);
     ++index;
@@ -1463,21 +1548,21 @@ inline static void s_objectDump(std::ostream& oss, const Jsonator& json, std::si
             oss << ',';
             s_newlineDump(oss, json, indent);
         }
-        s_indentDump(oss, json, indent, index);
+        s_indentDump(oss, json, indent, indentCharacter, index);
         s_stringDump(oss, cit->second.getKey()); // key
         oss << ':';
         if (indent != 0) {
             oss << ' ';
         }
-        s_typeDump(oss, cit->second, indent, index);
+        s_typeDump(oss, cit->second, indent, indentCharacter, index);
     }
     s_newlineDump(oss, json, indent);
     --index;
-    s_indentDump(oss, json, indent, index);
+    s_indentDump(oss, json, indent, indentCharacter, index);
     oss << '}';
 }
 
-inline static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
+inline static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
     oss << '[';
     s_newlineDump(oss, json, indent);
     ++index;
@@ -1486,22 +1571,22 @@ inline static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::siz
             oss << ',';
             s_newlineDump(oss, json, indent);
         }
-        s_indentDump(oss, json, indent, index);
-        s_typeDump(oss, json[i], indent, index);
+        s_indentDump(oss, json, indent, indentCharacter, index);
+        s_typeDump(oss, json[i], indent, indentCharacter, index);
     }
     s_newlineDump(oss, json, indent);
     --index;
-    s_indentDump(oss, json, indent, index);
+    s_indentDump(oss, json, indent, indentCharacter, index);
     oss << ']';
 }
 
-void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std::size_t index) {
+void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
     switch (json.getType()) {
         case Jsonator::ARRAY:
-            s_arrayDump(oss, json, indent, index);
+            s_arrayDump(oss, json, indent, indentCharacter, index);
             break;
         case Jsonator::OBJECT:
-            s_objectDump(oss, json, indent, index);
+            s_objectDump(oss, json, indent, indentCharacter, index);
             break;
         case Jsonator::STRING:
             s_stringDump(oss, json.getString());
@@ -1523,10 +1608,10 @@ void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, std
     }
 }
 
-inline std::string Jsonator::dump(std::size_t indent) const {
+inline std::string Jsonator::dump(std::size_t indent, char indentCharacter) const {
     std::ostringstream oss("");
     oss << std::setprecision(std::numeric_limits<double>::digits10 + 1);
-    s_typeDump(oss, *this, indent);
+    s_typeDump(oss, *this, indent, indentCharacter);
     return oss.str();
 }
 
