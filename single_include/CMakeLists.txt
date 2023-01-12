@@ -1,0 +1,18 @@
+find_program(PYTHON3 "python3")
+find_program(CLANG_FORMAT "clang-format")
+if(PYTHON3 AND CLANG_FORMAT)
+    execute_process(
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
+        COMMAND bash -c "./etc/script/amalgamate.py -c ./etc/script/config_jsonator.json -s . && clang-format -i ./single_include/mblet/jsonator.h"
+        OUTPUT_QUIET
+        RESULT_VARIABLE generate_result
+    )
+    if(generate_result EQUAL 0)
+        message(STATUS "Generate \"single_include/mblet/jsonator.h\" done")
+        if(BUILD_TESTING)
+            add_subdirectory(test)
+        endif()
+    else()
+        message(FATAL_ERROR "Generate \"single_include/mblet/jsonator.h\" failed")
+    endif()
+endif()

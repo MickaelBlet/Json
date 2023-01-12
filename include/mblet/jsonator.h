@@ -2,7 +2,7 @@
  * jsonator.h
  *
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
- * Copyright (c) 2022 BLET Mickaël.
+ * Copyright (c) 2022-2023 BLET Mickaël.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -257,14 +257,6 @@ class Jsonator : public std::map<std::string, Jsonator> {
     /**
      * @brief Construct a new Jsonator object
      *
-     * @param parent
-     * @param key
-     */
-    Jsonator(const Jsonator* parent, const std::string& key);
-
-    /**
-     * @brief Construct a new Jsonator object
-     *
      * @param rhs
      */
     Jsonator(const Jsonator& rhs);
@@ -435,6 +427,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return iterator
+     * @throw mblet::Jsonator::AccessException if type is not a object
      */
     iterator find(const std::string& key) {
         if (_type != OBJECT) {
@@ -448,6 +441,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const_iterator
+     * @throw mblet::Jsonator::AccessException if type is not a object
      */
     const_iterator find(const std::string& key) const {
         if (_type != OBJECT) {
@@ -461,6 +455,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return iterator
+     * @throw mblet::Jsonator::AccessException if type is not a object
      */
     iterator find(const char* key) {
         return find(std::string(key));
@@ -471,6 +466,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const_iterator
+     * @throw mblet::Jsonator::AccessException if type is not a object
      */
     const_iterator find(const char* key) const {
         return find(std::string(key));
@@ -481,6 +477,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam Size
      * @return iterator
+     * @throw mblet::Jsonator::AccessException if type is not a object
      */
     template<std::size_t Size>
     iterator find(const char (&key)[Size]) {
@@ -492,6 +489,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam Size
      * @return const_iterator
+     * @throw mblet::Jsonator::AccessException if type is not a object
      */
     template<std::size_t Size>
     const_iterator find(const char (&key)[Size]) const {
@@ -504,6 +502,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @tparam T
      * @param index
      * @return iterator
+     * @throw mblet::Jsonator::AccessException if type is not a array
      */
     template<typename T>
     iterator find(const T& index) {
@@ -519,6 +518,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @tparam T
      * @param index
      * @return const_iterator
+     * @throw mblet::Jsonator::AccessException if type is not a array
      */
     template<typename T>
     const_iterator find(const T& index) const {
@@ -532,7 +532,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get json from @p key
      *
      * @param key
-     * @return Jsonator&
+     * @return Jsonator& data associated with the key or if the key does not exist,
+     * a json object with that key is created using default values, which is then returned
+     * @throw mblet::Jsonator::AccessException if type is not a null and not a object
      */
     Jsonator& operator[](const std::string& key) {
         if (_type == NONE) {
@@ -551,6 +553,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     const Jsonator& operator[](const std::string& key) const {
         const_iterator it = find(key);
@@ -575,6 +579,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     const Jsonator& operator[](const char* key) const {
         return operator[](std::string(key));
@@ -596,6 +602,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     template<std::size_t Size>
     const Jsonator& operator[](const char (&key)[Size]) const {
@@ -603,7 +611,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief get json from @p index
+     * @brief get json from @p index if the lowers indexies not exists create of null object
      *
      * @param index
      * @return Jsonator&
@@ -631,6 +639,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param index
      * @return const Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     template<typename T>
     const Jsonator& operator[](const T& index) const {
@@ -646,6 +656,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     Jsonator& at(const std::string& key) {
         iterator it = find(key);
@@ -660,6 +672,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     const Jsonator& at(const std::string& key) const {
         const_iterator it = find(key);
@@ -674,6 +688,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     Jsonator& at(const char* key) {
         return at(std::string(key));
@@ -684,6 +700,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     const Jsonator& at(const char* key) const {
         return at(std::string(key));
@@ -694,6 +712,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     template<std::size_t Size>
     Jsonator& at(const char (&key)[Size]) {
@@ -705,6 +725,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw mblet::Jsonator::ChildException if key is not exists
      */
     template<std::size_t Size>
     const Jsonator& at(const char (&key)[Size]) const {
@@ -716,6 +738,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param index
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     template<typename T>
     Jsonator& at(const T& index) {
@@ -731,6 +755,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param index
      * @return const Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     template<typename T>
     const Jsonator& at(const T& index) const {
@@ -743,9 +769,10 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     /**
      * @brief get first json element
-     * create then if not exist
      *
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     Jsonator& front() {
         return at(0);
@@ -755,6 +782,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get first json element
      *
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     const Jsonator& front() const {
         return at(0);
@@ -765,6 +794,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * create then if not exist
      *
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     Jsonator& back() {
         if (size() == 0) {
@@ -779,6 +810,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get last json element
      *
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     const Jsonator& back() const {
         return at(size() - 1);
@@ -859,6 +892,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief remove first element
      *
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     Jsonator& pop_front() {
         erase(0);
@@ -869,6 +904,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief remove last element
      *
      * @return Jsonator&
+     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw mblet::Jsonator::ChildException if index is not exists
      */
     Jsonator& pop_back() {
         erase(size() - 1);
@@ -1063,6 +1100,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     std::string dump(std::size_t indent = 0, char indentCharacter = ' ') const;
 
+    /**
+     * @brief remove the @p key
+     *
+     * @param key
+     * @return Jsonator&
+     */
     Jsonator& erase(const std::string& key) {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
@@ -1080,15 +1123,33 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return *this;
     }
 
+    /**
+     * @brief remove the @p key
+     *
+     * @param key
+     * @return Jsonator&
+     */
     Jsonator& erase(const char* key) {
         return erase(std::string(key));
     }
 
+    /**
+     * @brief remove the @p key
+     *
+     * @param key
+     * @return Jsonator&
+     */
     template<std::size_t Size>
     Jsonator& erase(const char (&key)[Size]) {
         return erase(std::string(key));
     }
 
+    /**
+     * @brief remove the @p index
+     *
+     * @param index
+     * @return Jsonator&
+     */
     template<typename T>
     Jsonator& erase(const T& index) {
         if (_type != ARRAY) {
@@ -1128,14 +1189,30 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return *this;
     }
 
+    /**
+     * @brief get the parent json object
+     *
+     * @return const Jsonator* parent else NULL
+     */
     const Jsonator* getParent() const {
         return _parent;
     }
 
+    /**
+     * @brief get the key of json object
+     *
+     * @return const std::string&
+     */
     const std::string& getKey() const {
         return _key;
     }
 
+    /**
+     * @brief get the string of string json object
+     *
+     * @return const std::string&
+     * @throw mblet::Jsonator::AccessException if json type is not string
+     */
     const std::string& getString() const {
         if (_type != STRING) {
             throw AccessException(*this, "is not a string");
@@ -1171,18 +1248,29 @@ class Jsonator : public std::map<std::string, Jsonator> {
         ret = get<T>();
     }
 
-    operator Jsonator*() {
-        return this;
-    }
-
+    /**
+     * @brief string construct
+     *
+     * @return const std::string&
+     */
     operator const std::string&() const {
         return getString();
     }
 
+    /**
+     * @brief string construct
+     *
+     * @return const char*
+     */
     operator const char*() const {
         return getString().c_str();
     }
 
+    /**
+     * @brief bool construct
+     *
+     * @return const bool&
+     */
     operator const bool&() const {
         return getBoolean();
     }
@@ -1344,11 +1432,24 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return parseString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
     }
 
+    /**
+     * @brief get name of file after used parseFile
+     *
+     * @return const std::string&
+     */
     const std::string& getFilename() const {
         return _filename;
     }
 
   private:
+    /**
+     * @brief Construct a new Jsonator object
+     *
+     * @param parent
+     * @param key
+     */
+    Jsonator(const Jsonator* parent, const std::string& key);
+
     static void ultostr(char** pstr, unsigned long l) {
         if (l < 10UL) {
             **pstr = '0' + l;
@@ -1362,18 +1463,15 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     static std::string indexToString(unsigned long index) {
-        static const char* numbers[] = {
+        static const std::string numbers[] = {
             "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9",  "10", "11", "12", "13", "14", "15", "16",
             "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33",
             "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
             "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67",
             "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84",
             "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99"};
-        if (index < 10) {
-            return std::string(numbers[index], 1);
-        }
-        else if (index < 100) {
-            return std::string(numbers[index], 2);
+        if (index < 100) {
+            return numbers[index];
         }
         else {
             char str[32];

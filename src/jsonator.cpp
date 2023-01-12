@@ -2,7 +2,7 @@
  * jsonator.cpp
  *
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
- * Copyright (c) 2022 BLET Mickaël.
+ * Copyright (c) 2022-2023 BLET Mickaël.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,7 +100,8 @@ static inline void s_newlineDump(std::ostream& oss, const Jsonator& json, std::s
     }
 }
 
-static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
+static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+                                std::size_t index) {
     if (!json.empty() && indent != 0) {
         oss << std::string(indent * index, indentCharacter);
     }
@@ -134,9 +135,11 @@ static inline void s_stringDump(std::ostream& oss, const std::string& str) {
     oss << '"';
 }
 
-static void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index = 0);
+static void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+                       std::size_t index = 0);
 
-static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
+static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+                         std::size_t index) {
     oss << '{';
     s_newlineDump(oss, json, indent);
     ++index;
@@ -159,7 +162,8 @@ static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t in
     oss << '}';
 }
 
-static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
+static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+                        std::size_t index) {
     oss << '[';
     s_newlineDump(oss, json, indent);
     ++index;
@@ -274,12 +278,6 @@ static inline std::string s_replaceEscapeChar(const std::string& str) {
     return ret;
 }
 
-/**
- * @brief move index to character after spaces
- *
- * @param str
- * @param index
- */
 static inline void s_stringJumpSpace(const std::string& str, std::size_t& index) {
     while (::isspace(str[index])) {
         ++index;
@@ -369,48 +367,11 @@ static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, 
     if (json.find(key) != json.end()) {
         throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
-    return json.std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(key, Jsonator(&json, key)))
-        .first->second;
-}
-
-static inline void s_ultostr(char** pstr, unsigned long l) {
-    if (l < 10UL) {
-        **pstr = '0' + l;
-        ++(*pstr);
-    }
-    else {
-        s_ultostr(pstr, l / 10UL);
-        **pstr = '0' + (l % 10UL);
-        ++(*pstr);
-    }
-}
-
-static inline std::string s_indexToString(unsigned long index) {
-    static const char* numbers[] = {
-        "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9",  "10", "11", "12", "13", "14", "15", "16",
-        "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33",
-        "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
-        "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67",
-        "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84",
-        "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99"};
-    if (index < 10) {
-        return std::string(numbers[index], 1);
-    }
-    else if (index < 100) {
-        return std::string(numbers[index], 2);
-    }
-    else {
-        char str[32];
-        char* tmp = str;
-        s_ultostr(&tmp, index);
-        return std::string(str, tmp - str);
-    }
+    return json[key];
 }
 
 static inline Jsonator& s_createNewArrayElement(Jsonator& json) {
-    std::string str = s_indexToString(json.size());
-    return json.std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(str, Jsonator(&json, str)))
-        .first->second;
+    return json[json.size()];
 }
 
 static bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json);

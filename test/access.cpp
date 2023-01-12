@@ -521,7 +521,7 @@ GTEST_TEST(jsonator, dump) {
 GTEST_TEST(jsonator, getParent) {
     {
         mblet::Jsonator json;
-        mblet::Jsonator* constructJson = json;
+        mblet::Jsonator* constructJson = &json;
         for (unsigned int i = 0; i < 100; ++i) {
             std::ostringstream oss("");
             oss << "test" << i;

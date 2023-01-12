@@ -1,5 +1,5 @@
 {
-    "project": "JSON for Modern C++",
+    "project": "JSON for C++",
     "target": "single_include/mblet/jsonator.h",
     "sources": [
         "include/mblet/jsonator.h",

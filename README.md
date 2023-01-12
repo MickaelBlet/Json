@@ -23,12 +23,27 @@ const char jsonStr[] = \
     "  \"boolean\": false"          \
     "}";
 const mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
-std::cout << json["array"][0].getNumber() << '\n';                  // 42
-std::cout << json["array"][1][0].getNumber() << '\n';               // 1337
-std::cout << json["array"][2]["key_in_array"].getNumber() << '\n';  // 0.42
-std::cout << json["boolean"].getBoolean() << '\n';                  // 0
-std::cout << json["hello"].getString() << '\n';                     // world
-std::cout << json["null"].isNull() << '\n';                         // 1
+std::cout << json["array"][0].getNumber() << '\n';
+std::cout << json["array"][1][0].getNumber() << '\n';
+std::cout << json["array"][2]["key_in_array"].getNumber() << '\n';
+std::cout << json["boolean"].getBoolean() << '\n';
+std::cout << json["hello"].getString() << '\n';
+std::cout << json["null"].isNull() << '\n';
+// output:
+// 42
+// 1337
+// 0.42
+// 0
+// world
+// 1
+
+/*
+** transform
+*/
+std::vector<unsigned int> arraySecond = json["array"][1];
+std::cout << arraySecond[0] << std::endl;
+// output:
+// 1337
 
 /*
 ** generate
@@ -265,6 +280,7 @@ std::cout << json.getFilename() << std::endl;
 Check if json object has key.  
 
 ```cpp
+mblet::Jsonator json;
 json["string"] = "value";
 json["boolean"] = true;
 json["number"] = 42;
@@ -283,17 +299,35 @@ Get type of value.
 `getString`, `getBoolean`, `getNumber`, `getParent`, `getKey`, `getType`, `get`
 
 ```cpp
+mblet::Jsonator json;
 json["string"] = "value";
 json["boolean"] = true;
 json["number"] = 42;
 json["array"][0] = "array0";
 json["array"][1] = "array1";
 
-std::cout << json["string"].getString() << '\n'   // value
-          << json["boolean"].getBoolean() << '\n' // true
-          << json["number"].getNumber() << '\n'   // 42
-          << json["array"][1].getString()         // array1
-          << std::endl;
+mblet::Jsonator& jsonArray = json["array"];
+
+std::cout << json["string"].getString() << '\n' // value
+          << json["boolean"].getBoolean() << '\n' // 1
+          << json["number"].getNumber() << '\n' // 42
+          << jsonArray[1].getString() << '\n'; // array1
+
+std::cout << jsonArray.getKey() << '\n'; // array
+std::cout << (&json == jsonArray.getParent()) << '\n'; // 1
+std::cout << (json.getParent() == NULL) << '\n'; // 1
+
+unsigned int jsonNumber;
+std::string jsonString;
+
+jsonNumber = json["number"].get<unsigned int>();
+json["string"].get(jsonString);
+
+std::cout << jsonNumber << '\n' // 42
+          << jsonString << '\n'; // value
+
+mblet::Jsonator::Type arrayType = jsonArray.getType();
+std::cout << (arrayType == mblet::Jsonator::ARRAY) << std::endl; // 1
 ```
 
 ### Is*
@@ -303,6 +337,7 @@ Check type of json object.
 `isNull`, `isObject`, `isArray`, `isString`, `isNumber`, `isBoolean`
 
 ```cpp
+mblet::Jsonator json;
 json["string"].newString("value");
 json["boolean"].newBoolean(true);
 json["number"].newNumber(42);
@@ -311,11 +346,12 @@ json["array"][1].newNumber(42);
 json["array"][2].newObject();
 json["array"][2]["null"].newNull();
 
-std::cout << json["string"].isString() << '\n'         // 1
-          << json["boolean"].isBoolean() << '\n'       // 1
-          << json["number"].isNumber() << '\n'         // 1
-          << json["array"].isArray() << '\n'           // 1
-          << json["array"][2].isObject() << '\n'       // 1
-          << json["array"][2]["null"].isNull() << '\n' // 1
+std::cout << json["string"].isString() << '\n'   // 1
+          << json["boolean"].isBoolean() << '\n' // 1
+          << json["number"].isNumber() << '\n'   // 1
+          << json["array"].isArray() << '\n'     // 1
+          << json["array"][2].isObject() << '\n' // 1
+          << json["array"][2].isArray() << '\n'  // 0
+          << json["array"][2]["null"].isNull()   // 1
           << std::endl;
 ```

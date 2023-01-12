@@ -3,7 +3,7 @@
 
 #include <string>
 
-// erase first and last parenthesis, stringify
+// stringify with erase first and last parenthesis
 #define JSON_TO_STRING(j) removeSpaces(std::string(#j + 1, sizeof(#j) - 3))
 
 /**
