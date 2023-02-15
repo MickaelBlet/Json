@@ -277,6 +277,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief set value from str
      *
      * @param value : new value
+     * @throw AccessException if type is not none or not a string
      */
     void operator=(const std::string& value) {
         newString(value);
@@ -286,6 +287,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief set value from str
      *
      * @param value : new value
+     * @throw AccessException if type is not none or not a string
      */
     void operator=(const char* value) {
         newString(value);
@@ -295,6 +297,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief set value from str
      *
      * @param value : new value
+     * @throw AccessException if type is not none or not a string
      */
     template<std::size_t Size>
     void operator=(const char (&value)[Size]) {
@@ -305,6 +308,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief set value from bool
      *
      * @param value : new value
+     * @throw AccessException if type is not none or not a boolean
      */
     void operator=(const bool& value) {
         newBoolean(value);
@@ -315,6 +319,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T
      * @param value
+     * @throw AccessException if type is not none or not a array
      */
     template<typename T>
     void operator=(const std::deque<T>& value) {
@@ -329,6 +334,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T
      * @param value
+     * @throw AccessException if type is not none or not a array
      */
     template<typename T>
     void operator=(const std::list<T>& value) {
@@ -344,6 +350,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @tparam T key
      * @tparam U value
      * @param value
+     * @throw AccessException if type is not none or not a array
      */
     template<typename T, typename U>
     void operator=(const std::map<T, U>& value) {
@@ -358,6 +365,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T
      * @param value
+     * @throw AccessException if type is not none or not a array
      */
     template<typename T>
     void operator=(const std::queue<T>& value) {
@@ -373,6 +381,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T
      * @param value
+     * @throw AccessException if type is not none or not a array
      */
     template<typename T>
     void operator=(const std::set<T>& value) {
@@ -387,6 +396,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T
      * @param value
+     * @throw AccessException if type is not none or not a array
      */
     template<typename T>
     void operator=(const std::stack<T>& value) {
@@ -402,6 +412,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T
      * @param value
+     * @throw AccessException if type is not none or not a array
      */
     template<typename T>
     void operator=(const std::vector<T>& value) {
@@ -416,6 +427,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T
      * @param value
+     * @throw AccessException if type is not none or not a number
      */
     template<typename T>
     void operator=(const T& value) {
@@ -427,7 +439,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return iterator
-     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw AccessException if type is not a object
      */
     iterator find(const std::string& key) {
         if (_type != OBJECT) {
@@ -441,7 +453,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const_iterator
-     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw AccessException if type is not a object
      */
     const_iterator find(const std::string& key) const {
         if (_type != OBJECT) {
@@ -455,7 +467,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return iterator
-     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw AccessException if type is not a object
      */
     iterator find(const char* key) {
         return find(std::string(key));
@@ -466,7 +478,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const_iterator
-     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw AccessException if type is not a object
      */
     const_iterator find(const char* key) const {
         return find(std::string(key));
@@ -477,7 +489,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam Size
      * @return iterator
-     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw AccessException if type is not a object
      */
     template<std::size_t Size>
     iterator find(const char (&key)[Size]) {
@@ -489,7 +501,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam Size
      * @return const_iterator
-     * @throw mblet::Jsonator::AccessException if type is not a object
+     * @throw AccessException if type is not a object
      */
     template<std::size_t Size>
     const_iterator find(const char (&key)[Size]) const {
@@ -502,7 +514,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @tparam T
      * @param index
      * @return iterator
-     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw AccessException if type is not a array
      */
     template<typename T>
     iterator find(const T& index) {
@@ -518,7 +530,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @tparam T
      * @param index
      * @return const_iterator
-     * @throw mblet::Jsonator::AccessException if type is not a array
+     * @throw AccessException if type is not a array
      */
     template<typename T>
     const_iterator find(const T& index) const {
@@ -534,7 +546,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @param key
      * @return Jsonator& data associated with the key or if the key does not exist,
      * a json object with that key is created using default values, which is then returned
-     * @throw mblet::Jsonator::AccessException if type is not a null and not a object
+     * @throw AccessException if type is not a null and not a object
      */
     Jsonator& operator[](const std::string& key) {
         if (_type == NONE) {
@@ -553,8 +565,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     const Jsonator& operator[](const std::string& key) const {
         const_iterator it = find(key);
@@ -568,7 +580,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get json from @p key
      *
      * @param key
-     * @return Jsonator&
+     * @return Jsonator& data associated with the key or if the key does not exist,
+     * a json object with that key is created using default values, which is then returned
+     * @throw AccessException if type is not a null and not a object
      */
     Jsonator& operator[](const char* key) {
         return operator[](std::string(key));
@@ -579,8 +593,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     const Jsonator& operator[](const char* key) const {
         return operator[](std::string(key));
@@ -590,7 +604,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get json from @p key
      *
      * @param key
-     * @return Jsonator&
+     * @return Jsonator& data associated with the key or if the key does not exist,
+     * a json object with that key is created using default values, which is then returned
+     * @throw AccessException if type is not a null and not a object
      */
     template<std::size_t Size>
     Jsonator& operator[](const char (&key)[Size]) {
@@ -602,8 +618,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     template<std::size_t Size>
     const Jsonator& operator[](const char (&key)[Size]) const {
@@ -614,7 +630,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get json from @p index if the lowers indexies not exists create of null object
      *
      * @param index
-     * @return Jsonator&
+     * @return Jsonator& data associated with the index or if the index does not exist,
+     * a json object with that index is created using default values, which is then returned
+     * @throw AccessException if type is not a null and not a array
      */
     template<typename T>
     Jsonator& operator[](const T& index) {
@@ -639,8 +657,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param index
      * @return const Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     template<typename T>
     const Jsonator& operator[](const T& index) const {
@@ -656,8 +674,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     Jsonator& at(const std::string& key) {
         iterator it = find(key);
@@ -672,8 +690,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     const Jsonator& at(const std::string& key) const {
         const_iterator it = find(key);
@@ -688,8 +706,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     Jsonator& at(const char* key) {
         return at(std::string(key));
@@ -700,8 +718,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     const Jsonator& at(const char* key) const {
         return at(std::string(key));
@@ -712,8 +730,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     template<std::size_t Size>
     Jsonator& at(const char (&key)[Size]) {
@@ -725,8 +743,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return const Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a object
-     * @throw mblet::Jsonator::ChildException if key is not exists
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     template<std::size_t Size>
     const Jsonator& at(const char (&key)[Size]) const {
@@ -738,8 +756,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param index
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     template<typename T>
     Jsonator& at(const T& index) {
@@ -755,8 +773,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param index
      * @return const Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     template<typename T>
     const Jsonator& at(const T& index) const {
@@ -771,8 +789,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get first json element
      *
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     Jsonator& front() {
         return at(0);
@@ -782,8 +800,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get first json element
      *
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     const Jsonator& front() const {
         return at(0);
@@ -794,8 +812,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * create then if not exist
      *
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     Jsonator& back() {
         if (size() == 0) {
@@ -810,8 +828,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get last json element
      *
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     const Jsonator& back() const {
         return at(size() - 1);
@@ -824,6 +842,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @param key
      * @param value
      * @return Jsonator&
+     * @throw AccessException if type is not a null and not a object
      */
     template<typename T>
     Jsonator& insert(const std::string& key, const T& value) {
@@ -839,6 +858,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @param index
      * @param value
      * @return Jsonator&
+     * @throw AccessException if type is not a null and not a array
      */
     template<typename T>
     Jsonator& insert(const unsigned long& index, const T& value) {
@@ -860,6 +880,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @tparam T
      * @param value
      * @return Jsonator&
+     * @throw AccessException if type is not a null and not a array
      */
     template<typename T>
     Jsonator& push_front(const T& value) {
@@ -881,6 +902,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @tparam T
      * @param value
      * @return Jsonator&
+     * @throw AccessException if type is not a null and not a array
      */
     template<typename T>
     Jsonator& push_back(const T& value) {
@@ -892,8 +914,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief remove first element
      *
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     Jsonator& pop_front() {
         erase(0);
@@ -904,8 +926,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief remove last element
      *
      * @return Jsonator&
-     * @throw mblet::Jsonator::AccessException if type is not a array
-     * @throw mblet::Jsonator::ChildException if index is not exists
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     Jsonator& pop_back() {
         erase(size() - 1);
@@ -914,6 +936,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     /**
      * @brief create object
+     * @throw AccessException if type is not a null and not a object
      */
     void newObject() {
         if (_type != NONE && _type != OBJECT) {
@@ -924,6 +947,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     /**
      * @brief create array
+     * @throw AccessException if type is not a null and not a array
      */
     void newArray() {
         if (_type != NONE && _type != ARRAY) {
@@ -937,6 +961,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T type of value
      * @param value
+     * @throw AccessException if type is not a null and not a string
      */
     template<typename T>
     void newString(const T& value) {
@@ -954,6 +979,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T type of value
      * @param value
+     * @throw AccessException if type is not a null and not a number
      */
     template<typename T>
     void newNumber(const T& value) {
@@ -969,6 +995,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @tparam T type of value
      * @param value
+     * @throw AccessException if type is not a null and not a boolean
      */
     template<typename T>
     void newBoolean(const T& value) {
@@ -981,6 +1008,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
 
     /**
      * @brief create null
+     * @throw AccessException if type is not a null
      */
     void newNull() {
         if (_type != NONE) {
@@ -1048,6 +1076,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return true if object has key else false
+     * @throw AccessException if type is not a object
      */
     bool contains(const std::string& key) const {
         if (_type != OBJECT) {
@@ -1061,6 +1090,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return true if object has key else false
+     * @throw AccessException if type is not a object
      */
     bool contains(const char* key) const {
         return contains(std::string(key));
@@ -1071,6 +1101,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return true if object has key else false
+     * @throw AccessException if type is not a object
      */
     template<std::size_t Size>
     bool contains(const char (&key)[Size]) const {
@@ -1082,6 +1113,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param index
      * @return true if array has index else false
+     * @throw AccessException if type is not a array
      */
     template<typename T>
     bool contains(const T& index) const {
@@ -1105,6 +1137,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     Jsonator& erase(const std::string& key) {
         if (_type != OBJECT) {
@@ -1128,6 +1162,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     Jsonator& erase(const char* key) {
         return erase(std::string(key));
@@ -1138,6 +1174,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param key
      * @return Jsonator&
+     * @throw AccessException if type is not a object
+     * @throw ChildException if key is not exists
      */
     template<std::size_t Size>
     Jsonator& erase(const char (&key)[Size]) {
@@ -1149,6 +1187,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      *
      * @param index
      * @return Jsonator&
+     * @throw AccessException if type is not a array
+     * @throw ChildException if index is not exists
      */
     template<typename T>
     Jsonator& erase(const T& index) {
@@ -1208,10 +1248,10 @@ class Jsonator : public std::map<std::string, Jsonator> {
     }
 
     /**
-     * @brief get the string of string json object
+     * @brief get the string of json object
      *
      * @return const std::string&
-     * @throw mblet::Jsonator::AccessException if json type is not string
+     * @throw AccessException if json type is not a string
      */
     const std::string& getString() const {
         if (_type != STRING) {
@@ -1220,6 +1260,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _string;
     }
 
+    /**
+     * @brief get the number of json object
+     *
+     * @return const double&
+     * @throw AccessException if json type is not a number
+     */
     const double& getNumber() const {
         if (_type != NUMBER) {
             throw AccessException(*this, "is not a number");
@@ -1227,6 +1273,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _number;
     }
 
+    /**
+     * @brief get the boolean of json object
+     *
+     * @return const bool&
+     * @throw AccessException if json type is not a boolean
+     */
     const bool& getBoolean() const {
         if (_type != BOOLEAN) {
             throw AccessException(*this, "is not a boolean");
@@ -1234,15 +1286,32 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _boolean;
     }
 
+    /**
+     * @brief Get the Type object
+     *
+     * @return const Type&
+     */
     const Type& getType() const {
         return _type;
     }
 
+    /**
+     * @brief get the @c T of json object
+     *
+     * @tparam T
+     * @return T
+     */
     template<typename T>
     T get() const {
         return *this;
     }
 
+    /**
+     * @brief get the @p T of json object
+     *
+     * @tparam T
+     * @param ret
+     */
     template<typename T>
     void get(T& ret) const {
         ret = get<T>();
@@ -1252,6 +1321,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief string construct
      *
      * @return const std::string&
+     * @throw AccessException if json type is not a string
      */
     operator const std::string&() const {
         return getString();
@@ -1261,6 +1331,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief string construct
      *
      * @return const char*
+     * @throw AccessException if json type is not a string
      */
     operator const char*() const {
         return getString().c_str();
@@ -1270,6 +1341,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief bool construct
      *
      * @return const bool&
+     * @throw AccessException if json type is not a boolean
      */
     operator const bool&() const {
         return getBoolean();
@@ -1283,8 +1355,15 @@ class Jsonator : public std::map<std::string, Jsonator> {
     template<typename T>
     operator std::deque<T>() const {
         std::deque<T> ret;
-        for (const_iterator it = begin(); it != end(); ++it) {
-            ret.push_back(it->second);
+        if (_type == ARRAY) {
+            for (std::size_t i = 0; i < size(); ++i) {
+                ret.push_back(operator[](i));
+            }
+        }
+        else if (_type == OBJECT) {
+            for (const_iterator it = begin(); it != end(); ++it) {
+                ret.push_back(it->second);
+            }
         }
         return ret;
     }
@@ -1297,8 +1376,15 @@ class Jsonator : public std::map<std::string, Jsonator> {
     template<typename T>
     operator std::list<T>() const {
         std::list<T> ret;
-        for (const_iterator it = begin(); it != end(); ++it) {
-            ret.push_back(it->second);
+        if (_type == ARRAY) {
+            for (std::size_t i = 0; i < size(); ++i) {
+                ret.push_back(operator[](i));
+            }
+        }
+        else if (_type == OBJECT) {
+            for (const_iterator it = begin(); it != end(); ++it) {
+                ret.push_back(it->second);
+            }
         }
         return ret;
     }
@@ -1354,8 +1440,15 @@ class Jsonator : public std::map<std::string, Jsonator> {
     template<typename T>
     operator std::stack<T>() const {
         std::stack<T> ret;
-        for (const_iterator it = begin(); it != end(); ++it) {
-            ret.push(it->second);
+        if (_type == ARRAY) {
+            for (std::size_t i = 0; i < size(); ++i) {
+                ret.push(operator[](i));
+            }
+        }
+        else if (_type == OBJECT) {
+            for (const_iterator it = begin(); it != end(); ++it) {
+                ret.push(it->second);
+            }
         }
         return ret;
     }
@@ -1368,8 +1461,15 @@ class Jsonator : public std::map<std::string, Jsonator> {
     template<typename T>
     operator std::vector<T>() const {
         std::vector<T> ret;
-        for (const_iterator it = begin(); it != end(); ++it) {
-            ret.push_back(it->second);
+        if (_type == ARRAY) {
+            for (std::size_t i = 0; i < size(); ++i) {
+                ret.push_back(operator[](i));
+            }
+        }
+        else if (_type == OBJECT) {
+            for (const_iterator it = begin(); it != end(); ++it) {
+                ret.push_back(it->second);
+            }
         }
         return ret;
     }
@@ -1378,6 +1478,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief get number to T
      *
      * @tparam T
+     * @throw AccessException if json type is not a number
      */
     template<typename T>
     operator T() const {
@@ -1391,6 +1492,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @param comment active for skip the comment at parse
      * @param additionalNext active for skip the additional ',' at parse
      * @return Jsonator object
+     * @throw ParseException by json format
      */
     static Jsonator parseFile(const char* filename, bool comment = true, bool additionalNext = true);
 
@@ -1401,6 +1503,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @param comment active for skip the comment at parse
      * @param additionalNext active for skip the additional ',' at parse
      * @return Jsonator
+     * @throw ParseException by json format
      */
     static Jsonator parseStream(std::istream& stream, bool comment = true, bool additionalNext = true) {
         return _parseStream(stream, std::string(), comment, additionalNext);
@@ -1413,6 +1516,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @param comment active for skip the comment at parse
      * @param additionalNext active for skip the additional ',' at parse
      * @return Jsonator
+     * @throw ParseException by json format
      */
     static Jsonator parseString(const std::string& str, bool comment = true, bool additionalNext = true) {
         std::istringstream iss(str);
@@ -1427,6 +1531,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @param comment active for skip the comment at parse
      * @param additionalNext active for skip the additional ',' at parse
      * @return Jsonator
+     * @throw ParseException by json format
      */
     static Jsonator parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true) {
         return parseString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
