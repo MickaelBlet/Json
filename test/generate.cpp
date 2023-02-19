@@ -18,6 +18,20 @@ GTEST_TEST(jsonator, not_null) {
             }
         },
         mblet::Jsonator::AccessException);
+    EXPECT_THROW(
+        {
+            try {
+                mblet::Jsonator json;
+                json["foo"][0] = json;
+                json["foo"][0] = json;
+            }
+            catch (const mblet::Jsonator::AccessException& e) {
+                EXPECT_STREQ(e.what(), "[\"foo\"][0] is not null (is OBJECT).");
+                EXPECT_EQ(e.message(), "is not null");
+                throw;
+            }
+        },
+        mblet::Jsonator::AccessException);
 }
 
 GTEST_TEST(jsonator, equal_operator) {
@@ -173,9 +187,46 @@ GTEST_TEST(jsonator, newBoolean) {}
 
 GTEST_TEST(jsonator, newNull) {}
 
-GTEST_TEST(jsonator, erase) {}
+GTEST_TEST(jsonator, erase) {
+    mblet::Jsonator json;
+    json.push_back("foo");
+    json.push_back("bar");
+    json.push_back("010");
+    json.push_back("020");
+    json.push_back("030");
+    EXPECT_EQ(json.size(), 5);
+    EXPECT_EQ(json[0].getString(), "foo");
+    EXPECT_EQ(json[1].getString(), "bar");
+    EXPECT_EQ(json[2].getString(), "010");
+    EXPECT_EQ(json[3].getString(), "020");
+    EXPECT_EQ(json[4].getString(), "030");
+    json.erase(2);
+    EXPECT_EQ(json[0].getString(), "foo");
+    EXPECT_EQ(json[1].getString(), "bar");
+    EXPECT_EQ(json[2].getString(), "020");
+    EXPECT_EQ(json[3].getString(), "030");
+    json.erase(2);
+    EXPECT_EQ(json[0].getString(), "foo");
+    EXPECT_EQ(json[1].getString(), "bar");
+    EXPECT_EQ(json[2].getString(), "030");
+}
 
-GTEST_TEST(jsonator, clear) {}
+GTEST_TEST(jsonator, clear) {
+    mblet::Jsonator json;
+    json.push_back("foo");
+    json.push_back("bar");
+    json.push_back("010");
+    json.push_back("020");
+    json.push_back("030");
+    EXPECT_EQ(json.size(), 5);
+    json.clear();
+    EXPECT_EQ(json.size(), 0);
+    json["foo"] = "foo";
+    json["bar"] = "bar";
+    EXPECT_EQ(json.size(), 2);
+    json.clear();
+    EXPECT_EQ(json.size(), 0);
+}
 
 GTEST_TEST(jsonator, generate) {
     // clang-format off

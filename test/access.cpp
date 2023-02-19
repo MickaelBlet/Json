@@ -72,15 +72,15 @@ GTEST_TEST(jsonator, find) {
     {
         mblet::Jsonator json;
         json[0] = 42;
-        EXPECT_EQ(json.find(0)->first, "0");
-        EXPECT_EQ(json.find(0)->second.getNumber(), 42);
+        EXPECT_EQ(json.find(0)->getIndex(), 0);
+        EXPECT_EQ(json.find(0)->getNumber(), 42);
     }
     {
         mblet::Jsonator json;
         json[0] = 42;
         const mblet::Jsonator& cjson = json;
-        EXPECT_EQ(cjson.find(0)->first, "0");
-        EXPECT_EQ(cjson.find(0)->second.getNumber(), 42);
+        EXPECT_EQ(cjson.find(0)->getIndex(), 0);
+        EXPECT_EQ(cjson.find(0)->getNumber(), 42);
     }
 }
 
@@ -178,28 +178,28 @@ GTEST_TEST(jsonator, bracket) {
     {
         mblet::Jsonator json;
         json["foo"] = 42;
-        EXPECT_EQ(json.find("foo")->first, "foo");
-        EXPECT_EQ(json.find("foo")->second.getNumber(), 42);
+        EXPECT_EQ(json["foo"].getKey(), "foo");
+        EXPECT_EQ(json["foo"].getNumber(), 42);
     }
     {
         mblet::Jsonator json;
         json["foo"] = 42;
         const mblet::Jsonator& cjson = json;
-        EXPECT_EQ(cjson.find("foo")->first, "foo");
-        EXPECT_EQ(cjson.find("foo")->second.getNumber(), 42);
+        EXPECT_EQ(cjson["foo"].getKey(), "foo");
+        EXPECT_EQ(cjson["foo"].getNumber(), 42);
     }
     {
         mblet::Jsonator json;
         json[0] = 42;
-        EXPECT_EQ(json.find(0)->first, "0");
-        EXPECT_EQ(json.find(0)->second.getNumber(), 42);
+        EXPECT_EQ(json[0].getIndex(), 0);
+        EXPECT_EQ(json[0].getNumber(), 42);
     }
     {
         mblet::Jsonator json;
         json[0] = 42;
         const mblet::Jsonator& cjson = json;
-        EXPECT_EQ(cjson.find(0)->first, "0");
-        EXPECT_EQ(cjson.find(0)->second.getNumber(), 42);
+        EXPECT_EQ(cjson[0].getIndex(), 0);
+        EXPECT_EQ(cjson[0].getNumber(), 42);
     }
 }
 

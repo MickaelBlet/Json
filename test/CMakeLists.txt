@@ -40,7 +40,28 @@ if(BUILD_COVERAGE)
     foreach(file ${library_source_files})
         get_filename_component(filenamewe ${file} NAME_WE)
         add_test(NAME "${filenamewe}.gcov" COMMAND sh -c "find \"${CMAKE_CURRENT_BINARY_DIR}/..\" -name \"${filenamewe}.cpp.gcda\" -exec sh -c \"gcov -n \\\"{}\\\" | grep -A 1 \\\"${filenamewe}.cpp\\\" | grep \\\":\\\" | sed 's/[^:]\\+[:]\\([0-9]\\+[.][0-9]\\+%\\).*/\\1/g'\" \\;")
+        set_property(TEST "${filenamewe}.gcov" PROPERTY LABELS noMemcheck)
         set_property(TEST "${filenamewe}.gcov" PROPERTY FIXTURES_REQUIRED ${FIXTURES_COVERAGE_LIST})
         set_property(TEST "${filenamewe}.gcov" PROPERTY PASS_REGULAR_EXPRESSION "^100.00%")
     endforeach()
+endif()
+
+find_program(VALGRIND "valgrind")
+if (VALGRIND)
+    set(DART_CONFIG DartConfiguration.tcl)
+    add_custom_target(${DART_CONFIG}
+        COMMAND echo "MemoryCheckCommand: ${VALGRIND}" >> ${DART_CONFIG}
+        COMMENT "Generating ${DART_CONFIG}"
+    )
+    set(VALGRIND_ARGS
+        --leak-check=full
+        --error-exitcode=255
+    )
+    set(LOGFILE memcheck.log)
+    add_custom_target(valgrind
+        COMMAND ${CMAKE_CTEST_COMMAND} -O ${LOGFILE} -D ExperimentalMemCheck --overwrite MemoryCheckCommandOptions="${VALGRIND_ARGS}" -j 16 -T memcheck -LE "^noMemcheck$"
+        COMMAND tail -n1 ${LOGFILE} | grep 'Memory checking results:' > /dev/null
+        COMMAND rm -f ${LOGFILE}
+        DEPENDS ${DART_CONFIG}
+    )
 endif()

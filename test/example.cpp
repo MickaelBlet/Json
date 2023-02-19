@@ -32,15 +32,10 @@ GTEST_TEST(jsonator, test1) {
     char test[] = "example";
     const char* const test2 = "example";
     char test3[] = "array";
-    std::cout << __LINE__ << std::endl;
     EXPECT_EQ(jsonator[test].getType(), mblet::Jsonator::OBJECT);
-    std::cout << __LINE__ << std::endl;
     EXPECT_EQ(jsonator[test][test3].getType(), mblet::Jsonator::ARRAY);
-    std::cout << __LINE__ << std::endl;
     EXPECT_EQ(jsonator[test][test3][0][0].getNumber(), 0);
-    std::cout << __LINE__ << std::endl;
     EXPECT_EQ(jsonator[test2]["array"][0][1].getNumber(), 1);
-    std::cout << __LINE__ << std::endl;
     EXPECT_EQ(jsonator["example"]["array"][0][2].getNumber(), 2);
     EXPECT_EQ(jsonator["example"]["array"][1].getNumber(), 1);
     EXPECT_EQ(jsonator["example"]["array"][2].getNumber(), 2);
@@ -52,8 +47,8 @@ GTEST_TEST(jsonator, test1) {
     mblet::Jsonator jsonatorCpy = mblet::Jsonator::parseString(jsonator.dump(0));
     EXPECT_EQ(jsonatorCpy["example"].getKey(), "example");
     EXPECT_EQ(jsonatorCpy["example"]["array"].getKey(), "array");
-    EXPECT_EQ(jsonatorCpy["example"]["array"][0].getKey(), "0");
-    EXPECT_EQ(jsonatorCpy["example"]["array"][0][0].getKey(), "0");
+    EXPECT_EQ(jsonatorCpy["example"]["array"][0].getIndex(), 0);
+    EXPECT_EQ(jsonatorCpy["example"]["array"][0][0].getIndex(), 0);
     EXPECT_EQ(jsonatorCpy["example"]["array"][0][0].getNumber(), 0);
     EXPECT_EQ(jsonatorCpy["example"]["array"][0][1].getNumber(), 1);
     EXPECT_EQ(jsonatorCpy["example"]["array"][0][2].getNumber(), 2);
@@ -105,8 +100,8 @@ GTEST_TEST(jsonator, test2) {
     mblet::Jsonator jsonatorCpy = mblet::Jsonator::parseString(jsonator.dump(0));
     EXPECT_EQ(jsonatorCpy[0]["example"].getKey(), "example");
     EXPECT_EQ(jsonatorCpy[0]["example"]["array"].getKey(), "array");
-    EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0].getKey(), "0");
-    EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0][0].getKey(), "0");
+    EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0].getIndex(), 0);
+    EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0][0].getIndex(), 0);
     EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0][0].getNumber(), 0);
     EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0][1].getNumber(), 1);
     EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0][2].getNumber(), 2);

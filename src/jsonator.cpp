@@ -35,29 +35,49 @@
 namespace mblet {
 
 Jsonator::Jsonator() :
-    std::map<std::string, Jsonator>(),
     _parent(NULL),
-    _key(""),
-    _string("null"),
+    _array(std::vector<Jsonator>()),
+    _arrayIndex(0),
+    _object(),
+    _objectKey(""),
+    _string(""),
     _number(0),
     _boolean(false),
     _type(NONE),
     _filename("") {}
 
-Jsonator::Jsonator(const Jsonator* parent, const std::string& key) :
-    std::map<std::string, Jsonator>(),
+Jsonator::Jsonator(const Jsonator* parent, const std::size_t& index) :
     _parent(parent),
-    _key(key),
-    _string("null"),
+    _array(std::vector<Jsonator>()),
+    _arrayIndex(index),
+    _object(std::map<std::string, Jsonator>()),
+    _objectKey(""),
+    _string(""),
+    _number(0),
+    _boolean(false),
+    _type(NONE),
+    _filename("") {
+
+}
+
+Jsonator::Jsonator(const Jsonator* parent, const std::string& key) :
+    _parent(parent),
+    _array(std::vector<Jsonator>()),
+    _arrayIndex(0),
+    _object(std::map<std::string, Jsonator>()),
+    _objectKey(key),
+    _string(""),
     _number(0),
     _boolean(false),
     _type(NONE),
     _filename("") {}
 
 Jsonator::Jsonator(const Jsonator& rhs) :
-    std::map<std::string, Jsonator>(rhs),
     _parent(rhs._parent),
-    _key(rhs._key),
+    _array(rhs._array),
+    _arrayIndex(rhs._arrayIndex),
+    _object(rhs._object),
+    _objectKey(rhs._objectKey),
     _string(rhs._string),
     _number(rhs._number),
     _boolean(rhs._boolean),
@@ -72,12 +92,13 @@ void Jsonator::operator=(const Jsonator& json) {
     if (_type != NONE) {
         throw AccessException(*this, "is not null");
     }
+    _array = json._array;
+    _object = json._object;
     _string = json._string;
     _number = json._number;
     _boolean = json._boolean;
     _type = json._type;
     _filename = json._filename;
-    std::map<std::string, Jsonator>::operator=(json);
     _replaceParent(*this);
 }
 
@@ -143,8 +164,8 @@ static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t in
     oss << '{';
     s_newlineDump(oss, json, indent);
     ++index;
-    for (Jsonator::const_iterator cit = json.begin(); cit != json.end(); ++cit) {
-        if (cit != json.begin()) {
+    for (Jsonator::object_const_iterator cit = json.object_begin(); cit != json.object_end(); ++cit) {
+        if (cit != json.object_begin()) {
             oss << ',';
             s_newlineDump(oss, json, indent);
         }
@@ -364,7 +385,7 @@ static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, 
     s_stringJumpSpace(str, i);
     // get key
     std::string key = s_replaceEscapeChar(str.substr(start, end - start));
-    if (json.find(key) != json.end()) {
+    if (json.find(key) != json.object_end()) {
         throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
     return json[key];
@@ -495,12 +516,15 @@ inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, s
 }
 
 static void s_replaceCommentBySpace(std::string& str) {
-    for (std::size_t i = 0; i < str.size(); ++i) {
+    for (std::size_t i = 0; i < str.size() && str[i] != '\0'; ++i) {
         if (str[i] == '"') {
             ++i;
-            while (str[i] != '\n' && str[i] != '\0' && str[i] != '"') {
+            while (str[i] != '"') {
                 if (str[i] == '\\' && (str[i + 1] == '"' || str[i + 1] == '\\')) {
                     ++i; // escape character
+                }
+                if (str[i] == '\n' || str[i] == '\0') {
+                    break;
                 }
                 ++i;
             }
@@ -586,20 +610,26 @@ Jsonator Jsonator::_parseStream(std::istream& stream, const std::string& filenam
 }
 
 void Jsonator::_replaceParent(Jsonator& json) {
-    for (Jsonator::iterator it = json.begin(); it != json.end(); ++it) {
+    for (std::size_t i = 0; i < json._array.size(); ++i) {
+        json._array[i]._parent = &json;
+        _replaceParent(json._array[i]);
+    }
+    for (std::map<std::string, Jsonator>::iterator it = json._object.begin(); it != json._object.end(); ++it) {
         it->second._parent = &json;
         _replaceParent(it->second);
     }
 }
 
 void Jsonator::_replace(const Jsonator& json) {
-    _key = json._key;
+    _array = json._array;
+    _arrayIndex = json._arrayIndex;
+    _object = json._object;
+    _objectKey = json._objectKey;
     _string = json._string;
     _number = json._number;
     _boolean = json._boolean;
     _type = json._type;
     _filename = json._filename;
-    std::map<std::string, Jsonator>::operator=(json);
     _replaceParent(*this);
 }
 

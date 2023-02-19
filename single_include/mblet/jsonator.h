@@ -46,8 +46,13 @@ namespace mblet {
 /**
  * @brief Parse and create a json object
  */
-class Jsonator : public std::map<std::string, Jsonator> {
+class Jsonator {
   public:
+    typedef std::vector<Jsonator>::const_iterator array_const_iterator;
+    typedef std::vector<Jsonator>::iterator array_iterator;
+    typedef std::map<std::string, Jsonator>::const_iterator object_const_iterator;
+    typedef std::map<std::string, Jsonator>::iterator object_iterator;
+
     /**
      * @brief Parse exception from Exception
      */
@@ -134,7 +139,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
             return _json;
         }
 
-        static void jsonToPath(std::ostringstream& oss, const Jsonator& json) {
+      protected:
+        static void jsonToPath(std::ostream& oss, const Jsonator& json) {
             std::stack<const Jsonator*> jsons;
             const Jsonator* pJson = json._parent;
             while (pJson != NULL) {
@@ -142,23 +148,24 @@ class Jsonator : public std::map<std::string, Jsonator> {
                 pJson = pJson->_parent;
             }
             while (!jsons.empty()) {
-                if (jsons.top()->_parent && jsons.top()->_parent->isObject()) {
-                    oss << '\"' << jsons.top()->_key << '\"' << ':';
-                }
-                if (jsons.top()->_parent && jsons.top()->_parent->isArray()) {
-                    oss << '[' << jsons.top()->_key << ']' << ':';
+                if (jsons.top()->_parent) {
+                    if (jsons.top()->_parent->isObject()) {
+                        oss << "[\"" << jsons.top()->_objectKey << "\"]";
+                    }
+                    else if (jsons.top()->_parent && jsons.top()->_parent->isArray()) {
+                        oss << '[' << jsons.top()->_arrayIndex << ']';
+                    }
                 }
                 jsons.pop();
             }
             if (json._parent && json._parent->isObject()) {
-                oss << '\"' << json._key << '\"';
+                oss << "[\"" << json._objectKey << "\"]";
             }
             if (json._parent && json._parent->isArray()) {
-                oss << '[' << json._key << ']';
+                oss << '[' << json._arrayIndex << ']';
             }
         }
 
-      protected:
         std::string _what;
         std::string _message;
         const Jsonator& _json;
@@ -223,22 +230,28 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return const char*
      */
     static const char* getStrFromType(const Type& type) {
+        const char* ret = NULL;
         switch (type) {
             case NONE:
-                return "NONE";
+                ret = "NONE";
+                break;
             case OBJECT:
-                return "OBJECT";
+                ret = "OBJECT";
+                break;
             case ARRAY:
-                return "ARRAY";
+                ret = "ARRAY";
+                break;
             case STRING:
-                return "STRING";
+                ret = "STRING";
+                break;
             case NUMBER:
-                return "NUMBER";
+                ret = "NUMBER";
+                break;
             case BOOLEAN:
-                return "BOOLEAN";
-            default:
-                return "UNKNOWN";
+                ret = "BOOLEAN";
+                break;
         }
+        return ret;
     }
 
     /**
@@ -249,7 +262,24 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return std::ostream&
      */
     friend std::ostream& operator<<(std::ostream& os, const Jsonator& json) {
-        os << json.dump();
+        switch (json.getType()) {
+            case OBJECT:
+            case ARRAY:
+                os << json.dump();
+                break;
+            case NONE:
+                os << "null";
+                break;
+            case STRING:
+                os << json.getString();
+                break;
+            case NUMBER:
+                os << json.getNumber();
+                break;
+            case BOOLEAN:
+                os << json.getBoolean();
+                break;
+        }
         return os;
     }
 
@@ -445,11 +475,11 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return iterator
      * @throw AccessException if type is not a object
      */
-    iterator find(const std::string& key) {
+    object_iterator find(const std::string& key) {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        return std::map<std::string, Jsonator>::find(key);
+        return _object.find(key);
     }
 
     /**
@@ -459,11 +489,11 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return const_iterator
      * @throw AccessException if type is not a object
      */
-    const_iterator find(const std::string& key) const {
+    object_const_iterator find(const std::string& key) const {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        return std::map<std::string, Jsonator>::find(key);
+        return _object.find(key);
     }
 
     /**
@@ -473,7 +503,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return iterator
      * @throw AccessException if type is not a object
      */
-    iterator find(const char* key) {
+    object_iterator find(const char* key) {
         return find(std::string(key));
     }
 
@@ -484,7 +514,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return const_iterator
      * @throw AccessException if type is not a object
      */
-    const_iterator find(const char* key) const {
+    object_const_iterator find(const char* key) const {
         return find(std::string(key));
     }
 
@@ -496,7 +526,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw AccessException if type is not a object
      */
     template<std::size_t Size>
-    iterator find(const char (&key)[Size]) {
+    object_iterator find(const char (&key)[Size]) {
         return find(std::string(key));
     }
 
@@ -508,7 +538,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw AccessException if type is not a object
      */
     template<std::size_t Size>
-    const_iterator find(const char (&key)[Size]) const {
+    object_const_iterator find(const char (&key)[Size]) const {
         return find(std::string(key));
     }
 
@@ -521,11 +551,16 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw AccessException if type is not a array
      */
     template<typename T>
-    iterator find(const T& index) {
+    array_iterator find(const T& index) {
         if (_type != ARRAY) {
             throw AccessException(*this, "is not a array");
         }
-        return std::map<std::string, Jsonator>::find(indexToString(index));
+        if (static_cast<std::size_t>(index) < _array.size()) {
+            return _array.begin() + index;
+        }
+        else {
+            return _array.end();
+        }
     }
 
     /**
@@ -537,11 +572,16 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw AccessException if type is not a array
      */
     template<typename T>
-    const_iterator find(const T& index) const {
+    array_const_iterator find(const T& index) const {
         if (_type != ARRAY) {
             throw AccessException(*this, "is not a array");
         }
-        return std::map<std::string, Jsonator>::find(indexToString(index));
+        if (static_cast<std::size_t>(index) < _array.size()) {
+            return _array.begin() + index;
+        }
+        else {
+            return _array.end();
+        }
     }
 
     /**
@@ -556,12 +596,11 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type == NONE) {
             _type = OBJECT;
         }
-        iterator it = find(key);
-        if (it != end()) {
+        object_iterator it = find(key);
+        if (it != _object.end()) {
             return it->second;
         }
-        return std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(key, Jsonator(this, key)))
-            .first->second;
+        return _object.insert(std::pair<std::string, Jsonator>(key, Jsonator(this, key))).first->second;
     }
 
     /**
@@ -573,8 +612,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw ChildException if key is not exists
      */
     const Jsonator& operator[](const std::string& key) const {
-        const_iterator it = find(key);
-        if (it != end()) {
+        object_const_iterator it = find(key);
+        if (it != _object.end()) {
             return it->second;
         }
         throw ChildException(*this, key);
@@ -643,17 +682,15 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type == NONE) {
             _type = ARRAY;
         }
-        iterator it = find(index);
-        if (it != end()) {
-            return it->second;
+        array_iterator it = find(index);
+        if (it != _array.end()) {
+            return *it;
         }
-        while (static_cast<unsigned long>(size()) < static_cast<unsigned long>(index)) {
-            std::string strTmp = indexToString(size());
-            std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(strTmp, Jsonator(this, strTmp)));
+        while (_array.size() < static_cast<std::size_t>(index)) {
+            _array.push_back(Jsonator(this, _array.size()));
         }
-        std::string str(indexToString(index));
-        return std::map<std::string, Jsonator>::insert(std::pair<std::string, Jsonator>(str, Jsonator(this, str)))
-            .first->second;
+        _array.push_back(Jsonator(this, index));
+        return _array.back();
     }
 
     /**
@@ -666,9 +703,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     const Jsonator& operator[](const T& index) const {
-        const_iterator it = find(index);
-        if (it != end()) {
-            return it->second;
+        array_const_iterator it = find(index);
+        if (it != _array.end()) {
+            return *it;
         }
         throw ChildException(*this, index);
     }
@@ -682,8 +719,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw ChildException if key is not exists
      */
     Jsonator& at(const std::string& key) {
-        iterator it = find(key);
-        if (it != end()) {
+        object_iterator it = find(key);
+        if (it != _object.end()) {
             return it->second;
         }
         throw ChildException(*this, key);
@@ -698,8 +735,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw ChildException if key is not exists
      */
     const Jsonator& at(const std::string& key) const {
-        const_iterator it = find(key);
-        if (it != end()) {
+        object_const_iterator it = find(key);
+        if (it != _object.end()) {
             return it->second;
         }
         throw ChildException(*this, key);
@@ -765,9 +802,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     Jsonator& at(const T& index) {
-        iterator it = find(index);
-        if (it != end()) {
-            return it->second;
+        array_iterator it = find(index);
+        if (it != _array.end()) {
+            return *it;
         }
         throw ChildException(*this, index);
     }
@@ -782,11 +819,139 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     const Jsonator& at(const T& index) const {
-        const_iterator it = find(index);
-        if (it != end()) {
-            return it->second;
+        array_const_iterator it = find(index);
+        if (it != _array.end()) {
+            return *it;
         }
         throw ChildException(*this, index);
+    }
+
+    /**
+     * @brief Check if json object is empty
+     *
+     * @return true if is empty
+     */
+    bool empty() const {
+        if (_type == ARRAY) {
+            return _array.empty();
+        }
+        else if (_type == OBJECT) {
+            return _object.empty();
+        }
+        else {
+            return true;
+        }
+    }
+
+    /**
+     * @brief get the const iterator of begin object
+     *
+     * @return object_const_iterator
+     */
+    object_const_iterator object_begin() const {
+        if (_type != NONE && _type != OBJECT) {
+            throw AccessException(*this, "is not a object");
+        }
+        return _object.begin();
+    }
+
+    /**
+     * @brief get the iterator of begin object
+     *
+     * @return object_const_iterator
+     */
+    object_iterator object_begin() {
+        if (_type != NONE && _type != OBJECT) {
+            throw AccessException(*this, "is not a object");
+        }
+        return _object.begin();
+    }
+
+    /**
+     * @brief get the const iterator of begin array
+     *
+     * @return object_const_iterator
+     */
+    array_const_iterator array_begin() const {
+        if (_type != NONE && _type != ARRAY) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _array.begin();
+    }
+
+    /**
+     * @brief get the iterator of begin array
+     *
+     * @return object_const_iterator
+     */
+    array_iterator array_begin() {
+        if (_type != NONE && _type != ARRAY) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _array.begin();
+    }
+
+    /**
+     * @brief get the const iterator of end object
+     *
+     * @return object_const_iterator
+     */
+    object_const_iterator object_end() const {
+        if (_type != NONE && _type != OBJECT) {
+            throw AccessException(*this, "is not a object");
+        }
+        return _object.end();
+    }
+
+    /**
+     * @brief get the iterator of end object
+     *
+     * @return object_const_iterator
+     */
+    object_iterator object_end() {
+        if (_type != NONE && _type != OBJECT) {
+            throw AccessException(*this, "is not a object");
+        }
+        return _object.end();
+    }
+
+    /**
+     * @brief get the const iterator of end array
+     *
+     * @return object_const_iterator
+     */
+    array_const_iterator array_end() const {
+        if (_type != NONE && _type != ARRAY) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _array.end();
+    }
+
+    /**
+     * @brief get the iterator of end array
+     *
+     * @return object_const_iterator
+     */
+    array_iterator array_end() {
+        if (_type != NONE && _type != ARRAY) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _array.end();
+    }
+
+    /**
+     * @brief get the size of object or array
+     *
+     * @return std::size_t
+     */
+    std::size_t size() const {
+        if (_type == ARRAY) {
+            return _array.size();
+        }
+        else if (_type == OBJECT) {
+            return _object.size();
+        }
+        return 0;
     }
 
     /**
@@ -820,11 +985,11 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw ChildException if index is not exists
      */
     Jsonator& back() {
-        if (size() == 0) {
+        if (_array.size() == 0) {
             return at(0);
         }
         else {
-            return at(size() - 1);
+            return at(_array.size() - 1);
         }
     }
 
@@ -836,7 +1001,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw ChildException if index is not exists
      */
     const Jsonator& back() const {
-        return at(size() - 1);
+        return at(_array.size() - 1);
     }
 
     /**
@@ -866,13 +1031,14 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     Jsonator& insert(const unsigned long& index, const T& value) {
-        Jsonator newValue(this, indexToString(index));
+        Jsonator newValue(this, index);
         newValue = value;
         // move elements
-        for (std::size_t i = size(); i > static_cast<std::size_t>(index); --i) {
-            Jsonator& e = at(i - 1);
-            e._key = indexToString(i);
-            operator[](i)._replace(e);
+        for (std::size_t i = _array.size(); i > static_cast<std::size_t>(index); --i) {
+            Jsonator& n = operator[](i);
+            Jsonator& e = _array[i - 1];
+            e._arrayIndex = i;
+            n._replace(e);
         }
         operator[](index)._replace(newValue);
         return *this;
@@ -888,13 +1054,14 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     Jsonator& push_front(const T& value) {
-        Jsonator newValue(this, "0");
+        Jsonator newValue(this, 0);
         newValue = value;
         // move elements
-        for (std::size_t i = size(); i > 0; --i) {
-            Jsonator& e = at(i - 1);
-            e._key = indexToString(i);
-            operator[](i)._replace(e);
+        for (std::size_t i = _array.size(); i > 0; --i) {
+            Jsonator& n = operator[](i);
+            Jsonator& e = _array[i - 1];
+            e._arrayIndex = i;
+            n._replace(e);
         }
         operator[](0)._replace(newValue);
         return *this;
@@ -910,7 +1077,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      */
     template<typename T>
     Jsonator& push_back(const T& value) {
-        operator[](size()) = value;
+        operator[](_array.size()) = value;
         return *this;
     }
 
@@ -934,7 +1101,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @throw ChildException if index is not exists
      */
     Jsonator& pop_back() {
-        erase(size() - 1);
+        erase(_array.size() - 1);
         return *this;
     }
 
@@ -1086,7 +1253,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        return std::map<std::string, Jsonator>::find(key) != std::map<std::string, Jsonator>::end();
+        return _object.find(key) != _object.end();
     }
 
     /**
@@ -1124,7 +1291,7 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type != ARRAY) {
             throw AccessException(*this, "is not a array");
         }
-        return static_cast<std::size_t>(index) < size();
+        return static_cast<std::size_t>(index) < _array.size();
     }
 
     /**
@@ -1148,10 +1315,10 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type != OBJECT) {
             throw AccessException(*this, "is not a object");
         }
-        iterator it = find(key);
-        if (it != end()) {
-            std::map<std::string, Jsonator>::erase(key);
-            if (empty()) {
+        object_iterator it = find(key);
+        if (it != _object.end()) {
+            _object.erase(key);
+            if (_object.empty()) {
                 _type = NONE;
             }
         }
@@ -1199,16 +1366,16 @@ class Jsonator : public std::map<std::string, Jsonator> {
         if (_type != ARRAY) {
             throw AccessException(*this, "is not a array");
         }
-        iterator it = find(index);
-        if (it != end()) {
+        array_iterator it = find(index);
+        if (it != _array.end()) {
             // move elements
-            for (std::size_t i = index; i < size() - 1; ++i) {
+            for (std::size_t i = index; i < _array.size() - 1; ++i) {
                 Jsonator& e = at(i + 1);
-                e._key = indexToString(i);
+                e._arrayIndex = i;
                 operator[](i)._replace(e);
             }
-            std::map<std::string, Jsonator>::erase(indexToString(size() - 1));
-            if (empty()) {
+            _array.erase(_array.begin() + (_array.size() - 1));
+            if (_array.empty()) {
                 _type = NONE;
             }
         }
@@ -1224,8 +1391,9 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @return Jsonator&
      */
     Jsonator& clear() {
-        std::map<std::string, Jsonator>::clear();
-        _string = "null";
+        _object.clear();
+        _array.clear();
+        _string = "";
         _number = 0;
         _boolean = false;
         _type = NONE;
@@ -1242,13 +1410,17 @@ class Jsonator : public std::map<std::string, Jsonator> {
         return _parent;
     }
 
+    const std::size_t& getIndex() const {
+        return _arrayIndex;
+    }
+
     /**
      * @brief get the key of json object
      *
      * @return const std::string&
      */
     const std::string& getKey() const {
-        return _key;
+        return _objectKey;
     }
 
     /**
@@ -1360,12 +1532,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
     operator std::deque<T>() const {
         std::deque<T> ret;
         if (_type == ARRAY) {
-            for (std::size_t i = 0; i < size(); ++i) {
-                ret.push_back(operator[](i));
+            for (std::size_t i = 0; i < _array.size(); ++i) {
+                ret.push_back(_array[i]);
             }
         }
         else if (_type == OBJECT) {
-            for (const_iterator it = begin(); it != end(); ++it) {
+            for (std::map<std::string, Jsonator>::const_iterator it = _object.begin(); it != _object.end(); ++it) {
                 ret.push_back(it->second);
             }
         }
@@ -1381,14 +1553,29 @@ class Jsonator : public std::map<std::string, Jsonator> {
     operator std::list<T>() const {
         std::list<T> ret;
         if (_type == ARRAY) {
-            for (std::size_t i = 0; i < size(); ++i) {
-                ret.push_back(operator[](i));
+            for (std::size_t i = 0; i < _array.size(); ++i) {
+                ret.push_back(_array[i]);
             }
         }
         else if (_type == OBJECT) {
-            for (const_iterator it = begin(); it != end(); ++it) {
+            for (std::map<std::string, Jsonator>::const_iterator it = _object.begin(); it != _object.end(); ++it) {
                 ret.push_back(it->second);
             }
+        }
+        return ret;
+    }
+
+    /**
+     * @brief get json to map
+     *
+     * @tparam T
+     * @return std::map<std::string, T>
+     */
+    template<typename T>
+    operator std::map<std::string, T>() const {
+        std::map<std::string, T> ret;
+        for (std::map<std::string, Jsonator>::const_iterator it = _object.begin(); it != _object.end(); ++it) {
+            ret.insert(std::pair<std::string, T>(it->first, it->second));
         }
         return ret;
     }
@@ -1402,8 +1589,8 @@ class Jsonator : public std::map<std::string, Jsonator> {
     template<typename T, typename U>
     operator std::map<T, U>() const {
         std::map<T, U> ret;
-        for (const_iterator it = begin(); it != end(); ++it) {
-            ret.insert(std::pair<T, U>(it->first, it->second));
+        for (std::size_t i = 0; i < _array.size(); ++i) {
+            ret.insert(std::pair<T, U>(i, _array[i]));
         }
         return ret;
     }
@@ -1416,8 +1603,15 @@ class Jsonator : public std::map<std::string, Jsonator> {
     template<typename T>
     operator std::queue<T>() const {
         std::queue<T> ret;
-        for (const_iterator it = begin(); it != end(); ++it) {
-            ret.push(it->second);
+        if (_type == ARRAY) {
+            for (std::size_t i = 0; i < _array.size(); ++i) {
+                ret.push(_array[i]);
+            }
+        }
+        else if (_type == OBJECT) {
+            for (std::map<std::string, Jsonator>::const_iterator it = _object.begin(); it != _object.end(); ++it) {
+                ret.push(it->second);
+            }
         }
         return ret;
     }
@@ -1430,8 +1624,15 @@ class Jsonator : public std::map<std::string, Jsonator> {
     template<typename T>
     operator std::set<T>() const {
         std::set<T> ret;
-        for (const_iterator it = begin(); it != end(); ++it) {
-            ret.insert(it->second);
+        if (_type == ARRAY) {
+            for (std::size_t i = 0; i < _array.size(); ++i) {
+                ret.insert(_array[i]);
+            }
+        }
+        else if (_type == OBJECT) {
+            for (std::map<std::string, Jsonator>::const_iterator it = _object.begin(); it != _object.end(); ++it) {
+                ret.insert(it->second);
+            }
         }
         return ret;
     }
@@ -1445,12 +1646,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
     operator std::stack<T>() const {
         std::stack<T> ret;
         if (_type == ARRAY) {
-            for (std::size_t i = 0; i < size(); ++i) {
-                ret.push(operator[](i));
+            for (std::size_t i = 0; i < _array.size(); ++i) {
+                ret.push(_array[i]);
             }
         }
         else if (_type == OBJECT) {
-            for (const_iterator it = begin(); it != end(); ++it) {
+            for (std::map<std::string, Jsonator>::const_iterator it = _object.begin(); it != _object.end(); ++it) {
                 ret.push(it->second);
             }
         }
@@ -1466,12 +1667,12 @@ class Jsonator : public std::map<std::string, Jsonator> {
     operator std::vector<T>() const {
         std::vector<T> ret;
         if (_type == ARRAY) {
-            for (std::size_t i = 0; i < size(); ++i) {
-                ret.push_back(operator[](i));
+            for (std::size_t i = 0; i < _array.size(); ++i) {
+                ret.push_back(_array[i]);
             }
         }
         else if (_type == OBJECT) {
-            for (const_iterator it = begin(); it != end(); ++it) {
+            for (std::map<std::string, Jsonator>::const_iterator it = _object.begin(); it != _object.end(); ++it) {
                 ret.push_back(it->second);
             }
         }
@@ -1555,40 +1756,17 @@ class Jsonator : public std::map<std::string, Jsonator> {
      * @brief Construct a new Jsonator object
      *
      * @param parent
+     * @param index
+     */
+    Jsonator(const Jsonator* parent, const std::size_t& index);
+
+    /**
+     * @brief Construct a new Jsonator object
+     *
+     * @param parent
      * @param key
      */
     Jsonator(const Jsonator* parent, const std::string& key);
-
-    static void ultostr(char** pstr, unsigned long l) {
-        if (l < 10UL) {
-            **pstr = '0' + l;
-            ++(*pstr);
-        }
-        else {
-            ultostr(pstr, l / 10UL);
-            **pstr = '0' + (l % 10UL);
-            ++(*pstr);
-        }
-    }
-
-    static std::string indexToString(unsigned long index) {
-        static const std::string numbers[] = {
-            "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9",  "10", "11", "12", "13", "14", "15", "16",
-            "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33",
-            "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
-            "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67",
-            "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84",
-            "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99"};
-        if (index < 100) {
-            return numbers[index];
-        }
-        else {
-            char str[32];
-            char* tmp = str;
-            ultostr(&tmp, index);
-            return std::string(str, tmp - str);
-        }
-    }
 
     static Jsonator _parseStream(std::istream& stream, const std::string& filename, bool comment, bool additionalNext);
 
@@ -1596,7 +1774,10 @@ class Jsonator : public std::map<std::string, Jsonator> {
     void _replace(const Jsonator& json);
 
     const Jsonator* _parent;
-    std::string _key;
+    std::vector<Jsonator> _array;
+    std::size_t _arrayIndex;
+    std::map<std::string, Jsonator> _object;
+    std::string _objectKey;
     std::string _string;
     double _number;
     bool _boolean;
@@ -1644,29 +1825,47 @@ class Jsonator : public std::map<std::string, Jsonator> {
 namespace mblet {
 
 inline Jsonator::Jsonator() :
-    std::map<std::string, Jsonator>(),
     _parent(NULL),
-    _key(""),
-    _string("null"),
+    _array(std::vector<Jsonator>()),
+    _arrayIndex(0),
+    _object(),
+    _objectKey(""),
+    _string(""),
+    _number(0),
+    _boolean(false),
+    _type(NONE),
+    _filename("") {}
+
+inline Jsonator::Jsonator(const Jsonator* parent, const std::size_t& index) :
+    _parent(parent),
+    _array(std::vector<Jsonator>()),
+    _arrayIndex(index),
+    _object(std::map<std::string, Jsonator>()),
+    _objectKey(""),
+    _string(""),
     _number(0),
     _boolean(false),
     _type(NONE),
     _filename("") {}
 
 inline Jsonator::Jsonator(const Jsonator* parent, const std::string& key) :
-    std::map<std::string, Jsonator>(),
     _parent(parent),
-    _key(key),
-    _string("null"),
+    _array(std::vector<Jsonator>()),
+    _arrayIndex(0),
+    _object(std::map<std::string, Jsonator>()),
+    _objectKey(key),
+    _string(""),
     _number(0),
     _boolean(false),
     _type(NONE),
     _filename("") {}
 
 inline Jsonator::Jsonator(const Jsonator& rhs) :
-    std::map<std::string, Jsonator>(rhs),
     _parent(rhs._parent),
-    _key(rhs._key),
+    _array(rhs._array),
+    _arrayIndex(rhs._arrayIndex),
+    _object(rhs._object),
+    _objectKey(rhs._objectKey),
     _string(rhs._string),
     _number(rhs._number),
     _boolean(rhs._boolean),
@@ -1681,12 +1880,13 @@ inline void Jsonator::operator=(const Jsonator& json) {
     if (_type != NONE) {
         throw AccessException(*this, "is not null");
     }
+    _array = json._array;
+    _object = json._object;
     _string = json._string;
     _number = json._number;
     _boolean = json._boolean;
     _type = json._type;
     _filename = json._filename;
-    std::map<std::string, Jsonator>::operator=(json);
     _replaceParent(*this);
 }
 
@@ -1752,8 +1952,8 @@ static inline void s_objectDump(std::ostream& oss, const Jsonator& json, std::si
     oss << '{';
     s_newlineDump(oss, json, indent);
     ++index;
-    for (Jsonator::const_iterator cit = json.begin(); cit != json.end(); ++cit) {
-        if (cit != json.begin()) {
+    for (Jsonator::object_const_iterator cit = json.object_begin(); cit != json.object_end(); ++cit) {
+        if (cit != json.object_begin()) {
             oss << ',';
             s_newlineDump(oss, json, indent);
         }
@@ -1973,7 +2173,7 @@ static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, 
     s_stringJumpSpace(str, i);
     // get key
     std::string key = s_replaceEscapeChar(str.substr(start, end - start));
-    if (json.find(key) != json.end()) {
+    if (json.find(key) != json.object_end()) {
         throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
     return json[key];
@@ -2105,12 +2305,15 @@ inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, s
 }
 
 static inline void s_replaceCommentBySpace(std::string& str) {
-    for (std::size_t i = 0; i < str.size(); ++i) {
+    for (std::size_t i = 0; i < str.size() && str[i] != '\0'; ++i) {
         if (str[i] == '"') {
             ++i;
-            while (str[i] != '\n' && str[i] != '\0' && str[i] != '"') {
+            while (str[i] != '"') {
                 if (str[i] == '\\' && (str[i + 1] == '"' || str[i + 1] == '\\')) {
                     ++i; // escape character
+                }
+                if (str[i] == '\n' || str[i] == '\0') {
+                    break;
                 }
                 ++i;
             }
@@ -2197,20 +2400,26 @@ inline Jsonator Jsonator::_parseStream(std::istream& stream, const std::string& 
 }
 
 inline void Jsonator::_replaceParent(Jsonator& json) {
-    for (Jsonator::iterator it = json.begin(); it != json.end(); ++it) {
+    for (std::size_t i = 0; i < json._array.size(); ++i) {
+        json._array[i]._parent = &json;
+        _replaceParent(json._array[i]);
+    }
+    for (std::map<std::string, Jsonator>::iterator it = json._object.begin(); it != json._object.end(); ++it) {
         it->second._parent = &json;
         _replaceParent(it->second);
     }
 }
 
 inline void Jsonator::_replace(const Jsonator& json) {
-    _key = json._key;
+    _array = json._array;
+    _arrayIndex = json._arrayIndex;
+    _object = json._object;
+    _objectKey = json._objectKey;
     _string = json._string;
     _number = json._number;
     _boolean = json._boolean;
     _type = json._type;
     _filename = json._filename;
-    std::map<std::string, Jsonator>::operator=(json);
     _replaceParent(*this);
 }
 
