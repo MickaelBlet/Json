@@ -230,10 +230,14 @@ void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, cha
     }
 }
 
+void Jsonator::dump(std::ostream& os, std::size_t indent, char indentCharacter) const {
+    os << std::setprecision(std::numeric_limits<double>::digits10 + 1);
+    s_typeDump(os, *this, indent, indentCharacter);
+}
+
 std::string Jsonator::dump(std::size_t indent, char indentCharacter) const {
     std::ostringstream oss("");
-    oss << std::setprecision(std::numeric_limits<double>::digits10 + 1);
-    s_typeDump(oss, *this, indent, indentCharacter);
+    dump(oss, indent, indentCharacter);
     return oss.str();
 }
 

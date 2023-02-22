@@ -1292,6 +1292,15 @@ class Jsonator {
     }
 
     /**
+     * @brief serialize jsonator to ostream
+     *
+     * @param indent
+     * @param indentCharacter
+     * @return std::string
+     */
+    void dump(std::ostream& os, std::size_t indent = 0, char indentCharacter = ' ') const;
+
+    /**
      * @brief serialize jsonator to string
      *
      * @param indent
