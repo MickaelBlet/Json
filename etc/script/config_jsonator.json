@@ -9,6 +9,8 @@
     "add_inlines": [
         "Jsonator Jsonator::_parseStream(",
         "Jsonator Jsonator::parseFile(",
+        "Jsonator& Jsonator::clear(",
+        "Jsonator& Jsonator::operator=(",
         "Jsonator::Jsonator(",
         "Jsonator::~Jsonator(",
         "static bool s_parseType(",
@@ -20,9 +22,7 @@
         "static void s_replaceCommentBySpace(",
         "static void s_typeDump(",
         "std::string Jsonator::dump(",
-        "void Jsonator::_replace(",
-        "void Jsonator::_replaceParent(",
-        "void Jsonator::dump(",
-        "void Jsonator::operator=("
+        "void Jsonator::_swap(",
+        "void Jsonator::dump("
     ]
 }

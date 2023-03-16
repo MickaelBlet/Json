@@ -12,7 +12,7 @@ GTEST_TEST(jsonator, not_null) {
                 json[0] = json;
             }
             catch (const mblet::Jsonator::AccessException& e) {
-                EXPECT_STREQ(e.what(), "[0] is not null (is ARRAY).");
+                EXPECT_STREQ(e.what(), "is not null (is ARRAY_TYPE).");
                 EXPECT_EQ(e.message(), "is not null");
                 throw;
             }
@@ -26,7 +26,7 @@ GTEST_TEST(jsonator, not_null) {
                 json["foo"][0] = json;
             }
             catch (const mblet::Jsonator::AccessException& e) {
-                EXPECT_STREQ(e.what(), "[\"foo\"][0] is not null (is OBJECT).");
+                EXPECT_STREQ(e.what(), "is not null (is OBJECT_TYPE).");
                 EXPECT_EQ(e.message(), "is not null");
                 throw;
             }
@@ -143,9 +143,11 @@ GTEST_TEST(jsonator, push_front) {
     mblet::Jsonator json;
     json.push_front("foo");
     json.push_front("bar");
-    EXPECT_EQ(json.size(), 2);
-    EXPECT_EQ(json[0].getString(), "bar");
-    EXPECT_EQ(json[1].getString(), "foo");
+    json.push_front("bar1");
+    EXPECT_EQ(json.size(), 3);
+    EXPECT_EQ(json[0].getString(), "bar1");
+    EXPECT_EQ(json[1].getString(), "bar");
+    EXPECT_EQ(json[2].getString(), "foo");
 }
 
 GTEST_TEST(jsonator, push_back) {

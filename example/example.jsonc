@@ -12,6 +12,6 @@
         0.07
     ],
     "object": {
-        "key": "value", // extra useless next
+        "key": "value" // extra useless next
     }
 }

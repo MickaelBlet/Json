@@ -38,8 +38,6 @@ int main(int /*argc*/, char* /*argv*/[]) {
     std::vector<double> array = json["array"];
     std::map<std::string, std::string> map = json["object"];
     std::string key = json["object"]["key"];
-    // print filename
-    std::cout << "filename: " << json.getFilename() << '\n';
     // print result
     std::cout << "string:      " << str << '\n'
               << "number:      " << number << '\n'
@@ -54,7 +52,6 @@ int main(int /*argc*/, char* /*argv*/[]) {
 
 ```
 $ ./build/example/parseFile.example
-filename: ./example/example.jsonc
 string:      foobar
 number:      42
 boolean:     1

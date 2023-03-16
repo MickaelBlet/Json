@@ -12,13 +12,13 @@ int main(int /*argc*/, char* /*argv*/[]) {
     json["bar"]["0"] = 0;
     json["bar"]["1"] = 1;
     json["bar"]["2"] = 2;
-    mblet::Jsonator::array_iterator vit;
-    for (vit = json["foo"].array_begin(); vit != json["foo"].array_end(); ++vit) {
-        std::cout << "test: " << *vit << std::endl;
+    mblet::Jsonator::array_iterator ait;
+    for (ait = json["foo"].array_begin(); ait != json["foo"].array_end(); ++ait) {
+        std::cout << "test: " << *ait << std::endl;
     }
-    mblet::Jsonator::object_iterator mit;
-    for (mit = json["bar"].object_begin(); mit != json["bar"].object_end(); ++mit) {
-        std::cout << mit->first << ':' << mit->second << std::endl;
+    mblet::Jsonator::object_iterator oit;
+    for (oit = json["bar"].object_begin(); oit != json["bar"].object_end(); ++oit) {
+        std::cout << oit->first << ':' << oit->second << std::endl;
     }
     return 0;
 }

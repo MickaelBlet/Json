@@ -25,9 +25,10 @@
 
 #include "mblet/jsonator.h"
 
-#include <cctype>  // ::isdigit, ::isspace
-#include <cstdlib> // ::strtod
-#include <cstring> // ::strncmp
+#include <ctype.h>  // ::isdigit, ::isspace
+#include <stdlib.h> // ::strtod
+#include <string.h> // ::strncmp
+
 #include <fstream> // std::ifstream
 #include <iomanip> // std::setprecision
 #include <limits>  // std::numeric_limits
@@ -35,71 +36,60 @@
 namespace mblet {
 
 Jsonator::Jsonator() :
-    _parent(NULL),
-    _array(std::vector<Jsonator>()),
-    _arrayIndex(0),
-    _object(),
-    _objectKey(""),
-    _string(""),
-    _number(0),
-    _boolean(false),
-    _type(NONE),
-    _filename("") {}
-
-Jsonator::Jsonator(const Jsonator* parent, const std::size_t& index) :
-    _parent(parent),
-    _array(std::vector<Jsonator>()),
-    _arrayIndex(index),
-    _object(std::map<std::string, Jsonator>()),
-    _objectKey(""),
-    _string(""),
-    _number(0),
-    _boolean(false),
-    _type(NONE),
-    _filename("") {
-
-}
-
-Jsonator::Jsonator(const Jsonator* parent, const std::string& key) :
-    _parent(parent),
-    _array(std::vector<Jsonator>()),
-    _arrayIndex(0),
-    _object(std::map<std::string, Jsonator>()),
-    _objectKey(key),
-    _string(""),
-    _number(0),
-    _boolean(false),
-    _type(NONE),
-    _filename("") {}
+    _type(NONE_TYPE) {}
 
 Jsonator::Jsonator(const Jsonator& rhs) :
-    _parent(rhs._parent),
-    _array(rhs._array),
-    _arrayIndex(rhs._arrayIndex),
-    _object(rhs._object),
-    _objectKey(rhs._objectKey),
-    _string(rhs._string),
-    _number(rhs._number),
-    _boolean(rhs._boolean),
-    _type(rhs._type),
-    _filename(rhs._filename) {
-    _replaceParent(*this);
+    _type(rhs._type) {
+    switch (_type) {
+        case NONE_TYPE:
+            break;
+        case OBJECT_TYPE:
+            _value.object = new std::map<std::string, Jsonator>(*(rhs._value.object));
+            break;
+        case ARRAY_TYPE:
+            _value.array = new std::vector<Jsonator>(*(rhs._value.array));
+            break;
+        case STRING_TYPE:
+            _value.string = new std::string(*(rhs._value.string));
+            break;
+        case NUMBER_TYPE:
+            _value.number = rhs._value.number;
+            break;
+        case BOOLEAN_TYPE:
+            _value.boolean = rhs._value.boolean;
+            break;
+    }
 }
 
-Jsonator::~Jsonator() {}
+Jsonator::~Jsonator() {
+    clear();
+}
 
-void Jsonator::operator=(const Jsonator& json) {
-    if (_type != NONE) {
+Jsonator& Jsonator::operator=(const Jsonator& json) {
+    if (!isNull()) {
         throw AccessException(*this, "is not null");
     }
-    _array = json._array;
-    _object = json._object;
-    _string = json._string;
-    _number = json._number;
-    _boolean = json._boolean;
+    switch (json._type) {
+        case NONE_TYPE:
+            break;
+        case OBJECT_TYPE:
+            _value.object = new std::map<std::string, Jsonator>(*(json._value.object));
+            break;
+        case ARRAY_TYPE:
+            _value.array = new std::vector<Jsonator>(*(json._value.array));
+            break;
+        case STRING_TYPE:
+            _value.string = new std::string(*(json._value.string));
+            break;
+        case NUMBER_TYPE:
+            _value.number = json._value.number;
+            break;
+        case BOOLEAN_TYPE:
+            _value.boolean = json._value.boolean;
+            break;
+    }
     _type = json._type;
-    _filename = json._filename;
-    _replaceParent(*this);
+    return *this;
 }
 
 Jsonator Jsonator::parseFile(const char* filename, bool comment, bool next) {
@@ -107,7 +97,6 @@ Jsonator Jsonator::parseFile(const char* filename, bool comment, bool next) {
     if (fileStream.is_open()) {
         Jsonator json = _parseStream(fileStream, filename, comment, next); // parse file
         fileStream.close();
-        json._filename = filename;
         return json;
     }
     else {
@@ -115,20 +104,7 @@ Jsonator Jsonator::parseFile(const char* filename, bool comment, bool next) {
     }
 }
 
-static inline void s_newlineDump(std::ostream& oss, const Jsonator& json, std::size_t indent) {
-    if (!json.empty() && indent != 0) {
-        oss << '\n';
-    }
-}
-
-static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
-                                std::size_t index) {
-    if (!json.empty() && indent != 0) {
-        oss << std::string(indent * index, indentCharacter);
-    }
-}
-
-static inline void s_stringDump(std::ostream& oss, const std::string& str) {
+static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
     static const std::pair<char, std::string> pairChars[] = {
         std::pair<char, std::string>('\a', "\\a"),  // Alert (bell, alarm)
         std::pair<char, std::string>('\b', "\\b"),  // Backspace
@@ -156,6 +132,44 @@ static inline void s_stringDump(std::ostream& oss, const std::string& str) {
     oss << '"';
 }
 
+static inline void s_newlineDump(std::ostream& oss, const Jsonator& json, std::size_t indent) {
+    if (!json.empty() && indent != 0) {
+        oss << '\n';
+    }
+}
+
+static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+                                std::size_t index) {
+    if (!json.empty() && indent != 0) {
+        oss << std::string(indent * index, indentCharacter);
+    }
+}
+
+static inline void s_nullDump(std::ostream& oss, const Jsonator& /*json*/, std::size_t /*indent*/,
+                              char /*indentCharacter*/, std::size_t /*index*/) {
+    oss << "null";
+}
+
+static inline void s_numberDump(std::ostream& oss, const Jsonator& json, std::size_t /*indent*/,
+                                char /*indentCharacter*/, std::size_t /*index*/) {
+    oss << json.getNumber();
+}
+
+static inline void s_booleanDump(std::ostream& oss, const Jsonator& json, std::size_t /*indent*/,
+                                 char /*indentCharacter*/, std::size_t /*index*/) {
+    if (json.getBoolean()) {
+        oss << "true";
+    }
+    else {
+        oss << "false";
+    }
+}
+
+static inline void s_stringDump(std::ostream& oss, const Jsonator& json, std::size_t /*indent*/,
+                                char /*indentCharacter*/, std::size_t /*index*/) {
+    s_stringEscape(oss, json.getString());
+}
+
 static void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
                        std::size_t index = 0);
 
@@ -170,7 +184,7 @@ static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t in
             s_newlineDump(oss, json, indent);
         }
         s_indentDump(oss, json, indent, indentCharacter, index);
-        s_stringDump(oss, cit->second.getKey()); // key
+        s_stringEscape(oss, cit->first);
         oss << ':';
         if (indent != 0) {
             oss << ' ';
@@ -204,28 +218,23 @@ static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t ind
 
 void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
     switch (json.getType()) {
-        case Jsonator::ARRAY:
-            s_arrayDump(oss, json, indent, indentCharacter, index);
+        case Jsonator::NONE_TYPE:
+            s_nullDump(oss, json, indent, indentCharacter, index);
             break;
-        case Jsonator::OBJECT:
+        case Jsonator::OBJECT_TYPE:
             s_objectDump(oss, json, indent, indentCharacter, index);
             break;
-        case Jsonator::STRING:
-            s_stringDump(oss, json.getString());
+        case Jsonator::ARRAY_TYPE:
+            s_arrayDump(oss, json, indent, indentCharacter, index);
             break;
-        case Jsonator::NUMBER:
-            oss << json.getNumber();
+        case Jsonator::STRING_TYPE:
+            s_stringDump(oss, json, indent, indentCharacter, index);
             break;
-        case Jsonator::BOOLEAN:
-            if (json.getBoolean()) {
-                oss << "true";
-            }
-            else {
-                oss << "false";
-            }
+        case Jsonator::NUMBER_TYPE:
+            s_numberDump(oss, json, indent, indentCharacter, index);
             break;
-        case Jsonator::NONE:
-            oss << "null";
+        case Jsonator::BOOLEAN_TYPE:
+            s_booleanDump(oss, json, indent, indentCharacter, index);
             break;
     }
 }
@@ -239,6 +248,26 @@ std::string Jsonator::dump(std::size_t indent, char indentCharacter) const {
     std::ostringstream oss("");
     dump(oss, indent, indentCharacter);
     return oss.str();
+}
+
+Jsonator& Jsonator::clear() {
+    switch (_type) {
+        case NONE_TYPE:
+        case NUMBER_TYPE:
+        case BOOLEAN_TYPE:
+            break;
+        case OBJECT_TYPE:
+            delete _value.object;
+            break;
+        case ARRAY_TYPE:
+            delete _value.array;
+            break;
+        case STRING_TYPE:
+            delete _value.string;
+            break;
+    }
+    _type = NONE_TYPE;
+    return *this;
 }
 
 /*******************************************************************************
@@ -613,28 +642,13 @@ Jsonator Jsonator::_parseStream(std::istream& stream, const std::string& filenam
     }
 }
 
-void Jsonator::_replaceParent(Jsonator& json) {
-    for (std::size_t i = 0; i < json._array.size(); ++i) {
-        json._array[i]._parent = &json;
-        _replaceParent(json._array[i]);
-    }
-    for (std::map<std::string, Jsonator>::iterator it = json._object.begin(); it != json._object.end(); ++it) {
-        it->second._parent = &json;
-        _replaceParent(it->second);
-    }
-}
-
-void Jsonator::_replace(const Jsonator& json) {
-    _array = json._array;
-    _arrayIndex = json._arrayIndex;
-    _object = json._object;
-    _objectKey = json._objectKey;
-    _string = json._string;
-    _number = json._number;
-    _boolean = json._boolean;
+void Jsonator::_swap(Jsonator& json) {
+    EType typeTmp = _type;
+    UValue valueTmp = _value;
     _type = json._type;
-    _filename = json._filename;
-    _replaceParent(*this);
+    _value = json._value;
+    json._type = typeTmp;
+    json._value = valueTmp;
 }
 
 } // namespace mblet

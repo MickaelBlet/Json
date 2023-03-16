@@ -266,16 +266,6 @@ json["map"] = mStr;
 Convert Jsonator object to string.  
 Example at [docs/examples.md#Dump](docs/examples.md#dump).
 
-### GetFilename
-
-Get filename if you used parseFile method.  
-Example at [docs/examples.md#ParseFile](docs/examples.md#dump).
-
-```cpp
-const mblet::Jsonator json = mblet::Jsonator::parseFile("./example.json");
-std::cout << json.getFilename() << std::endl;
-```
-
 ### Contains
 
 Check if json object has key.  
@@ -297,7 +287,7 @@ std::cout << json.contains("string") << '\n'  // 1
 
 Get type of value.  
 
-`getString`, `getBoolean`, `getNumber`, `getParent`, `getKey`, `getType`, `get`
+`getString`, `getBoolean`, `getNumber`, `getType`, `get`
 
 ```cpp
 mblet::Jsonator json;
@@ -313,10 +303,6 @@ std::cout << json["string"].getString() << '\n' // value
           << json["boolean"].getBoolean() << '\n' // 1
           << json["number"].getNumber() << '\n' // 42
           << jsonArray[1].getString() << '\n'; // array1
-
-std::cout << jsonArray.getKey() << '\n'; // array
-std::cout << (&json == jsonArray.getParent()) << '\n'; // 1
-std::cout << (json.getParent() == NULL) << '\n'; // 1
 
 unsigned int jsonNumber;
 std::string jsonString;

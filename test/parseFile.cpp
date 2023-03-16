@@ -47,7 +47,6 @@ GTEST_TEST(parseFile, success) {
     fileGuard.close();
 
     mblet::Jsonator json = mblet::Jsonator::parseFile(testFile);
-    EXPECT_EQ(json.getFilename(), "/tmp/mblet_test_parsefile_success.json");
     EXPECT_EQ(json.contains("key"), true);
     EXPECT_EQ(json.at("key").getString(), "value");
     EXPECT_EQ(json.contains("array"), true);
