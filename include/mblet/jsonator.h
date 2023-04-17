@@ -46,8 +46,12 @@ class Jsonator {
   public:
     typedef std::vector<Jsonator>::const_iterator array_const_iterator;
     typedef std::vector<Jsonator>::iterator array_iterator;
+    typedef std::vector<Jsonator>::const_reverse_iterator array_const_reverse_iterator;
+    typedef std::vector<Jsonator>::reverse_iterator array_reverse_iterator;
     typedef std::map<std::string, Jsonator>::const_iterator object_const_iterator;
     typedef std::map<std::string, Jsonator>::iterator object_iterator;
+    typedef std::map<std::string, Jsonator>::const_reverse_iterator object_const_reverse_iterator;
+    typedef std::map<std::string, Jsonator>::reverse_iterator object_reverse_iterator;
 
     /**
      * @brief Parse exception from Exception
@@ -173,7 +177,7 @@ class Jsonator {
      * @brief type of jsonator
      */
     enum EType {
-        NONE_TYPE = 0,
+        NULL_TYPE = 0,
         OBJECT_TYPE,
         ARRAY_TYPE,
         STRING_TYPE,
@@ -190,8 +194,8 @@ class Jsonator {
     static const char* getStrFromType(const EType& type) {
         const char* ret = NULL;
         switch (type) {
-            case NONE_TYPE:
-                ret = "NONE_TYPE";
+            case NULL_TYPE:
+                ret = "NULL_TYPE";
                 break;
             case OBJECT_TYPE:
                 ret = "OBJECT_TYPE";
@@ -225,7 +229,7 @@ class Jsonator {
             case ARRAY_TYPE:
                 os << json.dump();
                 break;
-            case NONE_TYPE:
+            case NULL_TYPE:
                 os << "null";
                 break;
             case STRING_TYPE:
@@ -804,7 +808,7 @@ class Jsonator {
     bool empty() const {
         bool ret;
         switch (_type) {
-            case NONE_TYPE:
+            case NULL_TYPE:
             case NUMBER_TYPE:
             case BOOLEAN_TYPE:
                 ret = true;
@@ -820,6 +824,19 @@ class Jsonator {
                 break;
         }
         return ret;
+    }
+
+    /**
+     * @brief Returns the total number of elements that the %vector can
+     * hold before needing to allocate more memory
+     *
+     * @return std::size_t
+     */
+    std::size_t capacity() const {
+        if (!isArray()) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _value.array->capacity();
     }
 
     /**
@@ -862,6 +879,30 @@ class Jsonator {
     }
 
     /**
+     * @brief get the const iterator of begin object
+     *
+     * @return object_const_iterator
+     */
+    object_const_reverse_iterator object_rbegin() const {
+        if (!isObject()) {
+            throw AccessException(*this, "is not a object");
+        }
+        return _value.object->rbegin();
+    }
+
+    /**
+     * @brief get the iterator of begin object
+     *
+     * @return object_const_iterator
+     */
+    object_reverse_iterator object_rbegin() {
+        if (!isObject()) {
+            throw AccessException(*this, "is not a object");
+        }
+        return _value.object->rbegin();
+    }
+
+    /**
      * @brief get the const iterator of begin array
      *
      * @return object_const_iterator
@@ -883,6 +924,30 @@ class Jsonator {
             throw AccessException(*this, "is not a array");
         }
         return _value.array->begin();
+    }
+
+    /**
+     * @brief get the reverse iterator of begin array
+     *
+     * @return array_const_reverse_iterator
+     */
+    array_const_reverse_iterator array_rbegin() const {
+        if (!isArray()) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _value.array->rbegin();
+    }
+
+    /**
+     * @brief get the reverse iterator of begin array
+     *
+     * @return array_reverse_iterator
+     */
+    array_reverse_iterator array_rbegin() {
+        if (!isArray()) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _value.array->rbegin();
     }
 
     /**
@@ -910,6 +975,30 @@ class Jsonator {
     }
 
     /**
+     * @brief get the reverse iterator of end object
+     *
+     * @return object_const_reverse_iterator
+     */
+    object_const_reverse_iterator object_rend() const {
+        if (!isObject()) {
+            throw AccessException(*this, "is not a object");
+        }
+        return _value.object->rend();
+    }
+
+    /**
+     * @brief get the reverse iterator of end object
+     *
+     * @return object_const_iterator
+     */
+    object_reverse_iterator object_rend() {
+        if (!isObject()) {
+            throw AccessException(*this, "is not a object");
+        }
+        return _value.object->rend();
+    }
+
+    /**
      * @brief get the const iterator of end array
      *
      * @return object_const_iterator
@@ -934,6 +1023,30 @@ class Jsonator {
     }
 
     /**
+     * @brief get the reverse of end array
+     *
+     * @return array_reverse_iterator
+     */
+    array_const_reverse_iterator array_rend() const {
+        if (!isArray()) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _value.array->rend();
+    }
+
+    /**
+     * @brief get the reverse of end array
+     *
+     * @return array_reverse_iterator
+     */
+    array_reverse_iterator array_rend() {
+        if (!isArray()) {
+            throw AccessException(*this, "is not a array");
+        }
+        return _value.array->rend();
+    }
+
+    /**
      * @brief get the size of object or array or string
      *
      * @return std::size_t
@@ -941,7 +1054,7 @@ class Jsonator {
     std::size_t size() const {
         std::size_t ret;
         switch (_type) {
-            case NONE_TYPE:
+            case NULL_TYPE:
             case NUMBER_TYPE:
             case BOOLEAN_TYPE:
                 ret = 0;
@@ -954,6 +1067,32 @@ class Jsonator {
                 break;
             case STRING_TYPE:
                 ret = _value.string->size();
+                break;
+        }
+        return ret;
+    }
+
+    /**
+     * @brief get the max size of object or array or string
+     *
+     * @return std::size_t
+     */
+    std::size_t max_size() const {
+        std::size_t ret;
+        switch (_type) {
+            case NULL_TYPE:
+            case NUMBER_TYPE:
+            case BOOLEAN_TYPE:
+                ret = 0;
+                break;
+            case OBJECT_TYPE:
+                ret = _value.object->max_size();
+                break;
+            case ARRAY_TYPE:
+                ret = _value.array->max_size();
+                break;
+            case STRING_TYPE:
+                ret = _value.string->max_size();
                 break;
         }
         return ret;
@@ -1226,7 +1365,7 @@ class Jsonator {
         if (!isNull()) {
             throw AccessException(*this, "is not a null");
         }
-        _type = NONE_TYPE;
+        _type = NULL_TYPE;
     }
 
     /**
@@ -1235,7 +1374,7 @@ class Jsonator {
      * @return true if type is null else false
      */
     bool isNull() const {
-        return _type == NONE_TYPE;
+        return _type == NULL_TYPE;
     }
 
     /**
@@ -1369,7 +1508,7 @@ class Jsonator {
         if (it != _value.object->end()) {
             _value.object->erase(key);
             if (_value.object->empty()) {
-                _type = NONE_TYPE;
+                _type = NULL_TYPE;
                 delete _value.object;
             }
         }
@@ -1426,7 +1565,7 @@ class Jsonator {
             }
             _value.array->erase(_value.array->begin() + (_value.array->size() - 1));
             if (_value.array->empty()) {
-                _type = NONE_TYPE;
+                _type = NULL_TYPE;
                 delete _value.array;
             }
         }
@@ -1442,6 +1581,32 @@ class Jsonator {
      * @return Jsonator&
      */
     Jsonator& clear();
+
+    /**
+     * @brief get the object of json object
+     *
+     * @return std::map<std::string, Jsonator>&
+     * @throw AccessException if json type is not a object
+     */
+    const std::map<std::string, Jsonator>& getObject() const {
+        if (!isObject()) {
+            throw AccessException(*this, "is not a object");
+        }
+        return *_value.object;
+    }
+
+    /**
+     * @brief get the array of json object
+     *
+     * @return const std::vector<Jsonator>&
+     * @throw AccessException if json type is not a array
+     */
+    const std::vector<Jsonator>& getArray() const {
+        if (!isArray()) {
+            throw AccessException(*this, "is not a array");
+        }
+        return *_value.array;
+    }
 
     /**
      * @brief get the string of json object
@@ -1557,7 +1722,7 @@ class Jsonator {
             }
         }
         else if (isObject()) {
-            for (std::map<std::string, Jsonator>::const_iterator it = _value.object->begin();
+            for (object_const_iterator it = _value.object->begin();
                  it != _value.object->end(); ++it) {
                 ret.push_back(it->second);
             }
@@ -1579,7 +1744,7 @@ class Jsonator {
             }
         }
         else if (isObject()) {
-            for (std::map<std::string, Jsonator>::const_iterator it = _value.object->begin();
+            for (object_const_iterator it = _value.object->begin();
                  it != _value.object->end(); ++it) {
                 ret.push_back(it->second);
             }
@@ -1597,7 +1762,7 @@ class Jsonator {
     operator std::map<std::string, T>() const {
         std::map<std::string, T> ret;
         if (isObject()) {
-            for (std::map<std::string, Jsonator>::const_iterator it = _value.object->begin();
+            for (object_const_iterator it = _value.object->begin();
                  it != _value.object->end(); ++it) {
                 ret.insert(std::pair<std::string, T>(it->first, it->second));
             }
@@ -1636,7 +1801,7 @@ class Jsonator {
             }
         }
         else if (isObject()) {
-            for (std::map<std::string, Jsonator>::const_iterator it = _value.object->begin();
+            for (object_const_iterator it = _value.object->begin();
                  it != _value.object->end(); ++it) {
                 ret.push(it->second);
             }
@@ -1658,7 +1823,7 @@ class Jsonator {
             }
         }
         else if (isObject()) {
-            for (std::map<std::string, Jsonator>::const_iterator it = _value.object->begin();
+            for (object_const_iterator it = _value.object->begin();
                  it != _value.object->end(); ++it) {
                 ret.insert(it->second);
             }
@@ -1680,7 +1845,7 @@ class Jsonator {
             }
         }
         else if (isObject()) {
-            for (std::map<std::string, Jsonator>::const_iterator it = _value.object->begin();
+            for (object_const_iterator it = _value.object->begin();
                  it != _value.object->end(); ++it) {
                 ret.push(it->second);
             }
@@ -1704,7 +1869,7 @@ class Jsonator {
         }
         else if (isObject()) {
             ret.reserve(_value.object->size());
-            for (std::map<std::string, Jsonator>::const_iterator it = _value.object->begin();
+            for (object_const_iterator it = _value.object->begin();
                  it != _value.object->end(); ++it) {
                 ret.push_back(it->second);
             }

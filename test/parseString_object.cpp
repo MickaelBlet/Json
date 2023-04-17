@@ -31,7 +31,7 @@ GTEST_TEST(parseString_object, null) {
     EXPECT_EQ(json.getType(), mblet::Jsonator::OBJECT_TYPE);
     EXPECT_EQ(json.size(), 1);
     EXPECT_EQ(json.contains(""), true);
-    EXPECT_EQ(json.at("").getType(), mblet::Jsonator::NONE_TYPE);
+    EXPECT_EQ(json.at("").getType(), mblet::Jsonator::NULL_TYPE);
     EXPECT_EQ(json.at("").isNull(), true);
 }
 

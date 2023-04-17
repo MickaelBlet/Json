@@ -11,7 +11,7 @@ GTEST_TEST(jsonator, find) {
                 json.find("foo");
             }
             catch (const mblet::Jsonator::AccessException& e) {
-                EXPECT_STREQ(e.what(), "is not a object (is NONE_TYPE).");
+                EXPECT_STREQ(e.what(), "is not a object (is NULL_TYPE).");
                 EXPECT_EQ(e.message(), "is not a object");
                 throw;
             }
@@ -24,7 +24,7 @@ GTEST_TEST(jsonator, find) {
                 json.find("foo");
             }
             catch (const mblet::Jsonator::AccessException& e) {
-                EXPECT_STREQ(e.what(), "is not a object (is NONE_TYPE).");
+                EXPECT_STREQ(e.what(), "is not a object (is NULL_TYPE).");
                 EXPECT_EQ(e.message(), "is not a object");
                 throw;
             }
@@ -37,7 +37,7 @@ GTEST_TEST(jsonator, find) {
                 json.find(0);
             }
             catch (const mblet::Jsonator::AccessException& e) {
-                EXPECT_STREQ(e.what(), "is not a array (is NONE_TYPE).");
+                EXPECT_STREQ(e.what(), "is not a array (is NULL_TYPE).");
                 EXPECT_EQ(e.message(), "is not a array");
                 throw;
             }
@@ -50,7 +50,7 @@ GTEST_TEST(jsonator, find) {
                 json.find(0);
             }
             catch (const mblet::Jsonator::AccessException& e) {
-                EXPECT_STREQ(e.what(), "is not a array (is NONE_TYPE).");
+                EXPECT_STREQ(e.what(), "is not a array (is NULL_TYPE).");
                 EXPECT_EQ(e.message(), "is not a array");
                 throw;
             }
@@ -592,7 +592,7 @@ GTEST_TEST(jsonator, getType) {
         json["string"].newString("foo");
         EXPECT_EQ(json["object"].getType(), mblet::Jsonator::OBJECT_TYPE);
         EXPECT_EQ(json["array"].getType(), mblet::Jsonator::ARRAY_TYPE);
-        EXPECT_EQ(json["null"].getType(), mblet::Jsonator::NONE_TYPE);
+        EXPECT_EQ(json["null"].getType(), mblet::Jsonator::NULL_TYPE);
         EXPECT_EQ(json["boolean"].getType(), mblet::Jsonator::BOOLEAN_TYPE);
         EXPECT_EQ(json["number"].getType(), mblet::Jsonator::NUMBER_TYPE);
         EXPECT_EQ(json["string"].getType(), mblet::Jsonator::STRING_TYPE);

@@ -31,7 +31,7 @@ GTEST_TEST(parseString_array, null) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY_TYPE);
         EXPECT_EQ(json.size(), 1);
-        EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NONE_TYPE);
+        EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NULL_TYPE);
         EXPECT_EQ(json.at(0).isNull(), true);
     }
     {
@@ -47,9 +47,9 @@ GTEST_TEST(parseString_array, null) {
         mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
         EXPECT_EQ(json.getType(), mblet::Jsonator::ARRAY_TYPE);
         EXPECT_EQ(json.size(), 2);
-        EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NONE_TYPE);
+        EXPECT_EQ(json.at(0).getType(), mblet::Jsonator::NULL_TYPE);
         EXPECT_EQ(json.at(0).isNull(), true);
-        EXPECT_EQ(json.at(1).getType(), mblet::Jsonator::NONE_TYPE);
+        EXPECT_EQ(json.at(1).getType(), mblet::Jsonator::NULL_TYPE);
         EXPECT_EQ(json.at(1).isNull(), true);
     }
 }

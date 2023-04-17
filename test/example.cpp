@@ -43,7 +43,7 @@ GTEST_TEST(jsonator, test1) {
     EXPECT_EQ(jsonator["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonator["example"]["bool1"].getBoolean(), false);
     EXPECT_EQ(jsonator["example"]["bool2"].getBoolean(), true);
-    EXPECT_EQ(jsonator["example"]["n\"one"].getType(), mblet::Jsonator::NONE_TYPE);
+    EXPECT_EQ(jsonator["example"]["n\"one"].getType(), mblet::Jsonator::NULL_TYPE);
     mblet::Jsonator jsonatorCpy = mblet::Jsonator::parseString(jsonator.dump(0));
     EXPECT_EQ(jsonatorCpy["example"]["array"][0][0].getNumber(), 0);
     EXPECT_EQ(jsonatorCpy["example"]["array"][0][1].getNumber(), 1);
@@ -52,7 +52,7 @@ GTEST_TEST(jsonator, test1) {
     EXPECT_EQ(jsonatorCpy["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonatorCpy["example"]["bool1"].getBoolean(), false);
     EXPECT_EQ(jsonatorCpy["example"]["bool2"].getBoolean(), true);
-    EXPECT_EQ(jsonatorCpy["example"]["n\"one"].getType(), mblet::Jsonator::NONE_TYPE);
+    EXPECT_EQ(jsonatorCpy["example"]["n\"one"].getType(), mblet::Jsonator::NULL_TYPE);
     std::cout << jsonatorCpy.dump(2) << std::endl;
     std::cout << jsonatorCpy.dump() << std::endl;
 }
@@ -92,7 +92,7 @@ GTEST_TEST(jsonator, test2) {
     EXPECT_EQ(jsonator[0]["example"]["string"].getString(), "foo\nbar");
     EXPECT_EQ(jsonator[0]["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonator[0]["example"]["bool"].getBoolean(), false);
-    EXPECT_EQ(jsonator[0]["example"]["n\"one"].getType(), mblet::Jsonator::NONE_TYPE);
+    EXPECT_EQ(jsonator[0]["example"]["n\"one"].getType(), mblet::Jsonator::NULL_TYPE);
     mblet::Jsonator jsonatorCpy = mblet::Jsonator::parseString(jsonator.dump(0));
     EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0][0].getNumber(), 0);
     EXPECT_EQ(jsonatorCpy[0]["example"]["array"][0][1].getNumber(), 1);
@@ -100,7 +100,7 @@ GTEST_TEST(jsonator, test2) {
     EXPECT_EQ(jsonatorCpy[0]["example"]["string"].getString(), "foo\nbar");
     EXPECT_EQ(jsonatorCpy[0]["example"]["number"].getNumber(), 42.42);
     EXPECT_EQ(jsonatorCpy[0]["example"]["bool"].getBoolean(), false);
-    EXPECT_EQ(jsonatorCpy[0]["example"]["n\"one"].getType(), mblet::Jsonator::NONE_TYPE);
+    EXPECT_EQ(jsonatorCpy[0]["example"]["n\"one"].getType(), mblet::Jsonator::NULL_TYPE);
     std::cout << jsonatorCpy.dump(2) << std::endl;
     std::cout << jsonatorCpy.dump() << std::endl;
 }

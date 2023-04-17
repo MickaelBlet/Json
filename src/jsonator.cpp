@@ -36,12 +36,12 @@
 namespace mblet {
 
 Jsonator::Jsonator() :
-    _type(NONE_TYPE) {}
+    _type(NULL_TYPE) {}
 
 Jsonator::Jsonator(const Jsonator& rhs) :
     _type(rhs._type) {
     switch (_type) {
-        case NONE_TYPE:
+        case NULL_TYPE:
             break;
         case OBJECT_TYPE:
             _value.object = new std::map<std::string, Jsonator>(*(rhs._value.object));
@@ -70,7 +70,7 @@ Jsonator& Jsonator::operator=(const Jsonator& json) {
         throw AccessException(*this, "is not null");
     }
     switch (json._type) {
-        case NONE_TYPE:
+        case NULL_TYPE:
             break;
         case OBJECT_TYPE:
             _value.object = new std::map<std::string, Jsonator>(*(json._value.object));
@@ -218,7 +218,7 @@ static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t ind
 
 void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
     switch (json.getType()) {
-        case Jsonator::NONE_TYPE:
+        case Jsonator::NULL_TYPE:
             s_nullDump(oss, json, indent, indentCharacter, index);
             break;
         case Jsonator::OBJECT_TYPE:
@@ -252,7 +252,7 @@ std::string Jsonator::dump(std::size_t indent, char indentCharacter) const {
 
 Jsonator& Jsonator::clear() {
     switch (_type) {
-        case NONE_TYPE:
+        case NULL_TYPE:
         case NUMBER_TYPE:
         case BOOLEAN_TYPE:
             break;
@@ -266,7 +266,7 @@ Jsonator& Jsonator::clear() {
             delete _value.string;
             break;
     }
-    _type = NONE_TYPE;
+    _type = NULL_TYPE;
     return *this;
 }
 
