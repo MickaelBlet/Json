@@ -29,16 +29,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import argparse
 import datetime
 import json
 import os
 import re
-
 
 class Amalgamation(object):
 
@@ -212,6 +207,153 @@ class TranslationUnit(object):
         tmp_content += self.content[prev_end:]
         self.content = tmp_content
 
+    @staticmethod
+    def replace_comments_and_strings(text):
+        def replace_by_space(matchobj):
+            return ' ' * len(matchobj.group(0))
+        text = re.sub(r"\\\\(?<!$)", replace_by_space, text, flags=re.MULTILINE)
+        text = re.sub(r'"(?s).*?(?:(?<!\\)")|\'(?s).*?(?:(?<!\\)\')|\/\*(?s).*?\*\/|\/\/(?s).*?(?:(?<!\\)$)', replace_by_space, text, flags=re.MULTILINE)
+        text = re.sub(r"#(?s).*?(?:(?<!\\)$)", replace_by_space, text, flags=re.MULTILINE)
+        text = list(text)
+        for search in re.finditer(r"(\b__[a-z_A-Z]+(?:__)?|\bthrow|\bnoexcept|\balignas|(?:->\s*)?\bdecltype)\s*[(]", str(text), flags=re.MULTILINE):
+            level = 0
+            for i in range(*search.span(0)):
+                if text[i] == '{' or text[i] == '}':
+                    text[i] = ' ' # delete in parenthesis
+                if text[i] == '(':
+                    text[i] = ' ' # delete in parenthesis
+                    level+=1
+                elif text[i] == ')':
+                    text[i] = ' ' # delete in parenthesis
+                    level-=1
+                    if level == 0:
+                        isPrototype = False
+                        for j in range(i + 1, len(text)):
+                            if text[j] == ' ' or text[j] == '\t' or text[j] == '\r' or text[j] == '\n':
+                                continue
+                            elif text[j] == ';':
+                                isPrototype = True
+                                break
+                            else:
+                                break
+                        if isPrototype == False:
+                            text[search.span(1)[1]] = ':'
+                        break
+        text = ''.join(text)
+        text = re.sub(r"(?:\bthrow\b|\bnoexcept\b|\balignas\b|(?:->\s*)?\bdecltype\b|\bstruct\b|\bstatic\b|\bunion\b|\benum\b|\bconst\b|\bsizeof\b|\boverride\b|\bvolatile\b)", replace_by_space, text, flags=re.MULTILINE)
+        return text
+
+    @staticmethod
+    def get_parenthesis_index(text, index):
+        startParenthesis = -1
+        endParenthesis = -1
+        for i in range(index, len(text)):
+            if '(' == text[i]:
+                startParenthesis = i + 1
+                break
+        if startParenthesis < 0:
+            return None
+
+        level = 1
+        for i in range(startParenthesis, len(text)):
+            if text[i] == ':' and i + 1 < len(text) and text[i+1] == ':':
+                i+=1
+            elif level == 1 and text[i] == ')':
+                endParenthesis = i
+                level-=1
+                i+=1
+                while re.match(r"\s", text[i], flags=re.MULTILINE):
+                    i+=1
+                if text[i] == '-' and text[i + 1] == '>':
+                    i+=2
+                    while re.match(r"\s", text[i], flags=re.MULTILINE):
+                        i+=1
+                    while re.match(r";|{|:|=", text[i], flags=re.MULTILINE) is None:
+                        i+=1
+                if text[i] == '=' and text[i + 1] != '=':
+                    i+=1
+                    while re.match(r"\s", text[i], flags=re.MULTILINE):
+                        i+=1
+                    while re.match(r";|{|:", text[i], flags=re.MULTILINE) is None:
+                        i+=1
+                if text[i] == ':' or text[i] == '{' or text[i] == ';':
+                    return [startParenthesis, endParenthesis, i]
+                else:
+                    i-=1
+            elif level > 0 and text[i] == ')':
+                level-=1
+            elif level == 0 and text[i] == '(':
+                startParenthesis = i + 1
+                level = 1
+            elif text[i] == '(':
+                level+=1
+
+        return None
+
+    @staticmethod
+    def get_open_brace_index(text, index):
+        for i in range(index, len(text)):
+            if text[i] == '(' or text[i] == ';':
+                return None
+            if text[i] == ':' or text[i] == '{':
+                return i
+        return None
+
+    @staticmethod
+    def get_close_brace_index(text, index, isConstructor):
+        level = 0 - 1 if isConstructor else 0
+        for i in range(index, len(text)):
+            if level < 0 and text[i] == ';':
+                return i
+            elif level == 0 and text[i] == '}':
+                if isConstructor:
+                    save = i
+                    i+=1
+                    while re.match(r"\s", text[i], flags=re.MULTILINE):
+                        i+=1
+                    if text[i] != ',' and text[i] != '{':
+                        return save
+                    level-=1
+                    i-=1
+                else:
+                    return i
+            elif level > 0 and text[i] == '}':
+                level-=1
+            elif text[i] == '{':
+                level+=1
+        return None
+
+    @staticmethod
+    def search_function(text:str):
+        new_inline_index = []
+        endParenthesis = 0
+        parenthesis = TranslationUnit.get_parenthesis_index(text, endParenthesis)
+        while parenthesis:
+            endParenthesis = parenthesis[2]
+            startBrace = TranslationUnit.get_open_brace_index(text, endParenthesis)
+            if startBrace == None:
+                parenthesis = TranslationUnit.get_parenthesis_index(text, endParenthesis)
+                pass
+                # no inline on front of prototype
+            else:
+                isConstructor = text[startBrace] == ":"
+                startBrace+=1
+                endBrace = TranslationUnit.get_close_brace_index(text, startBrace, isConstructor)
+                if endBrace == None:
+                    parenthesis = TranslationUnit.get_parenthesis_index(text, endParenthesis)
+                    continue
+                # add inline on front line
+                while re.match(r"$", text[parenthesis[0]], flags=re.MULTILINE) is None:
+                    parenthesis[0]-=1
+                while re.match(r"\s", text[parenthesis[0]], flags=re.MULTILINE):
+                    parenthesis[0]+=1
+                if re.match(r".*\binline\b.*", text[parenthesis[0]:parenthesis[1]]) is None:
+                    new_inline_index.append(parenthesis[0])
+                # words = searchPrototypes(parenthesis[0], parenthesis[1])
+                endParenthesis = endBrace
+            parenthesis = TranslationUnit.get_parenthesis_index(text, endParenthesis)
+        return new_inline_index
+
     # Include all trivial #include directives into self.content.
     def _process_includes(self):
         content_len = len(self.content)
@@ -252,9 +394,13 @@ class TranslationUnit(object):
         tmp_content += self.content[prev_end:]
         tmp_content += '\n'
 
-        # add inline at begin of lines
-        for inline in self.amalgamation.add_inlines:
-            tmp_content = tmp_content.replace(inline, f'inline {inline}')
+        # add inline at begin of function or method
+        transform_content = self.replace_comments_and_strings(tmp_content)
+        new_inline_index = self.search_function(transform_content)
+        index = 0
+        for inline_index in new_inline_index:
+            tmp_content = tmp_content[:inline_index + index] + 'inline ' + tmp_content[inline_index + index:]
+            index += len('inline ')
 
         self.content = tmp_content
 

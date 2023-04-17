@@ -5,24 +5,5 @@
         "include/mblet/jsonator.h",
         "src/jsonator.cpp"
     ],
-    "include_paths": ["include"],
-    "add_inlines": [
-        "Jsonator Jsonator::_parseStream(",
-        "Jsonator Jsonator::parseFile(",
-        "Jsonator& Jsonator::clear(",
-        "Jsonator& Jsonator::operator=(",
-        "Jsonator::Jsonator(",
-        "Jsonator::~Jsonator(",
-        "static bool s_parseType(",
-        "static std::string s_streamToStr(",
-        "static void s_arrayDump(",
-        "static void s_objectDump(",
-        "static void s_parseArray(",
-        "static void s_parseObject(",
-        "static void s_replaceCommentBySpace(",
-        "static void s_typeDump(",
-        "std::string Jsonator::dump(",
-        "void Jsonator::_swap(",
-        "void Jsonator::dump("
-    ]
+    "include_paths": ["include"]
 }
