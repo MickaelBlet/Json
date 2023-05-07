@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(jsonator VERSION 3.0.0 LANGUAGES CXX)
+project(json VERSION 3.0.0 LANGUAGES CXX)
 
 # OPTIONS
 option(BUILD_EXAMPLE "Build example binaries" OFF)
@@ -12,7 +12,8 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 add_library("${PROJECT_NAME}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/jsonator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/exception.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/json.cpp"
 )
 
 set_target_properties("${PROJECT_NAME}"
@@ -24,8 +25,8 @@ set_target_properties("${PROJECT_NAME}"
         CXX_EXTENSIONS OFF
         NO_SYSTEM_FROM_IMPORTED ON
         COMPILE_FLAGS "-pedantic -Wall -Wextra -Werror"
-        INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
-        INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:include>"
+        INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include;${CMAKE_CURRENT_SOURCE_DIR}/Dict/single_include"
+        INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>;$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Dict/single_include>;$<INSTALL_INTERFACE:include>;$<INSTALL_INTERFACE:Dict/single_include>"
 )
 
 # install
@@ -42,7 +43,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
         DESTINATION include
 )
 install(EXPORT "${PROJECT_NAME}Targets"
-        NAMESPACE mblet::
+        NAMESPACE blet::
         FILE "${PROJECT_NAME}Targets.cmake"
         DESTINATION "lib/cmake"
 )

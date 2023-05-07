@@ -1,8 +1,8 @@
 #ifndef _TEST_ALREADY_INCLUDE_
 #define _TEST_ALREADY_INCLUDE_
 
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
-void test(mblet::Jsonator& json);
+void test(blet::Dict& json);
 
 #endif // _TEST_ALREADY_INCLUDE_

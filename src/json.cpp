@@ -1,5 +1,5 @@
 /**
- * jsonator.cpp
+ * json.cpp
  *
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
  * Copyright (c) 2022-2023 BLET Mickaël.
@@ -23,7 +23,7 @@
  * SOFTWARE.
  */
 
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
 #include <ctype.h>  // ::isdigit, ::isspace
 #include <stdlib.h> // ::strtod
@@ -33,76 +33,9 @@
 #include <iomanip> // std::setprecision
 #include <limits>  // std::numeric_limits
 
-namespace mblet {
+namespace blet {
 
-Jsonator::Jsonator() :
-    _type(NULL_TYPE) {}
-
-Jsonator::Jsonator(const Jsonator& rhs) :
-    _type(rhs._type) {
-    switch (_type) {
-        case NULL_TYPE:
-            break;
-        case OBJECT_TYPE:
-            _value.object = new std::map<std::string, Jsonator>(*(rhs._value.object));
-            break;
-        case ARRAY_TYPE:
-            _value.array = new std::vector<Jsonator>(*(rhs._value.array));
-            break;
-        case STRING_TYPE:
-            _value.string = new std::string(*(rhs._value.string));
-            break;
-        case NUMBER_TYPE:
-            _value.number = rhs._value.number;
-            break;
-        case BOOLEAN_TYPE:
-            _value.boolean = rhs._value.boolean;
-            break;
-    }
-}
-
-Jsonator::~Jsonator() {
-    clear();
-}
-
-Jsonator& Jsonator::operator=(const Jsonator& json) {
-    if (!isNull()) {
-        throw AccessException(*this, "is not null");
-    }
-    switch (json._type) {
-        case NULL_TYPE:
-            break;
-        case OBJECT_TYPE:
-            _value.object = new std::map<std::string, Jsonator>(*(json._value.object));
-            break;
-        case ARRAY_TYPE:
-            _value.array = new std::vector<Jsonator>(*(json._value.array));
-            break;
-        case STRING_TYPE:
-            _value.string = new std::string(*(json._value.string));
-            break;
-        case NUMBER_TYPE:
-            _value.number = json._value.number;
-            break;
-        case BOOLEAN_TYPE:
-            _value.boolean = json._value.boolean;
-            break;
-    }
-    _type = json._type;
-    return *this;
-}
-
-Jsonator Jsonator::parseFile(const char* filename, bool comment, bool next) {
-    std::ifstream fileStream(filename); // open file
-    if (fileStream.is_open()) {
-        Jsonator json = _parseStream(fileStream, filename, comment, next); // parse file
-        fileStream.close();
-        return json;
-    }
-    else {
-        throw ParseException(filename, "Open file failed");
-    }
-}
+namespace json {
 
 static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
     static const std::pair<char, std::string> pairChars[] = {
@@ -119,7 +52,6 @@ static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
     };
     static const std::map<char, std::string> escapeChar(pairChars, pairChars + sizeof(pairChars) / sizeof(*pairChars));
 
-    oss << '"';
     for (std::size_t i = 0; i < str.size(); ++i) {
         std::map<char, std::string>::const_iterator cit = escapeChar.find(str[i]);
         if (cit != escapeChar.end()) {
@@ -129,35 +61,68 @@ static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
             oss << str[i];
         }
     }
-    oss << '"';
 }
 
-static inline void s_newlineDump(std::ostream& oss, const Jsonator& json, std::size_t indent) {
-    if (!json.empty() && indent != 0) {
-        oss << '\n';
+static inline void s_newlineDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent) {
+    if (indent != 0) {
+        switch (dict.getType()) {
+            case blet::Dict::NULL_TYPE:
+                break;
+            case blet::Dict::OBJECT_TYPE:
+                if (!dict.unsafeGetObject().empty()) {
+                    oss << '\n';
+                }
+                break;
+            case blet::Dict::ARRAY_TYPE:
+                if (!dict.unsafeGetArray().empty()) {
+                    oss << '\n';
+                }
+                break;
+            case blet::Dict::STRING_TYPE:
+                break;
+            case blet::Dict::NUMBER_TYPE:
+                break;
+            case blet::Dict::BOOLEAN_TYPE:
+                break;
+        }
     }
 }
 
-static inline void s_indentDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+static inline void s_indentDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent, char indentCharacter,
                                 std::size_t index) {
-    if (!json.empty() && indent != 0) {
-        oss << std::string(indent * index, indentCharacter);
+    if (indent != 0) {
+        switch (dict.getType()) {
+            case blet::Dict::NULL_TYPE:
+                break;
+            case blet::Dict::OBJECT_TYPE:
+                oss << std::string(indent * index, indentCharacter);
+                break;
+            case blet::Dict::ARRAY_TYPE:
+                oss << std::string(indent * index, indentCharacter);
+                break;
+            case blet::Dict::STRING_TYPE:
+                break;
+            case blet::Dict::NUMBER_TYPE:
+                break;
+            case blet::Dict::BOOLEAN_TYPE:
+                break;
+        }
     }
 }
 
-static inline void s_nullDump(std::ostream& oss, const Jsonator& /*json*/, std::size_t /*indent*/,
+static inline void s_nullDump(std::ostream& oss, const blet::Dict& /*json*/, std::size_t /*indent*/,
                               char /*indentCharacter*/, std::size_t /*index*/) {
     oss << "null";
 }
 
-static inline void s_numberDump(std::ostream& oss, const Jsonator& json, std::size_t /*indent*/,
+static inline void s_numberDump(std::ostream& oss, const blet::Dict& dict, std::size_t /*indent*/,
                                 char /*indentCharacter*/, std::size_t /*index*/) {
-    oss << json.getNumber();
+    oss << dict.getNumber();
 }
 
-static inline void s_booleanDump(std::ostream& oss, const Jsonator& json, std::size_t /*indent*/,
+static inline void s_booleanDump(std::ostream& oss, const blet::Dict& dict, std::size_t /*indent*/,
                                  char /*indentCharacter*/, std::size_t /*index*/) {
-    if (json.getBoolean()) {
+    if (dict.getBoolean()) {
         oss << "true";
     }
     else {
@@ -165,123 +130,105 @@ static inline void s_booleanDump(std::ostream& oss, const Jsonator& json, std::s
     }
 }
 
-static inline void s_stringDump(std::ostream& oss, const Jsonator& json, std::size_t /*indent*/,
+static inline void s_stringDump(std::ostream& oss, const blet::Dict& dict, std::size_t /*indent*/,
                                 char /*indentCharacter*/, std::size_t /*index*/) {
-    s_stringEscape(oss, json.getString());
+    oss << '"';
+    s_stringEscape(oss, dict.getString());
+    oss << '"';
 }
 
-static void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+static void s_typeDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent, char indentCharacter,
                        std::size_t index = 0);
 
-static void s_objectDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+static void s_objectDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent, char indentCharacter,
                          std::size_t index) {
     oss << '{';
-    s_newlineDump(oss, json, indent);
+    s_newlineDump(oss, dict, indent);
     ++index;
-    for (Jsonator::object_const_iterator cit = json.object_begin(); cit != json.object_end(); ++cit) {
-        if (cit != json.object_begin()) {
+    for (blet::Dict::object_t::const_iterator cit = dict.unsafeGetObject().begin(); cit != dict.unsafeGetObject().end();
+         ++cit) {
+        if (cit != dict.unsafeGetObject().begin()) {
             oss << ',';
-            s_newlineDump(oss, json, indent);
+            s_newlineDump(oss, dict, indent);
         }
-        s_indentDump(oss, json, indent, indentCharacter, index);
+        s_indentDump(oss, dict, indent, indentCharacter, index);
+        oss << '"';
         s_stringEscape(oss, cit->first);
+        oss << '"';
         oss << ':';
         if (indent != 0) {
             oss << ' ';
         }
         s_typeDump(oss, cit->second, indent, indentCharacter, index);
     }
-    s_newlineDump(oss, json, indent);
+    s_newlineDump(oss, dict, indent);
     --index;
-    s_indentDump(oss, json, indent, indentCharacter, index);
+    s_indentDump(oss, dict, indent, indentCharacter, index);
     oss << '}';
 }
 
-static void s_arrayDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter,
+static void s_arrayDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent, char indentCharacter,
                         std::size_t index) {
     oss << '[';
-    s_newlineDump(oss, json, indent);
+    s_newlineDump(oss, dict, indent);
     ++index;
-    for (std::size_t i = 0; i < json.size(); ++i) {
+    for (std::size_t i = 0; i < dict.unsafeGetArray().size(); ++i) {
         if (i != 0) {
             oss << ',';
-            s_newlineDump(oss, json, indent);
+            s_newlineDump(oss, dict, indent);
         }
-        s_indentDump(oss, json, indent, indentCharacter, index);
-        s_typeDump(oss, json[i], indent, indentCharacter, index);
+        s_indentDump(oss, dict, indent, indentCharacter, index);
+        s_typeDump(oss, dict.unsafeGetArray()[i], indent, indentCharacter, index);
     }
-    s_newlineDump(oss, json, indent);
+    s_newlineDump(oss, dict, indent);
     --index;
-    s_indentDump(oss, json, indent, indentCharacter, index);
+    s_indentDump(oss, dict, indent, indentCharacter, index);
     oss << ']';
 }
 
-void s_typeDump(std::ostream& oss, const Jsonator& json, std::size_t indent, char indentCharacter, std::size_t index) {
-    switch (json.getType()) {
-        case Jsonator::NULL_TYPE:
-            s_nullDump(oss, json, indent, indentCharacter, index);
+void s_typeDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent, char indentCharacter,
+                std::size_t index) {
+    switch (dict.getType()) {
+        case blet::Dict::NULL_TYPE:
+            s_nullDump(oss, dict, indent, indentCharacter, index);
             break;
-        case Jsonator::OBJECT_TYPE:
-            s_objectDump(oss, json, indent, indentCharacter, index);
+        case blet::Dict::OBJECT_TYPE:
+            s_objectDump(oss, dict, indent, indentCharacter, index);
             break;
-        case Jsonator::ARRAY_TYPE:
-            s_arrayDump(oss, json, indent, indentCharacter, index);
+        case blet::Dict::ARRAY_TYPE:
+            s_arrayDump(oss, dict, indent, indentCharacter, index);
             break;
-        case Jsonator::STRING_TYPE:
-            s_stringDump(oss, json, indent, indentCharacter, index);
+        case blet::Dict::STRING_TYPE:
+            s_stringDump(oss, dict, indent, indentCharacter, index);
             break;
-        case Jsonator::NUMBER_TYPE:
-            s_numberDump(oss, json, indent, indentCharacter, index);
+        case blet::Dict::NUMBER_TYPE:
+            s_numberDump(oss, dict, indent, indentCharacter, index);
             break;
-        case Jsonator::BOOLEAN_TYPE:
-            s_booleanDump(oss, json, indent, indentCharacter, index);
+        case blet::Dict::BOOLEAN_TYPE:
+            s_booleanDump(oss, dict, indent, indentCharacter, index);
             break;
     }
 }
 
-void Jsonator::dump(std::ostream& os, std::size_t indent, char indentCharacter) const {
+void dump(const blet::Dict& dict, std::ostream& os, std::size_t indent, char indentCharacter) {
     os << std::setprecision(std::numeric_limits<double>::digits10 + 1);
-    s_typeDump(os, *this, indent, indentCharacter);
+    s_typeDump(os, dict, indent, indentCharacter);
 }
 
-std::string Jsonator::dump(std::size_t indent, char indentCharacter) const {
+std::string dump(const blet::Dict& dict, std::size_t indent, char indentCharacter) {
     std::ostringstream oss("");
-    dump(oss, indent, indentCharacter);
+    dump(dict, oss, indent, indentCharacter);
     return oss.str();
 }
-
-Jsonator& Jsonator::clear() {
-    switch (_type) {
-        case NULL_TYPE:
-        case NUMBER_TYPE:
-        case BOOLEAN_TYPE:
-            break;
-        case OBJECT_TYPE:
-            delete _value.object;
-            break;
-        case ARRAY_TYPE:
-            delete _value.array;
-            break;
-        case STRING_TYPE:
-            delete _value.string;
-            break;
-    }
-    _type = NULL_TYPE;
-    return *this;
-}
-
-/*******************************************************************************
- * PRIVATE
- ******************************************************************************/
 
 /**
  * @brief structure of info parser
  */
-struct JsonatorParseInfo {
-    JsonatorParseInfo(const std::string& filename_, bool additionnalNext_) :
+struct JsonParseInfo {
+    JsonParseInfo(const std::string& filename_, bool additionnalNext_) :
         filename(filename_),
         additionalNext(additionnalNext_) {}
-    ~JsonatorParseInfo() {}
+    ~JsonParseInfo() {}
 
     std::size_t line(std::size_t i) const {
         return indexToLine[i];
@@ -338,13 +285,13 @@ static inline void s_stringJumpSpace(const std::string& str, std::size_t& index)
     }
 }
 
-static inline void s_parseNull(std::size_t& i, Jsonator& json) {
-    json.newNull();
+static inline void s_parseNull(std::size_t& i, blet::Dict& dict) {
+    dict.newNull();
     i += sizeof("null") - 1;
 }
 
-static inline void s_parseBool(bool boolean, std::size_t& i, Jsonator& json) {
-    json.newBoolean(boolean);
+static inline void s_parseBool(bool boolean, std::size_t& i, blet::Dict& dict) {
+    dict.newBoolean(boolean);
     if (boolean) {
         i += sizeof("true") - 1;
     }
@@ -353,23 +300,21 @@ static inline void s_parseBool(bool boolean, std::size_t& i, Jsonator& json) {
     }
 }
 
-static inline void s_parseNumber(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                                 Jsonator& json) {
+static inline void s_parseNumber(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
     if (str[i] == '0' && ::isdigit(str[i + 1])) {
-        throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Octal number not allowed");
+        throw ParseException(info.filename, info.line(i), info.column(i), "Octal number not allowed");
     }
     char* ret = NULL;
     double number = ::strtod(str.c_str() + i, &ret);
-    json.newNumber(number);
+    dict.newNumber(number);
     std::size_t jump = ret - (str.c_str() + i);
     if (jump == 0) {
-        throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Bad number");
+        throw ParseException(info.filename, info.line(i), info.column(i), "Bad number");
     }
     i += jump;
 }
 
-static inline void s_parseString(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                                 Jsonator& json) {
+static inline void s_parseString(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
     ++i; // jump '"'
     std::size_t start = i;
     // search end quote
@@ -378,20 +323,20 @@ static inline void s_parseString(const JsonatorParseInfo& info, const std::strin
             ++i;
         }
         else if (str[i] == '\0') {
-            throw Jsonator::ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of string");
+            throw ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of string");
         }
         else if (str[i] == '\n') {
-            throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "New line in string");
+            throw ParseException(info.filename, info.line(start), info.column(start), "New line in string");
         }
         ++i;
     }
     std::size_t end = i;
     ++i; // jump '"'
-    json.newString(s_replaceEscapeChar(str.substr(start, end - start)));
+    dict.newString(s_replaceEscapeChar(str.substr(start, end - start)));
 }
 
-static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, const std::string& str, std::size_t& i,
-                                                 Jsonator& json) {
+static inline blet::Dict& s_createNewObjectElement(const JsonParseInfo& info, const std::string& str, std::size_t& i,
+                                                   blet::Dict& dict) {
     // parser key
     ++i; // jump '"'
     std::size_t start = i;
@@ -401,10 +346,10 @@ static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, 
             ++i;
         }
         else if (str[i] == '\0') {
-            throw Jsonator::ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of key");
+            throw ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of key");
         }
         else if (str[i] == '\n') {
-            throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "New line in key");
+            throw ParseException(info.filename, info.line(start), info.column(start), "New line in key");
         }
         ++i;
     }
@@ -412,38 +357,38 @@ static inline Jsonator& s_createNewObjectElement(const JsonatorParseInfo& info, 
     ++i; // jump '"'
     s_stringJumpSpace(str, i);
     if (str[i] != ':') {
-        throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Need definition of object");
+        throw ParseException(info.filename, info.line(i), info.column(i), "Need definition of object");
     }
     ++i; // jump ':'
     s_stringJumpSpace(str, i);
     // get key
     std::string key = s_replaceEscapeChar(str.substr(start, end - start));
-    if (json.find(key) != json.object_end()) {
-        throw Jsonator::ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
+    if (dict.unsafeGetObject().find(key) != dict.unsafeGetObject().end()) {
+        throw ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
-    return json[key];
+    return dict.unsafeGetObject()[key];
 }
 
-static inline Jsonator& s_createNewArrayElement(Jsonator& json) {
-    return json[json.size()];
+static inline blet::Dict& s_createNewArrayElement(blet::Dict& dict) {
+    dict.unsafeGetArray().push_back(blet::Dict());
+    return dict.unsafeGetArray().back();
 }
 
-static bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json);
+static bool s_parseType(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict);
 
-static void s_parseArray(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json) {
-    json.newArray();
+static void s_parseArray(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
+    dict.newArray();
     bool next = false;
 
     ++i; // jump '['
     s_stringJumpSpace(str, i);
     while (str[i] != ']' || (next == true && info.additionalNext == false)) {
         if (str[i] == '\0') {
-            throw Jsonator::ParseException(info.filename, info.lastLine(i), info.lastColumn(i),
-                                           "End of array not found");
+            throw ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of array not found");
         }
         // search array, object, string, number, bool or null
-        if (!s_parseType(info, str, i, s_createNewArrayElement(json))) {
-            throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Bad element of array");
+        if (!s_parseType(info, str, i, s_createNewArrayElement(dict))) {
+            throw ParseException(info.filename, info.line(i), info.column(i), "Bad element of array");
         }
         s_stringJumpSpace(str, i);
         // next
@@ -459,25 +404,24 @@ static void s_parseArray(const JsonatorParseInfo& info, const std::string& str, 
     ++i; // jump ']'
 }
 
-static void s_parseObject(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json) {
-    json.newObject();
+static void s_parseObject(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
+    dict.newObject();
     bool next = false;
 
     ++i; // jump '{'
     s_stringJumpSpace(str, i);
     while (str[i] != '}' || (next == true && info.additionalNext == false)) {
         if (str[i] == '\0') {
-            throw Jsonator::ParseException(info.filename, info.lastLine(i), info.lastColumn(i),
-                                           "End of object not found");
+            throw ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of object not found");
         }
         else if (str[i] == '"') {
             // search array, object, string, number, bool or null
-            if (!s_parseType(info, str, i, s_createNewObjectElement(info, str, i, json))) {
-                throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Bad element in the key");
+            if (!s_parseType(info, str, i, s_createNewObjectElement(info, str, i, dict))) {
+                throw ParseException(info.filename, info.line(i), info.column(i), "Bad element in the key");
             }
         }
         else {
-            throw Jsonator::ParseException(info.filename, info.line(i), info.column(i), "Key of object not found");
+            throw ParseException(info.filename, info.line(i), info.column(i), "Key of object not found");
         }
         s_stringJumpSpace(str, i);
         // next
@@ -493,16 +437,16 @@ static void s_parseObject(const JsonatorParseInfo& info, const std::string& str,
     ++i; // jump '}'
 }
 
-inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, std::size_t& i, Jsonator& json) {
+inline bool s_parseType(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
     switch (str[i]) {
         case '[':
-            s_parseArray(info, str, i, json);
+            s_parseArray(info, str, i, dict);
             break;
         case '{':
-            s_parseObject(info, str, i, json);
+            s_parseObject(info, str, i, dict);
             break;
         case '"':
-            s_parseString(info, str, i, json);
+            s_parseString(info, str, i, dict);
             break;
         case '-':
         case '0':
@@ -515,11 +459,11 @@ inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, s
         case '7':
         case '8':
         case '9':
-            s_parseNumber(info, str, i, json);
+            s_parseNumber(info, str, i, dict);
             break;
         case 't':
             if (!::strncmp(str.c_str() + i, "true", sizeof("true") - 1)) {
-                s_parseBool(true, i, json);
+                s_parseBool(true, i, dict);
             }
             else {
                 return false;
@@ -527,7 +471,7 @@ inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, s
             break;
         case 'f':
             if (!::strncmp(str.c_str() + i, "false", sizeof("false") - 1)) {
-                s_parseBool(false, i, json);
+                s_parseBool(false, i, dict);
             }
             else {
                 return false;
@@ -535,7 +479,7 @@ inline bool s_parseType(const JsonatorParseInfo& info, const std::string& str, s
             break;
         case 'n':
             if (!::strncmp(str.c_str() + i, "null", sizeof("null") - 1)) {
-                s_parseNull(i, json);
+                s_parseNull(i, dict);
             }
             else {
                 return false;
@@ -590,7 +534,7 @@ static void s_replaceCommentBySpace(std::string& str) {
     }
 }
 
-static std::string s_streamToStr(JsonatorParseInfo& info, std::istream& stream) {
+static std::string s_streamToStr(JsonParseInfo& info, std::istream& stream) {
     // generate line and column index
     std::ostringstream oss("");
     std::string line("");
@@ -608,8 +552,8 @@ static std::string s_streamToStr(JsonatorParseInfo& info, std::istream& stream) 
     return oss.str();
 }
 
-Jsonator Jsonator::_parseStream(std::istream& stream, const std::string& filename, bool comment, bool additionalNext) {
-    JsonatorParseInfo info(filename, additionalNext);
+blet::Dict s_parseStream(std::istream& stream, const std::string& filename, bool comment, bool additionalNext) {
+    JsonParseInfo info(filename, additionalNext);
     std::string str = s_streamToStr(info, stream);
     if (comment) {
         s_replaceCommentBySpace(str);
@@ -617,38 +561,55 @@ Jsonator Jsonator::_parseStream(std::istream& stream, const std::string& filenam
     std::size_t i = 0;
     s_stringJumpSpace(str, i);
     try {
-        Jsonator json;
+        blet::Dict dict;
         switch (str[i]) {
             case '{':
-                s_parseObject(info, str, i, json);
+                s_parseObject(info, str, i, dict);
                 s_stringJumpSpace(str, i);
                 break;
             case '[':
-                s_parseArray(info, str, i, json);
+                s_parseArray(info, str, i, dict);
                 s_stringJumpSpace(str, i);
                 break;
             case '\0':
-                return json;
+                return dict;
             default:
                 throw ParseException(info.filename, info.line(i), info.column(i), "Not a valid start character");
         }
         if (str[i] != '\0') {
             throw ParseException(info.filename, info.line(i), info.column(i), "Not a valid end character");
         }
-        return json;
+        return dict;
     }
     catch (const ParseException& /*e*/) {
         throw;
     }
 }
 
-void Jsonator::_swap(Jsonator& json) {
-    EType typeTmp = _type;
-    UValue valueTmp = _value;
-    _type = json._type;
-    _value = json._value;
-    json._type = typeTmp;
-    json._value = valueTmp;
+blet::Dict parseFile(const char* filename, bool comment, bool additionalNext) {
+    std::ifstream fileStream(filename); // open file
+    if (fileStream.is_open()) {
+        blet::Dict dict = s_parseStream(fileStream, filename, comment, additionalNext);
+        return dict;
+    }
+    else {
+        throw ParseException(filename, "Open file failed");
+    }
 }
 
-} // namespace mblet
+blet::Dict parseStream(std::istream& stream, bool comment, bool additionalNext) {
+    return s_parseStream(stream, std::string(), comment, additionalNext);
+}
+
+blet::Dict parseString(const std::string& str, bool comment, bool additionalNext) {
+    std::istringstream iss(str);
+    return parseStream(iss, comment, additionalNext);
+}
+
+blet::Dict parseData(const void* data, std::size_t size, bool comment, bool additionalNext) {
+    return parseString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
+}
+
+} // namespace json
+
+} // namespace blet

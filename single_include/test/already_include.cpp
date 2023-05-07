@@ -1,5 +1,5 @@
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
-void test(mblet::Jsonator& json) {
+void test(blet::Dict& json) {
     json["test"] = 42;
 }

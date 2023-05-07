@@ -1,7 +1,7 @@
 # Jsonator
 
 Json parse and dump library  
-Header only library at [single_include/mblet/jsonator.h](single_include/mblet/jsonator.h).  
+Header only library at [single_include/blet/json.h](single_include/blet/json.h).  
 Examples at [docs/examples.md](docs/examples.md)
 
 ## Quick start
@@ -10,20 +10,20 @@ Examples at [docs/examples.md](docs/examples.md)
 /*
 ** parse
 */
-const char jsonStr[] = \
-    "{"                             \
-    "  \"hello\": \"world\","       \
-    "  \"array\": ["                \
-    "    42,"                       \
-    "    [ 1337 ],"                 \
-    "    {"                         \
-    "      \"key_in_array\": 0.42"  \
-    "    }"                         \
-    "  ],"                          \
-    "  \"null\": null,"             \
-    "  \"boolean\": false"          \
+const char jsonStr[] =
+    "{"
+    "  \"hello\": \"world\","
+    "  \"array\": ["
+    "    42,"
+    "    [ 1337 ],"
+    "    {"
+    "      \"key_in_array\": 0.42"
+    "    }"
+    "  ],"
+    "  \"null\": null,"
+    "  \"boolean\": false"
     "}";
-const mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
+const blet::Dict json = blet::json::parseString(jsonStr);
 std::cout << json["array"][0].getNumber() << '\n';
 std::cout << json["array"][1][0].getNumber() << '\n';
 std::cout << json["array"][2]["key_in_array"].getNumber() << '\n';
@@ -59,7 +59,7 @@ std::map<std::string, std::string> mStr;
 mStr["key1"] = "value1";
 mStr["key2"] = "value2";
 
-mblet::Jsonator newJson;
+blet::Dict newJson;
 newJson["foo"] = "bar";
 newJson["array"][0] = "foo";
 newJson["array"][1] = "bar";
@@ -71,7 +71,7 @@ newJson["number"] = 24;
 newJson["null"].newNull();
 newJson["json"] = json;
 
-std::cout << newJson.dump(4) << '\n';
+std::cout << blet::json::dump(newJson, 4) << '\n';
 // output:
 // {
 //     "array": [
@@ -131,12 +131,12 @@ mkdir build; pushd build; cmake -DCMAKE_INSTALL_PREFIX="YOUR_INSTALL_PATH" .. &&
 mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_EXAMPLE=1 -DBUILD_TESTING=1 -DBUILD_COVERAGE=1 -DCMAKE_CXX_STANDARD=98 .. && make -j && make test -j; popd
 ```
 
-## Parse Methods
+## Parse Functions
 
 ### parseFile
 
 ```cpp
-static Jsonator parseFile(const char* filename, bool comment = true, bool additionalNext = true);
+blet::Dict parseFile(const char* filename, bool comment = true, bool additionalNext = true);
 ```
 Take a path of json file and parse them for create Jsonator object.  
 You can disable options `comment` and `additionnalNext` for a better parsing.  
@@ -145,7 +145,7 @@ Example at [docs/examples.md#ParseFile](docs/examples.md#parsefile).
 ### parseStream
 
 ```cpp
-static Jsonator parseStream(std::istream& stream, bool comment = true, bool additionalNext = true);
+blet::Dict parseStream(std::istream& stream, bool comment = true, bool additionalNext = true);
 ```
 
 Take a std::istream and parse them  for create Jsonator object.  
@@ -155,7 +155,7 @@ Example at [docs/examples.md#ParseStream](docs/examples.md#parsestream).
 ### parseString
 
 ```cpp
-static Jsonator parseString(const std::string& str, bool comment = true, bool additionalNext = true);
+blet::Dict parseString(const std::string& str, bool comment = true, bool additionalNext = true);
 ```
 
 Take a std::string and parse them  for create Jsonator object.  
@@ -165,7 +165,7 @@ Example at [docs/examples.md#ParseString](docs/examples.md#parsestring).
 ### parseData
 
 ```cpp
-static Jsonator parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true);
+blet::Dict parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true);
 ```
 
 Take a data and size and parse them  for create Jsonator object.  
@@ -271,7 +271,7 @@ Example at [docs/examples.md#Dump](docs/examples.md#dump).
 Check if json object has key.  
 
 ```cpp
-mblet::Jsonator json;
+blet::Jsonator json;
 json["string"] = "value";
 json["boolean"] = true;
 json["number"] = 42;
@@ -290,14 +290,14 @@ Get type of value.
 `getString`, `getBoolean`, `getNumber`, `getType`, `get`
 
 ```cpp
-mblet::Jsonator json;
+blet::Jsonator json;
 json["string"] = "value";
 json["boolean"] = true;
 json["number"] = 42;
 json["array"][0] = "array0";
 json["array"][1] = "array1";
 
-mblet::Jsonator& jsonArray = json["array"];
+blet::Jsonator& jsonArray = json["array"];
 
 std::cout << json["string"].getString() << '\n' // value
           << json["boolean"].getBoolean() << '\n' // 1
@@ -313,8 +313,8 @@ json["string"].get(jsonString);
 std::cout << jsonNumber << '\n' // 42
           << jsonString << '\n'; // value
 
-mblet::Jsonator::Type arrayType = jsonArray.getType();
-std::cout << (arrayType == mblet::Jsonator::ARRAY) << std::endl; // 1
+blet::Jsonator::Type arrayType = jsonArray.getType();
+std::cout << (arrayType == blet::Jsonator::ARRAY) << std::endl; // 1
 ```
 
 ### Is*
@@ -324,7 +324,7 @@ Check type of json object.
 `isNull`, `isObject`, `isArray`, `isString`, `isNumber`, `isBoolean`
 
 ```cpp
-mblet::Jsonator json;
+blet::Jsonator json;
 json["string"].newString("value");
 json["boolean"].newBoolean(true);
 json["number"].newNumber(42);

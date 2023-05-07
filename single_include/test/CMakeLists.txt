@@ -1,4 +1,4 @@
-set(library_project_name jsonator)
+set(library_project_name json)
 
 add_executable("already_include.single_include_test"
     "${CMAKE_CURRENT_SOURCE_DIR}/already_include.cpp"
@@ -12,7 +12,7 @@ set_target_properties("already_include.single_include_test"
         CXX_EXTENSIONS OFF
         NO_SYSTEM_FROM_IMPORTED ON
         COMPILE_FLAGS "-pedantic -Wall -Wextra -Werror"
-        INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/.."
+        INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/..;${CMAKE_CURRENT_SOURCE_DIR}/../../Dict/single_include"
 )
 
 add_dependencies("already_include.single_include_test" "${library_project_name}_single_include")

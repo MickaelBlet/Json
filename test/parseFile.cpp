@@ -14,9 +14,9 @@ GTEST_TEST(parseFile, except) {
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json = mblet::Jsonator::parseFile(testFile);
+                blet::Jsonator json = blet::Jsonator::parseFile(testFile);
             }
-            catch (const mblet::Jsonator::ParseException& e) {
+            catch (const blet::Jsonator::ParseException& e) {
                 EXPECT_STREQ(e.what(), "Parse /tmp/mblet_test_parseFile_except.json: (Open file failed).");
                 EXPECT_EQ(e.message(), "Open file failed");
                 EXPECT_EQ(e.filename(), "/tmp/mblet_test_parseFile_except.json");
@@ -25,7 +25,7 @@ GTEST_TEST(parseFile, except) {
                 throw;
             }
         },
-        mblet::Jsonator::ParseException);
+        blet::Jsonator::ParseException);
 }
 
 GTEST_TEST(parseFile, success) {
@@ -46,9 +46,9 @@ GTEST_TEST(parseFile, success) {
     fileGuard << jsonStr << std::flush;
     fileGuard.close();
 
-    mblet::Jsonator json = mblet::Jsonator::parseFile(testFile);
+    blet::Jsonator json = blet::Jsonator::parseFile(testFile);
     EXPECT_EQ(json.contains("key"), true);
-    EXPECT_EQ(json.at("key").getString(), "value");
+    EXPECT_EQ(json["key"].getString(), "value");
     EXPECT_EQ(json.contains("array"), true);
     EXPECT_EQ(json.at("array").at(0).getNumber(), 0);
     EXPECT_EQ(json.at("array").at(1).getNumber(), 1);

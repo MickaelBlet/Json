@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
     std::string jsonStr("{\"hello\":\"world\"}");
-    const mblet::Jsonator json = mblet::Jsonator::parseData(jsonStr.c_str(), jsonStr.size());
+    const blet::Dict json = blet::json::parseData(jsonStr.c_str(), jsonStr.size());
     // get value
     std::string str = json["hello"];
     // print result

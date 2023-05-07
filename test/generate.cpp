@@ -7,31 +7,31 @@ GTEST_TEST(jsonator, not_null) {
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json[0] = json;
                 json[0] = json;
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not null (is ARRAY_TYPE).");
                 EXPECT_EQ(e.message(), "is not null");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json["foo"][0] = json;
                 json["foo"][0] = json;
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not null (is OBJECT_TYPE).");
                 EXPECT_EQ(e.message(), "is not null");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
 }
 
 GTEST_TEST(jsonator, equal_operator) {
@@ -61,7 +61,7 @@ GTEST_TEST(jsonator, equal_operator) {
     }));
     // clang-format on
 
-    mblet::Jsonator jsonator;
+    blet::Jsonator jsonator;
 
     std::string string = "string";
     const char* starChar = "string";
@@ -102,7 +102,7 @@ GTEST_TEST(jsonator, equal_operator) {
     float f = 42;
     double d = 42;
 
-    mblet::Jsonator json;
+    blet::Jsonator json;
     json["jsonator"] = jsonator;
     json["string"] = string;
     json["starChar"] = starChar;
@@ -130,7 +130,7 @@ GTEST_TEST(jsonator, equal_operator) {
 }
 
 GTEST_TEST(jsonator, insert) {
-    mblet::Jsonator json;
+    blet::Jsonator json;
     json.insert("foo", "bar");
     json["bar"].insert(0, "bar");
     json["bar"].insert(0, "foo");
@@ -140,7 +140,7 @@ GTEST_TEST(jsonator, insert) {
 }
 
 GTEST_TEST(jsonator, push_front) {
-    mblet::Jsonator json;
+    blet::Jsonator json;
     json.push_front("foo");
     json.push_front("bar");
     json.push_front("bar1");
@@ -151,7 +151,7 @@ GTEST_TEST(jsonator, push_front) {
 }
 
 GTEST_TEST(jsonator, push_back) {
-    mblet::Jsonator json;
+    blet::Jsonator json;
     json.push_back("foo");
     json.push_back("bar");
     EXPECT_EQ(json.size(), 2);
@@ -160,7 +160,7 @@ GTEST_TEST(jsonator, push_back) {
 }
 
 GTEST_TEST(jsonator, pop_front) {
-    mblet::Jsonator json;
+    blet::Jsonator json;
     json.push_back("foo");
     json.push_back("bar");
     json.pop_front();
@@ -169,7 +169,7 @@ GTEST_TEST(jsonator, pop_front) {
 }
 
 GTEST_TEST(jsonator, pop_back) {
-    mblet::Jsonator json;
+    blet::Jsonator json;
     json.push_back("foo");
     json.push_back("bar");
     json.pop_back();
@@ -190,7 +190,7 @@ GTEST_TEST(jsonator, newBoolean) {}
 GTEST_TEST(jsonator, newNull) {}
 
 GTEST_TEST(jsonator, erase) {
-    mblet::Jsonator json;
+    blet::Jsonator json;
     json.push_back("foo");
     json.push_back("bar");
     json.push_back("010");
@@ -214,7 +214,7 @@ GTEST_TEST(jsonator, erase) {
 }
 
 GTEST_TEST(jsonator, clear) {
-    mblet::Jsonator json;
+    blet::Jsonator json;
     json.push_back("foo");
     json.push_back("bar");
     json.push_back("010");
@@ -254,7 +254,7 @@ GTEST_TEST(jsonator, generate) {
     // clang-format on
 
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["root"]["1"].newArray();
         json["root"]["1"][0].newNumber(0);
         json["root"]["1"][1].newNumber(1);
@@ -270,7 +270,7 @@ GTEST_TEST(jsonator, generate) {
         EXPECT_EQ(jsonStr, json.dump());
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["root"]["1"][0] = 0;
         json["root"]["1"][1] = 1;
         json["root"]["1"][2] = 2;
@@ -284,7 +284,7 @@ GTEST_TEST(jsonator, generate) {
         EXPECT_EQ(jsonStr, json.dump());
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         std::vector<int> vectorInt;
         vectorInt.push_back(0);
         vectorInt.push_back(1);
@@ -302,7 +302,7 @@ GTEST_TEST(jsonator, generate) {
         EXPECT_EQ(jsonStr, json.dump());
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["root"]["1"].push_back(2);
         json["root"]["1"].push_front(0);
         json["root"]["1"].insert(1, 1);

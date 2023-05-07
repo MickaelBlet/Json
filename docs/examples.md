@@ -29,7 +29,7 @@ $ cat ./example/example.jsonc
 #include "mblet/jsonator.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
-    const mblet::Jsonator json = mblet::Jsonator::parseFile("./example/example.jsonc");
+    const blet::Jsonator json = blet::Jsonator::parseFile("./example/example.jsonc");
     // get value
     std::string str = json["string"];
     unsigned int number = json["number"];
@@ -70,7 +70,7 @@ object[key]: value
 
 int main(int /*argc*/, char* /*argv*/[]) {
     std::istringstream iss("{\"hello\":\"world\"}");
-    const mblet::Jsonator json = mblet::Jsonator::parseStream(iss);
+    const blet::Jsonator json = blet::Jsonator::parseStream(iss);
     // get value
     std::string str = json["hello"];
     // print result
@@ -88,7 +88,7 @@ world
 
 ```cpp
 std::string jsonStr("{\"hello\":\"world\"}");
-const mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
+const blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
 // get value
 std::string str = json["hello"];
 // print result
@@ -104,7 +104,7 @@ world
 
 ```cpp
 std::string jsonStr("{\"hello\":\"world\"}");
-const mblet::Jsonator json = mblet::Jsonator::parseData(jsonStr.c_str(), jsonStr.size());
+const blet::Jsonator json = blet::Jsonator::parseData(jsonStr.c_str(), jsonStr.size());
 // get value
 std::string str = json["hello"];
 // print result
@@ -122,7 +122,7 @@ world
 #include "mblet/jsonator.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
-    mblet::Jsonator json;
+    blet::Jsonator json;
     // construct json
     json["foo"] = "bar";
     json["number"] = 42;

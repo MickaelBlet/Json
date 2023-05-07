@@ -7,77 +7,77 @@ GTEST_TEST(jsonator, find) {
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json.find("foo");
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a object (is NULL_TYPE).");
                 EXPECT_EQ(e.message(), "is not a object");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                const mblet::Jsonator json;
+                const blet::Jsonator json;
                 json.find("foo");
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a object (is NULL_TYPE).");
                 EXPECT_EQ(e.message(), "is not a object");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json.find(0);
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a array (is NULL_TYPE).");
                 EXPECT_EQ(e.message(), "is not a array");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                const mblet::Jsonator json;
+                const blet::Jsonator json;
                 json.find(0);
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a array (is NULL_TYPE).");
                 EXPECT_EQ(e.message(), "is not a array");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["foo"] = 42;
         EXPECT_EQ(json.find("foo")->first, "foo");
         EXPECT_EQ(json.find("foo")->second.getNumber(), 42);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["foo"] = 42;
-        const mblet::Jsonator& cjson = json;
+        const blet::Jsonator& cjson = json;
         EXPECT_EQ(cjson.find("foo")->first, "foo");
         EXPECT_EQ(cjson.find("foo")->second.getNumber(), 42);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json[0] = 42;
         EXPECT_EQ(json.find(0)->getNumber(), 42);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json[0] = 42;
-        const mblet::Jsonator& cjson = json;
+        const blet::Jsonator& cjson = json;
         EXPECT_EQ(cjson.find(0)->getNumber(), 42);
     }
 }
@@ -86,113 +86,113 @@ GTEST_TEST(jsonator, bracket) {
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
                 json["foo"];
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a object (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a object");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
-                const mblet::Jsonator& cjson = json;
+                const blet::Jsonator& cjson = json;
                 cjson["foo"];
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a object (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a object");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
                 json[0];
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a array (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a array");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
-                const mblet::Jsonator& cjson = json;
+                const blet::Jsonator& cjson = json;
                 cjson[0];
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a array (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a array");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json["foo"] = 42;
-                const mblet::Jsonator& cjson = json;
+                const blet::Jsonator& cjson = json;
                 cjson["bar"];
             }
-            catch (const mblet::Jsonator::ChildException& e) {
+            catch (const blet::Jsonator::ChildException& e) {
                 EXPECT_STREQ(e.what(), "has not a child 'bar'.");
                 EXPECT_EQ(e.message(), "has not a child");
                 EXPECT_EQ(e.child(), "bar");
                 throw;
             }
         },
-        mblet::Jsonator::ChildException);
+        blet::Jsonator::ChildException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json[0] = 42;
-                const mblet::Jsonator& cjson = json;
+                const blet::Jsonator& cjson = json;
                 cjson[1];
             }
-            catch (const mblet::Jsonator::ChildException& e) {
+            catch (const blet::Jsonator::ChildException& e) {
                 EXPECT_STREQ(e.what(), "out of range '1'.");
                 EXPECT_EQ(e.message(), "out of range");
                 EXPECT_EQ(e.index(), 1);
                 throw;
             }
         },
-        mblet::Jsonator::ChildException);
+        blet::Jsonator::ChildException);
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["foo"] = 42;
         EXPECT_EQ(json["foo"].getNumber(), 42);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["foo"] = 42;
-        const mblet::Jsonator& cjson = json;
+        const blet::Jsonator& cjson = json;
         EXPECT_EQ(cjson["foo"].getNumber(), 42);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json[0] = 42;
         EXPECT_EQ(json[0].getNumber(), 42);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json[0] = 42;
-        const mblet::Jsonator& cjson = json;
+        const blet::Jsonator& cjson = json;
         EXPECT_EQ(cjson[0].getNumber(), 42);
     }
 }
@@ -201,169 +201,169 @@ GTEST_TEST(jsonator, at) {
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
                 json.at("foo");
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a object (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a object");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
-                const mblet::Jsonator& cjson = json;
+                const blet::Jsonator& cjson = json;
                 cjson.at("foo");
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a object (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a object");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
                 json.at(0);
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a array (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a array");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
-                const mblet::Jsonator& cjson = json;
+                const blet::Jsonator& cjson = json;
                 cjson.at(0);
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a array (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a array");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json["foo"] = 42;
                 json.at("bar");
             }
-            catch (const mblet::Jsonator::ChildException& e) {
+            catch (const blet::Jsonator::ChildException& e) {
                 EXPECT_STREQ(e.what(), "has not a child 'bar'.");
                 EXPECT_EQ(e.message(), "has not a child");
                 EXPECT_EQ(e.child(), "bar");
                 throw;
             }
         },
-        mblet::Jsonator::ChildException);
+        blet::Jsonator::ChildException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json["foo"] = 42;
-                const mblet::Jsonator& cjson = json;
+                const blet::Jsonator& cjson = json;
                 cjson.at("bar");
             }
-            catch (const mblet::Jsonator::ChildException& e) {
+            catch (const blet::Jsonator::ChildException& e) {
                 EXPECT_STREQ(e.what(), "has not a child 'bar'.");
                 EXPECT_EQ(e.message(), "has not a child");
                 EXPECT_EQ(e.child(), "bar");
                 throw;
             }
         },
-        mblet::Jsonator::ChildException);
+        blet::Jsonator::ChildException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json[0] = 42;
                 json.at(1);
             }
-            catch (const mblet::Jsonator::ChildException& e) {
+            catch (const blet::Jsonator::ChildException& e) {
                 EXPECT_STREQ(e.what(), "out of range '1'.");
                 EXPECT_EQ(e.message(), "out of range");
                 EXPECT_EQ(e.index(), 1);
                 throw;
             }
         },
-        mblet::Jsonator::ChildException);
+        blet::Jsonator::ChildException);
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json[0] = 42;
-                const mblet::Jsonator& cjson = json;
+                const blet::Jsonator& cjson = json;
                 cjson.at(1);
             }
-            catch (const mblet::Jsonator::ChildException& e) {
+            catch (const blet::Jsonator::ChildException& e) {
                 EXPECT_STREQ(e.what(), "out of range '1'.");
                 EXPECT_EQ(e.message(), "out of range");
                 EXPECT_EQ(e.index(), 1);
                 throw;
             }
         },
-        mblet::Jsonator::ChildException);
+        blet::Jsonator::ChildException);
 }
 
 GTEST_TEST(jsonator, front) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.push_back(42);
         json.push_back(24);
         json.push_back(84);
         EXPECT_EQ(json.front(), 42);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.push_back(42);
         json.push_back(24);
         json.push_back(84);
-        const mblet::Jsonator& cjson = json;
+        const blet::Jsonator& cjson = json;
         EXPECT_EQ(cjson.front(), 42);
     }
 }
 
 GTEST_TEST(jsonator, back) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.push_back(42);
         json.push_back(24);
         json.push_back(84);
         EXPECT_EQ(json.back(), 84);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.push_back(42);
         json.push_back(24);
         json.push_back(84);
-        const mblet::Jsonator& cjson = json;
+        const blet::Jsonator& cjson = json;
         EXPECT_EQ(cjson.back(), 84);
     }
 }
 
 GTEST_TEST(jsonator, isNull) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newNull();
         EXPECT_EQ(json.isNull(), true);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newNumber(42);
         EXPECT_EQ(json.isNull(), false);
     }
@@ -371,12 +371,12 @@ GTEST_TEST(jsonator, isNull) {
 
 GTEST_TEST(jsonator, isObject) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newObject();
         EXPECT_EQ(json.isObject(), true);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newNumber(42);
         EXPECT_EQ(json.isObject(), false);
     }
@@ -384,12 +384,12 @@ GTEST_TEST(jsonator, isObject) {
 
 GTEST_TEST(jsonator, isArray) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newArray();
         EXPECT_EQ(json.isArray(), true);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newNumber(42);
         EXPECT_EQ(json.isArray(), false);
     }
@@ -397,12 +397,12 @@ GTEST_TEST(jsonator, isArray) {
 
 GTEST_TEST(jsonator, isString) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newString("foo");
         EXPECT_EQ(json.isString(), true);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newNumber(42);
         EXPECT_EQ(json.isString(), false);
     }
@@ -410,12 +410,12 @@ GTEST_TEST(jsonator, isString) {
 
 GTEST_TEST(jsonator, isNumber) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newNumber(42);
         EXPECT_EQ(json.isNumber(), true);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newNull();
         EXPECT_EQ(json.isNumber(), false);
     }
@@ -423,12 +423,12 @@ GTEST_TEST(jsonator, isNumber) {
 
 GTEST_TEST(jsonator, isBoolean) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newBoolean(true);
         EXPECT_EQ(json.isBoolean(), true);
     }
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json.newNumber(42);
         EXPECT_EQ(json.isBoolean(), false);
     }
@@ -436,7 +436,7 @@ GTEST_TEST(jsonator, isBoolean) {
 
 GTEST_TEST(jsonator, contains) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["foo"] = 1;
         json["bar"] = 2;
         EXPECT_EQ(json.contains("foo"), true);
@@ -458,7 +458,7 @@ GTEST_TEST(jsonator, dump) {
         }
     ));
     // clang-format on
-    mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
+    blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
     for (unsigned int i = 0; i < 1000; ++i) {
         std::ostringstream oss("");
         oss << '{';
@@ -516,19 +516,19 @@ GTEST_TEST(jsonator, getString) {
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = 42;
                 json.getString();
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a string (is NUMBER_TYPE).");
                 EXPECT_EQ(e.message(), "is not a string");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json = "foo";
         std::string str = json.getString();
         EXPECT_EQ(str, "foo");
@@ -539,19 +539,19 @@ GTEST_TEST(jsonator, getNumber) {
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = "42";
                 json.getNumber();
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a number (is STRING_TYPE).");
                 EXPECT_EQ(e.message(), "is not a number");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json = 42.42;
         double d = json.getNumber();
         EXPECT_EQ(d, 42.42);
@@ -562,19 +562,19 @@ GTEST_TEST(jsonator, getBoolean) {
     EXPECT_THROW(
         {
             try {
-                mblet::Jsonator json;
+                blet::Jsonator json;
                 json = "42";
                 json.getBoolean();
             }
-            catch (const mblet::Jsonator::AccessException& e) {
+            catch (const blet::Jsonator::AccessException& e) {
                 EXPECT_STREQ(e.what(), "is not a boolean (is STRING_TYPE).");
                 EXPECT_EQ(e.message(), "is not a boolean");
                 throw;
             }
         },
-        mblet::Jsonator::AccessException);
+        blet::Jsonator::AccessException);
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json = true;
         bool b = json.getBoolean();
         EXPECT_EQ(b, true);
@@ -583,19 +583,19 @@ GTEST_TEST(jsonator, getBoolean) {
 
 GTEST_TEST(jsonator, getType) {
     {
-        mblet::Jsonator json;
+        blet::Jsonator json;
         json["object"].newObject();
         json["array"].newArray();
         json["null"].newNull();
         json["boolean"].newBoolean(true);
         json["number"].newNumber(42);
         json["string"].newString("foo");
-        EXPECT_EQ(json["object"].getType(), mblet::Jsonator::OBJECT_TYPE);
-        EXPECT_EQ(json["array"].getType(), mblet::Jsonator::ARRAY_TYPE);
-        EXPECT_EQ(json["null"].getType(), mblet::Jsonator::NULL_TYPE);
-        EXPECT_EQ(json["boolean"].getType(), mblet::Jsonator::BOOLEAN_TYPE);
-        EXPECT_EQ(json["number"].getType(), mblet::Jsonator::NUMBER_TYPE);
-        EXPECT_EQ(json["string"].getType(), mblet::Jsonator::STRING_TYPE);
+        EXPECT_EQ(json["object"].getType(), blet::Jsonator::OBJECT_TYPE);
+        EXPECT_EQ(json["array"].getType(), blet::Jsonator::ARRAY_TYPE);
+        EXPECT_EQ(json["null"].getType(), blet::Jsonator::NULL_TYPE);
+        EXPECT_EQ(json["boolean"].getType(), blet::Jsonator::BOOLEAN_TYPE);
+        EXPECT_EQ(json["number"].getType(), blet::Jsonator::NUMBER_TYPE);
+        EXPECT_EQ(json["string"].getType(), blet::Jsonator::STRING_TYPE);
     }
 }
 
@@ -629,7 +629,7 @@ GTEST_TEST(jsonator, castOperator) {
     ));
     // clang-format on
 
-    mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
+    blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
 
     std::string string = json.at("string");
     const char* starChar = json.at("starChar");

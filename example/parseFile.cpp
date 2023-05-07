@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
-    const mblet::Jsonator json = mblet::Jsonator::parseFile("./example/example.jsonc");
+    const blet::Dict json = blet::json::parseFile("./example/example.jsonc");
     // get value
     std::string str = json["string"];
     unsigned int number = json["number"];

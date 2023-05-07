@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
     /*
@@ -19,7 +19,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
         "  \"null\": null,"
         "  \"boolean\": false"
         "}";
-    const mblet::Jsonator json = mblet::Jsonator::parseString(jsonStr);
+    const blet::Dict json = blet::json::parseString(jsonStr);
     std::cout << json["array"][0].getNumber() << '\n';
     std::cout << json["array"][1][0].getNumber() << '\n';
     std::cout << json["array"][2]["key_in_array"].getNumber() << '\n';
@@ -55,7 +55,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
     mStr["key1"] = "value1";
     mStr["key2"] = "value2";
 
-    mblet::Jsonator newJson;
+    blet::Dict newJson;
     newJson["foo"] = "bar";
     newJson["array"][0] = "foo";
     newJson["array"][1] = "bar";
@@ -67,7 +67,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
     newJson["null"].newNull();
     newJson["json"] = json;
 
-    std::cout << newJson.dump(4) << '\n';
+    std::cout << blet::json::dump(newJson, 4) << '\n';
     // output:
     // {
     //     "array": [

@@ -1,0 +1,13 @@
+{
+    "project": "JSON for C++",
+    "target": "single_include/blet/json.h",
+    "include_paths": [
+        "include",
+        "Dict/single_include"
+    ],
+    "sources": [
+        "include/blet/json.h",
+        "src/exception.cpp",
+        "src/json.cpp"
+    ]
+}
