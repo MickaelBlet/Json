@@ -24,6 +24,7 @@ const char jsonStr[] =
     "  \"boolean\": false"
     "}";
 const blet::Dict json = blet::json::parseString(jsonStr);
+
 std::cout << json["array"][0].getNumber() << '\n';
 std::cout << json["array"][1][0].getNumber() << '\n';
 std::cout << json["array"][2]["key_in_array"].getNumber() << '\n';
@@ -138,7 +139,7 @@ mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_EXAMPLE=1 -DBUI
 ```cpp
 blet::Dict parseFile(const char* filename, bool comment = true, bool additionalNext = true);
 ```
-Take a path of json file and parse them for create Jsonator object.  
+Take a path of json file and parse them for create a Dict object.  
 You can disable options `comment` and `additionnalNext` for a better parsing.  
 Example at [docs/examples.md#ParseFile](docs/examples.md#parsefile).
 
@@ -148,7 +149,7 @@ Example at [docs/examples.md#ParseFile](docs/examples.md#parsefile).
 blet::Dict parseStream(std::istream& stream, bool comment = true, bool additionalNext = true);
 ```
 
-Take a std::istream and parse them  for create Jsonator object.  
+Take a std::istream and parse them for create a Dict object.  
 You can disable options `comment` and `additionnalNext` for a better parsing.  
 Example at [docs/examples.md#ParseStream](docs/examples.md#parsestream).
 
@@ -158,7 +159,7 @@ Example at [docs/examples.md#ParseStream](docs/examples.md#parsestream).
 blet::Dict parseString(const std::string& str, bool comment = true, bool additionalNext = true);
 ```
 
-Take a std::string and parse them  for create Jsonator object.  
+Take a std::string and parse them for create a Dict object.  
 You can disable options `comment` and `additionnalNext` for a better parsing.  
 Example at [docs/examples.md#ParseString](docs/examples.md#parsestring).
 
@@ -168,177 +169,26 @@ Example at [docs/examples.md#ParseString](docs/examples.md#parsestring).
 blet::Dict parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true);
 ```
 
-Take a data and size and parse them  for create Jsonator object.  
+Take a data and size and parse them for create a Dict object.  
 You can disable options `comment` and `additionnalNext` for a better parsing.  
 Example at [docs/examples.md#ParseData](docs/examples.md#parsedata).
 
-## Setter Methods
-
-### Operator[] and Operator=
-
-Use bracket and equal operator.  
-
-```cpp
-json["string"] = "value";
-json["boolean"] = true;
-json["number"] = 42;
-json["array"][0] = "array0";
-json["array"][1] = "array1";
-/* ------------------------------------------
-{
-    "array": [
-        "array0",
-        "array1"
-    ],
-    "boolean": true,
-    "number": 42,
-    "string": "value"
-}
------------------------------------------- */
-```
-
-### New*
-
-Use the new methods.  
-
-```cpp
-json.newObject();
-json["string"].newString("value");
-json["boolean"].newBoolean(true);
-json["number"].newNumber(42);
-json["array"].newArray();
-json["array"][0].newString("array0");
-json["array"][1].newNumber(42);
-json["array"][2].newObject();
-json["array"][2]["null"].newNull();
-/* ------------------------------------------
-{
-    "array": [
-        "array0",
-        42,
-        {
-            "null": null
-        }
-    ],
-    "boolean": true,
-    "number": 42,
-    "string": "value"
-}
------------------------------------------- */
-```
-
-### From std container
-
-`deque`, `list`, `map`, `queue`, `set`, `stack`, `vector`
-
-```cpp
-std::vector<double> vDouble;
-vDouble.reserve(3);
-vDouble.push_back(0.42);
-vDouble.push_back(-0.42);
-vDouble.push_back(42);
-
-std::map<std::string, std::string> mStr;
-mStr["key1"] = "value1";
-mStr["key2"] = "value2";
-
-json["vector"] = vDouble;
-json["map"] = mStr;
-/* ------------------------------------------
-{
-    "map": {
-        "key1": "value1",
-        "key2": "value2"
-    },
-    "vector": [
-        0.42,
-        -0.42,
-        42
-    ]
-}
------------------------------------------- */
-```
-
-## Getter Methods
+## Dump Functions
 
 ### Dump
 
-Convert Jsonator object to string.  
-Example at [docs/examples.md#Dump](docs/examples.md#dump).
-
-### Contains
-
-Check if json object has key.  
-
-```cpp
-blet::Jsonator json;
-json["string"] = "value";
-json["boolean"] = true;
-json["number"] = 42;
-
-std::cout << json.contains("string") << '\n'  // 1
-          << json.contains("boolean") << '\n' // 1
-          << json.contains("number") << '\n'  // 1
-          << json.contains("foo")             // 0
-          << std::endl;
+``` cpp
+void dump(const blet::Dict& dict, std::ostream& os, std::size_t indent = 0, char indentCharacter = ' ');
 ```
 
-### Get*
+Dump from a Dict to json format in stream.  
+You can set the `indent` and `indentCharacter` for better formating.  
+Example at [docs/examples.md#DumpStream](docs/examples.md#dumpstream).
 
-Get type of value.  
-
-`getString`, `getBoolean`, `getNumber`, `getType`, `get`
-
-```cpp
-blet::Jsonator json;
-json["string"] = "value";
-json["boolean"] = true;
-json["number"] = 42;
-json["array"][0] = "array0";
-json["array"][1] = "array1";
-
-blet::Jsonator& jsonArray = json["array"];
-
-std::cout << json["string"].getString() << '\n' // value
-          << json["boolean"].getBoolean() << '\n' // 1
-          << json["number"].getNumber() << '\n' // 42
-          << jsonArray[1].getString() << '\n'; // array1
-
-unsigned int jsonNumber;
-std::string jsonString;
-
-jsonNumber = json["number"].get<unsigned int>();
-json["string"].get(jsonString);
-
-std::cout << jsonNumber << '\n' // 42
-          << jsonString << '\n'; // value
-
-blet::Jsonator::Type arrayType = jsonArray.getType();
-std::cout << (arrayType == blet::Jsonator::ARRAY) << std::endl; // 1
+``` cpp
+std::string dump(const blet::Dict& dict, std::size_t indent = 0, char indentCharacter = ' ');
 ```
 
-### Is*
-
-Check type of json object.  
-
-`isNull`, `isObject`, `isArray`, `isString`, `isNumber`, `isBoolean`
-
-```cpp
-blet::Jsonator json;
-json["string"].newString("value");
-json["boolean"].newBoolean(true);
-json["number"].newNumber(42);
-json["array"][0].newString("array0");
-json["array"][1].newNumber(42);
-json["array"][2].newObject();
-json["array"][2]["null"].newNull();
-
-std::cout << json["string"].isString() << '\n'   // 1
-          << json["boolean"].isBoolean() << '\n' // 1
-          << json["number"].isNumber() << '\n'   // 1
-          << json["array"].isArray() << '\n'     // 1
-          << json["array"][2].isObject() << '\n' // 1
-          << json["array"][2].isArray() << '\n'  // 0
-          << json["array"][2]["null"].isNull()   // 1
-          << std::endl;
-```
+Dump from a Dict to json format in string.  
+You can set the `indent` and `indentCharacter` for better formating.  
+Example at [docs/examples.md#DumpStream](docs/examples.md#dumpstring).

@@ -2,30 +2,40 @@
 
 #include "blet/json.h"
 
+#define JSON_TO_STRING(x) std::string(#x + 1, sizeof(#x) - 3)
+
 int main(int /*argc*/, char* /*argv*/[]) {
     /*
     ** parse
     */
-    const char jsonStr[] =
-        "{"
-        "  \"hello\": \"world\","
-        "  \"array\": ["
-        "    42,"
-        "    [ 1337 ],"
-        "    {"
-        "      \"key_in_array\": 0.42"
-        "    }"
-        "  ],"
-        "  \"null\": null,"
-        "  \"boolean\": false"
-        "}";
-    const blet::Dict json = blet::json::parseString(jsonStr);
+    const std::string jsonStr = JSON_TO_STRING((
+        {
+          "hello": "world",
+          "array": [
+            42,
+            [ 1337 ],
+            {
+              "key_in_array": 0.42
+            }
+          ],
+          "null": null,
+          "boolean": false
+        }
+    ));
+    blet::Dict json = blet::json::parseString(jsonStr);
     std::cout << json["array"][0].getNumber() << '\n';
     std::cout << json["array"][1][0].getNumber() << '\n';
     std::cout << json["array"][2]["key_in_array"].getNumber() << '\n';
     std::cout << json["boolean"].getBoolean() << '\n';
     std::cout << json["hello"].getString() << '\n';
     std::cout << json["null"].isNull() << '\n';
+
+    json["array"].getArray().push_back(42);
+    json["array"].getArray().push_back("42");
+    json["array"].getArray().push_back(0.42);
+    json["array"].getArray().push_back(blet::Dict());
+
+    std::cout << json["array"].getArray().size() << std::endl;
     // output:
     // 42
     // 1337

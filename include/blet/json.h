@@ -2,7 +2,7 @@
 #define _BLET_JSON_H_
 
 #include <exception> // std::exception
-#include <sstream>   // std::istream, std::ostream, std:ostringstream
+#include <sstream>   // std::istream, std::ostream
 #include <string>    // std::string
 
 #include "blet/dict.h"
@@ -34,32 +34,65 @@ class ParseException : public std::exception {
 };
 
 /**
- * @brief dump dict in json format
+ * @brief Dump dict in json format.
  *
- * @param dict object for dump
- * @param os output ostream
- * @param indent indentation of dump
- * @param indentCharacter indentation character
+ * @param dict A dict.
+ * @param os A ostream.
+ * @param indent Indentation of dump.
+ * @param indentCharacter Indentation character.
  */
 void dump(const blet::Dict& dict, std::ostream& os, std::size_t indent = 0, char indentCharacter = ' ');
 
 /**
- * @brief dump dict in json format
+ * @brief Dump dict in json format.
  *
- * @param dict object for dump
- * @param indent indentation of dump
- * @param indentCharacter indentation character
- * @return std::string
+ * @param dict A dict.
+ * @param indent Indentation of dump.
+ * @param indentCharacter Indentation character.
+ * @return std::string Json string.
  */
 std::string dump(const blet::Dict& dict, std::size_t indent = 0, char indentCharacter = ' ');
 
-blet::Dict parseFile(const char* filename, bool comment = true, bool additionalNext = true);
+/**
+ * @brief Parse a json from filename.
+ *
+ * @param filename A filename.
+ * @param comment Option for accept the comment (style C/C++) in json.
+ * @param additionalNext Option for accept the bad commat at end of json object.
+ * @return blet::Dict Dictionnary of json.
+ */
+blet::Dict parseFile(const char* filename, bool comment = false, bool additionalNext = false);
 
-blet::Dict parseStream(std::istream& stream, bool comment = true, bool additionalNext = true);
+/**
+ * @brief Parse a json from stream.
+ *
+ * @param stream A stream.
+ * @param comment Option for accept the comment (style C/C++) in json.
+ * @param additionalNext Option for accept the bad commat at end of json object.
+ * @return blet::Dict Dictionnary of json.
+ */
+blet::Dict parseStream(std::istream& stream, bool comment = false, bool additionalNext = false);
 
-blet::Dict parseString(const std::string& str, bool comment = true, bool additionalNext = true);
+/**
+ * @brief Parse a json from string.
+ *
+ * @param str A string.
+ * @param comment Option for accept the comment (style C/C++) in json.
+ * @param additionalNext Option for accept the bad commat at end of json object.
+ * @return blet::Dict Dictionnary of json.
+ */
+blet::Dict parseString(const std::string& str, bool comment = false, bool additionalNext = false);
 
-blet::Dict parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true);
+/**
+ * @brief Parse a json from data.
+ *
+ * @param data A data.
+ * @param size Size of data.
+ * @param comment Option for accept the comment (style C/C++) in json.
+ * @param additionalNext Option for accept the bad commat at end of json object.
+ * @return blet::Dict Dictionnary of json.
+ */
+blet::Dict parseData(const void* data, std::size_t size, bool comment = false, bool additionalNext = false);
 
 } // namespace json
 

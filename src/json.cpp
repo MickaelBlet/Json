@@ -27,7 +27,6 @@
 
 #include <ctype.h>  // ::isdigit, ::isspace
 #include <stdlib.h> // ::strtod
-#include <string.h> // ::strncmp
 
 #include <fstream> // std::ifstream
 #include <iomanip> // std::setprecision
@@ -38,27 +37,41 @@ namespace blet {
 namespace json {
 
 static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
-    static const std::pair<char, std::string> pairChars[] = {
-        std::pair<char, std::string>('\a', "\\a"),  // Alert (bell, alarm)
-        std::pair<char, std::string>('\b', "\\b"),  // Backspace
-        std::pair<char, std::string>('\f', "\\f"),  // Form feed (new page)
-        std::pair<char, std::string>('\n', "\\n"),  // New-line
-        std::pair<char, std::string>('\r', "\\r"),  // Carriage return
-        std::pair<char, std::string>('\t', "\\t"),  // Horizontal tab
-        std::pair<char, std::string>('\v', "\\v"),  // Vertical tab
-        std::pair<char, std::string>('\'', "\\'"),  // Single quotation mark
-        std::pair<char, std::string>('\"', "\\\""), // Double quotation mark
-        std::pair<char, std::string>('\\', "\\\\")  // Backslash
-    };
-    static const std::map<char, std::string> escapeChar(pairChars, pairChars + sizeof(pairChars) / sizeof(*pairChars));
-
     for (std::size_t i = 0; i < str.size(); ++i) {
-        std::map<char, std::string>::const_iterator cit = escapeChar.find(str[i]);
-        if (cit != escapeChar.end()) {
-            oss << cit->second;
-        }
-        else {
-            oss << str[i];
+        switch (str[i]) {
+            case '\a':
+                oss << '\\' << 'a';
+                break;
+            case '\b':
+                oss << '\\' << 'b';
+                break;
+            case '\f':
+                oss << '\\' << 'f';
+                break;
+            case '\n':
+                oss << '\\' << 'n';
+                break;
+            case '\r':
+                oss << '\\' << 'r';
+                break;
+            case '\t':
+                oss << '\\' << 't';
+                break;
+            case '\v':
+                oss << '\\' << 'v';
+                break;
+            case '\'':
+                oss << '\\' << '\'';
+                break;
+            case '"':
+                oss << '\\' << '"';
+                break;
+            case '\\':
+                oss << '\\' << '\\';
+                break;
+            default:
+                oss << str[i];
+                break;
         }
     }
 }
@@ -69,12 +82,12 @@ static inline void s_newlineDump(std::ostream& oss, const blet::Dict& dict, std:
             case blet::Dict::NULL_TYPE:
                 break;
             case blet::Dict::OBJECT_TYPE:
-                if (!dict.unsafeGetObject().empty()) {
+                if (!dict.getValue().getObject().empty()) {
                     oss << '\n';
                 }
                 break;
             case blet::Dict::ARRAY_TYPE:
-                if (!dict.unsafeGetArray().empty()) {
+                if (!dict.getValue().getArray().empty()) {
                     oss << '\n';
                 }
                 break;
@@ -112,7 +125,7 @@ static inline void s_indentDump(std::ostream& oss, const blet::Dict& dict, std::
 
 static inline void s_nullDump(std::ostream& oss, const blet::Dict& /*json*/, std::size_t /*indent*/,
                               char /*indentCharacter*/, std::size_t /*index*/) {
-    oss << "null";
+    oss.write("null", sizeof("null") - 1);
 }
 
 static inline void s_numberDump(std::ostream& oss, const blet::Dict& dict, std::size_t /*indent*/,
@@ -123,10 +136,10 @@ static inline void s_numberDump(std::ostream& oss, const blet::Dict& dict, std::
 static inline void s_booleanDump(std::ostream& oss, const blet::Dict& dict, std::size_t /*indent*/,
                                  char /*indentCharacter*/, std::size_t /*index*/) {
     if (dict.getBoolean()) {
-        oss << "true";
+        oss.write("true", sizeof("true") - 1);
     }
     else {
-        oss << "false";
+        oss.write("false", sizeof("false") - 1);
     }
 }
 
@@ -145,9 +158,9 @@ static void s_objectDump(std::ostream& oss, const blet::Dict& dict, std::size_t 
     oss << '{';
     s_newlineDump(oss, dict, indent);
     ++index;
-    for (blet::Dict::object_t::const_iterator cit = dict.unsafeGetObject().begin(); cit != dict.unsafeGetObject().end();
+    for (blet::Dict::object_t::const_iterator cit = dict.getValue().getObject().begin(); cit != dict.getValue().getObject().end();
          ++cit) {
-        if (cit != dict.unsafeGetObject().begin()) {
+        if (cit != dict.getValue().getObject().begin()) {
             oss << ',';
             s_newlineDump(oss, dict, indent);
         }
@@ -172,13 +185,13 @@ static void s_arrayDump(std::ostream& oss, const blet::Dict& dict, std::size_t i
     oss << '[';
     s_newlineDump(oss, dict, indent);
     ++index;
-    for (std::size_t i = 0; i < dict.unsafeGetArray().size(); ++i) {
+    for (std::size_t i = 0; i < dict.getValue().getArray().size(); ++i) {
         if (i != 0) {
             oss << ',';
             s_newlineDump(oss, dict, indent);
         }
         s_indentDump(oss, dict, indent, indentCharacter, index);
-        s_typeDump(oss, dict.unsafeGetArray()[i], indent, indentCharacter, index);
+        s_typeDump(oss, dict.getValue().getArray()[i], indent, indentCharacter, index);
     }
     s_newlineDump(oss, dict, indent);
     --index;
@@ -253,26 +266,50 @@ struct JsonParseInfo {
 };
 
 static inline std::string s_replaceEscapeChar(const std::string& str) {
-    static const std::pair<char, char> pairChars[] = {
-        std::pair<char, char>('a', '\a'),  // Alert (bell, alarm)
-        std::pair<char, char>('b', '\b'),  // Backspace
-        std::pair<char, char>('f', '\f'),  // Form feed (new page)
-        std::pair<char, char>('n', '\n'),  // New-line
-        std::pair<char, char>('r', '\r'),  // Carriage return
-        std::pair<char, char>('t', '\t'),  // Horizontal tab
-        std::pair<char, char>('v', '\v'),  // Vertical tab
-        std::pair<char, char>('\'', '\''), // Single quotation mark
-        std::pair<char, char>('"', '\"'),  // Double quotation mark
-        std::pair<char, char>('\\', '\\')  // Backslash
-    };
-    static const std::map<char, char> escapeChar(pairChars, pairChars + sizeof(pairChars) / sizeof(*pairChars));
     std::string ret(str);
     for (std::size_t i = 0; i < ret.size(); ++i) {
         if (ret[i] == '\\') {
-            const std::map<char, char>::const_iterator cit = escapeChar.find(ret[i + 1]);
-            if (cit != escapeChar.end()) {
-                ret.erase(i, 1);
-                ret[i] = cit->second;
+            switch (ret[i + 1]) {
+                case 'a':
+                    ret.erase(i, 1);
+                    ret[i] = '\a';
+                    break;
+                case 'b':
+                    ret.erase(i, 1);
+                    ret[i] = '\b';
+                    break;
+                case 'f':
+                    ret.erase(i, 1);
+                    ret[i] = '\f';
+                    break;
+                case 'n':
+                    ret.erase(i, 1);
+                    ret[i] = '\n';
+                    break;
+                case 'r':
+                    ret.erase(i, 1);
+                    ret[i] = '\r';
+                    break;
+                case 't':
+                    ret.erase(i, 1);
+                    ret[i] = '\t';
+                    break;
+                case 'v':
+                    ret.erase(i, 1);
+                    ret[i] = '\v';
+                    break;
+                case '\'':
+                    ret.erase(i, 1);
+                    ret[i] = '\'';
+                    break;
+                case '"':
+                    ret.erase(i, 1);
+                    ret[i] = '\"';
+                    break;
+                case '\\':
+                    ret.erase(i, 1);
+                    ret[i] = '\\';
+                    break;
             }
         }
     }
@@ -363,15 +400,15 @@ static inline blet::Dict& s_createNewObjectElement(const JsonParseInfo& info, co
     s_stringJumpSpace(str, i);
     // get key
     std::string key = s_replaceEscapeChar(str.substr(start, end - start));
-    if (dict.unsafeGetObject().find(key) != dict.unsafeGetObject().end()) {
+    if (dict.getValue().getObject().find(key) != dict.getValue().getObject().end()) {
         throw ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
-    return dict.unsafeGetObject()[key];
+    return dict.getValue().getObject()[key];
 }
 
 static inline blet::Dict& s_createNewArrayElement(blet::Dict& dict) {
-    dict.unsafeGetArray().push_back(blet::Dict());
-    return dict.unsafeGetArray().back();
+    dict.getValue().getArray().push_back(blet::Dict());
+    return dict.getValue().getArray().back();
 }
 
 static bool s_parseType(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict);
@@ -462,7 +499,7 @@ inline bool s_parseType(const JsonParseInfo& info, const std::string& str, std::
             s_parseNumber(info, str, i, dict);
             break;
         case 't':
-            if (!::strncmp(str.c_str() + i, "true", sizeof("true") - 1)) {
+            if (!str.compare(i, sizeof("true") - 1, "true", sizeof("true") - 1)) {
                 s_parseBool(true, i, dict);
             }
             else {
@@ -470,7 +507,7 @@ inline bool s_parseType(const JsonParseInfo& info, const std::string& str, std::
             }
             break;
         case 'f':
-            if (!::strncmp(str.c_str() + i, "false", sizeof("false") - 1)) {
+            if (!str.compare(i, sizeof("false") - 1, "false", sizeof("false") - 1)) {
                 s_parseBool(false, i, dict);
             }
             else {
@@ -478,7 +515,7 @@ inline bool s_parseType(const JsonParseInfo& info, const std::string& str, std::
             }
             break;
         case 'n':
-            if (!::strncmp(str.c_str() + i, "null", sizeof("null") - 1)) {
+            if (!str.compare(i, sizeof("null") - 1, "null", sizeof("null") - 1)) {
                 s_parseNull(i, dict);
             }
             else {
@@ -552,7 +589,7 @@ static std::string s_streamToStr(JsonParseInfo& info, std::istream& stream) {
     return oss.str();
 }
 
-blet::Dict s_parseStream(std::istream& stream, const std::string& filename, bool comment, bool additionalNext) {
+static blet::Dict s_parseStream(std::istream& stream, const std::string& filename, bool comment, bool additionalNext) {
     JsonParseInfo info(filename, additionalNext);
     std::string str = s_streamToStr(info, stream);
     if (comment) {
@@ -588,13 +625,10 @@ blet::Dict s_parseStream(std::istream& stream, const std::string& filename, bool
 
 blet::Dict parseFile(const char* filename, bool comment, bool additionalNext) {
     std::ifstream fileStream(filename); // open file
-    if (fileStream.is_open()) {
-        blet::Dict dict = s_parseStream(fileStream, filename, comment, additionalNext);
-        return dict;
-    }
-    else {
+    if (!fileStream.is_open()) {
         throw ParseException(filename, "Open file failed");
     }
+    return s_parseStream(fileStream, filename, comment, additionalNext);
 }
 
 blet::Dict parseStream(std::istream& stream, bool comment, bool additionalNext) {
