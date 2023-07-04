@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(json VERSION 3.0.0 LANGUAGES CXX)
+add_subdirectory("third/Dict")
+
+project(blet_json VERSION 4.0.0 LANGUAGES CXX)
 
 # OPTIONS
 option(BUILD_EXAMPLE "Build example binaries" OFF)
@@ -9,6 +11,15 @@ option(BUILD_TESTING "Build test binaries" OFF)
 option(BUILD_COVERAGE "Check coverage at end of test" OFF)
 if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 11 CACHE STRING "C++ standard to be used")
+endif()
+if(NOT CMAKE_INSTALL_LIBDIR)
+    set(CMAKE_INSTALL_LIBDIR lib CACHE STRING "Install destination library directory")
+endif()
+if(NOT CMAKE_INSTALL_BINDIR)
+    set(CMAKE_INSTALL_BINDIR bin CACHE STRING "Install destination binary directory")
+endif()
+if(NOT CMAKE_INSTALL_INCLUDEDIR)
+    set(CMAKE_INSTALL_INCLUDEDIR include CACHE STRING "Install destination include directory")
 endif()
 
 add_library("${PROJECT_NAME}"
@@ -25,9 +36,11 @@ set_target_properties("${PROJECT_NAME}"
         CXX_EXTENSIONS OFF
         NO_SYSTEM_FROM_IMPORTED ON
         COMPILE_FLAGS "-pedantic -Wall -Wextra -Werror"
-        INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include;${CMAKE_CURRENT_SOURCE_DIR}/Dict/single_include"
-        INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>;$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Dict/single_include>;$<INSTALL_INTERFACE:include>;$<INSTALL_INTERFACE:Dict/single_include>"
+        INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        INTERFACE_INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:include>"
 )
+
+target_link_libraries("${PROJECT_NAME}" PUBLIC blet_dict)
 
 # install
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
@@ -35,20 +48,19 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
 )
 
 install(TARGETS "${PROJECT_NAME}" EXPORT "${PROJECT_NAME}Targets"
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
-        DESTINATION include
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 install(EXPORT "${PROJECT_NAME}Targets"
-        NAMESPACE blet::
         FILE "${PROJECT_NAME}Targets.cmake"
-        DESTINATION "lib/cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
 )
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-        DESTINATION "lib/cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake"
 )
 
 if(BUILD_TESTING)
@@ -70,7 +82,7 @@ if(library_type STREQUAL "STATIC_LIBRARY" AND
    BUILD_TESTING)
     if(BUILD_COVERAGE)
         target_compile_options("${PROJECT_NAME}" PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
-        target_link_libraries("${PROJECT_NAME}" gcov)
+        target_link_libraries("${PROJECT_NAME}" PRIVATE gcov)
     endif()
     add_subdirectory(test)
 endif()

@@ -1,8 +1,14 @@
-# Jsonator
+# Json
 
 Json parse and dump library  
 Header only library at [single_include/blet/json.h](single_include/blet/json.h).  
 Examples at [docs/examples.md](docs/examples.md)
+
+## Clone
+
+```
+git clone --recurse-submodules "https://github.com/MickaelBlet/Json.git"
+```
 
 ## Quick start
 
@@ -137,40 +143,40 @@ mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_EXAMPLE=1 -DBUI
 ### parseFile
 
 ```cpp
-blet::Dict parseFile(const char* filename, bool comment = true, bool additionalNext = true);
+blet::Dict parseFile(const char* filename, bool comment = false, bool additionalNext = false);
 ```
 Take a path of json file and parse them for create a Dict object.  
-You can disable options `comment` and `additionnalNext` for a better parsing.  
+You can enable options `comment` and `additionnalNext` for a better parsing.  
 Example at [docs/examples.md#ParseFile](docs/examples.md#parsefile).
 
 ### parseStream
 
 ```cpp
-blet::Dict parseStream(std::istream& stream, bool comment = true, bool additionalNext = true);
+blet::Dict parseStream(std::istream& stream, bool comment = false, bool additionalNext = false);
 ```
 
 Take a std::istream and parse them for create a Dict object.  
-You can disable options `comment` and `additionnalNext` for a better parsing.  
+You can enable options `comment` and `additionnalNext` for a better parsing.  
 Example at [docs/examples.md#ParseStream](docs/examples.md#parsestream).
 
 ### parseString
 
 ```cpp
-blet::Dict parseString(const std::string& str, bool comment = true, bool additionalNext = true);
+blet::Dict parseString(const std::string& str, bool comment = false, bool additionalNext = false);
 ```
 
 Take a std::string and parse them for create a Dict object.  
-You can disable options `comment` and `additionnalNext` for a better parsing.  
+You can enable options `comment` and `additionnalNext` for a better parsing.  
 Example at [docs/examples.md#ParseString](docs/examples.md#parsestring).
 
 ### parseData
 
 ```cpp
-blet::Dict parseData(const void* data, std::size_t size, bool comment = true, bool additionalNext = true);
+blet::Dict parseData(const void* data, std::size_t size, bool comment = false, bool additionalNext = false);
 ```
 
 Take a data and size and parse them for create a Dict object.  
-You can disable options `comment` and `additionnalNext` for a better parsing.  
+You can enable options `comment` and `additionnalNext` for a better parsing.  
 Example at [docs/examples.md#ParseData](docs/examples.md#parsedata).
 
 ## Dump Functions

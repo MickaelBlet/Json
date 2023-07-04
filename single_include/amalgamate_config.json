@@ -3,7 +3,7 @@
     "target": "single_include/blet/json.h",
     "include_paths": [
         "include",
-        "Dict/include"
+        "third/Dict/include"
     ],
     "sources": [
         "include/blet/json.h",
