@@ -25,9 +25,6 @@
 
 #include "blet/json.h"
 
-#include <ctype.h>  // ::isdigit, ::isspace
-#include <stdlib.h> // ::strtod
-
 #include <fstream> // std::ifstream
 #include <iomanip> // std::setprecision
 #include <limits>  // std::numeric_limits
@@ -317,7 +314,8 @@ static inline std::string s_replaceEscapeChar(const std::string& str) {
 }
 
 static inline void s_stringJumpSpace(const std::string& str, std::size_t& index) {
-    while (::isspace(str[index])) {
+    // isspace
+    while ((str[index] >= '\t' && str[index] <= '\r') || str[index] == ' ') {
         ++index;
     }
 }
@@ -338,17 +336,20 @@ static inline void s_parseBool(bool boolean, std::size_t& i, blet::Dict& dict) {
 }
 
 static inline void s_parseNumber(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
-    if (str[i] == '0' && ::isdigit(str[i + 1])) {
+    if (str[i] == '0' && str[i + 1] >= '0' && str[i + 1] <= '9') {
         throw ParseException(info.filename, info.line(i), info.column(i), "Octal number not allowed");
     }
-    char* ret = NULL;
-    double number = ::strtod(str.c_str() + i, &ret);
-    dict.newNumber(number);
-    std::size_t jump = ret - (str.c_str() + i);
-    if (jump == 0) {
+    double number;
+    std::istringstream iss(str.substr(i));
+    std::streampos pos = iss.tellg();
+    if (iss >> number) {
+        dict.newNumber(number);
+        // jump of string number size
+        i += (iss.tellg() - pos);
+    }
+    else {
         throw ParseException(info.filename, info.line(i), info.column(i), "Bad number");
     }
-    i += jump;
 }
 
 static inline void s_parseString(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {

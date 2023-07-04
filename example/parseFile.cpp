@@ -3,7 +3,7 @@
 #include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
-    const blet::Dict json = blet::json::parseFile("./example/example.jsonc");
+    const blet::Dict json = blet::json::parseFile("./example/example.jsonc", true, true);
     // get value
     std::string str = json["string"];
     unsigned int number = json["number"];

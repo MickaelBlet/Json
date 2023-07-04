@@ -16,7 +16,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
             [ 1337 ],
             {
               "key_in_array": 0.42
-            }
+            },
+            -42e4
           ],
           "null": null,
           "boolean": false
@@ -29,11 +30,6 @@ int main(int /*argc*/, char* /*argv*/[]) {
     std::cout << json["boolean"].getBoolean() << '\n';
     std::cout << json["hello"].getString() << '\n';
     std::cout << json["null"].isNull() << '\n';
-
-    json["array"].getArray().push_back(42);
-    json["array"].getArray().push_back("42");
-    json["array"].getArray().push_back(0.42);
-    json["array"].getArray().push_back(blet::Dict());
 
     std::cout << json["array"].getArray().size() << std::endl;
     // output:

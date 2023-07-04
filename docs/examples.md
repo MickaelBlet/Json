@@ -26,10 +26,10 @@ $ cat ./example/example.jsonc
 ```cpp
 #include <iostream>
 
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
-    const blet::Jsonator json = blet::Jsonator::parseFile("./example/example.jsonc");
+    const blet::Dict json = blet::json::parseFile("./example/example.jsonc", true, true);
     // get value
     std::string str = json["string"];
     unsigned int number = json["number"];
@@ -66,11 +66,11 @@ object[key]: value
 ```cpp
 #include <iostream>
 
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
     std::istringstream iss("{\"hello\":\"world\"}");
-    const blet::Jsonator json = blet::Jsonator::parseStream(iss);
+    const blet::Dict json = blet::json::parseStream(iss);
     // get value
     std::string str = json["hello"];
     // print result
@@ -88,7 +88,7 @@ world
 
 ```cpp
 std::string jsonStr("{\"hello\":\"world\"}");
-const blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+const blet::Dict json = blet::json::parseString(jsonStr);
 // get value
 std::string str = json["hello"];
 // print result
@@ -104,7 +104,7 @@ world
 
 ```cpp
 std::string jsonStr("{\"hello\":\"world\"}");
-const blet::Jsonator json = blet::Jsonator::parseData(jsonStr.c_str(), jsonStr.size());
+const blet::Dict json = blet::json::parseData(jsonStr.c_str(), jsonStr.size());
 // get value
 std::string str = json["hello"];
 // print result
@@ -119,10 +119,10 @@ world
 ## Dump
 
 ```cpp
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
-    blet::Jsonator json;
+    blet::Dict json;
     // construct json
     json["foo"] = "bar";
     json["number"] = 42;
@@ -130,8 +130,8 @@ int main(int /*argc*/, char* /*argv*/[]) {
     json["array"][0] = 4;
     json["array"][1] = 2;
     // print result
-    std::cout << json.dump() << '\n' << '\n'
-              << json.dump(2) << std::endl;
+    std::cout << blet::json::dump(json) << '\n' << '\n'
+              << blet::json::dump(json, 2) << std::endl;
 }
 ```
 

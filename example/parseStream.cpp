@@ -4,7 +4,7 @@
 
 int main(int /*argc*/, char* /*argv*/[]) {
     std::istringstream iss("{\"hello\":\"world\"}");
-    const blet::Dict json = blet::json::parseStream(iss);
+    blet::Dict json = blet::json::parseStream(iss);
     // get value
     std::string str = json["hello"];
     // print result

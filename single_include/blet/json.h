@@ -2,8 +2,9 @@
 #ifndef _AMALGAMATE_GUARD__SINGLE_INCLUDE_BLET_JSON_H_
 #define _AMALGAMATE_GUARD__SINGLE_INCLUDE_BLET_JSON_H_
 
-// Copy from include/blet/json.h
-
+// -------------------------
+// Start include/blet/json.h
+// -------------------------
 #ifndef _BLET_JSON_H_
 #define _BLET_JSON_H_
 
@@ -12,8 +13,9 @@
 #include <string>    // std::string
 
 // #include "blet/dict.h"
-
-// Copy from Dict/include/blet/dict.h
+// ------------------------------------
+// Start third/Dict/include/blet/dict.h
+// ------------------------------------
 
 /**
  * dict.h
@@ -139,10 +141,7 @@ class Dict {
         template<typename T>
         inline UValue(const std::deque<T>& value) :
             _array(new array_t()) {
-            typename std::deque<T>::const_iterator it;
-            for (it = value.begin(); it != value.end(); ++it) {
-                _array->push_back(*it);
-            }
+            extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
@@ -150,10 +149,7 @@ class Dict {
         template<typename T>
         inline UValue(const std::list<T>& value) :
             _array(new array_t()) {
-            typename std::list<T>::const_iterator it;
-            for (it = value.begin(); it != value.end(); ++it) {
-                _array->push_back(*it);
-            }
+            extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
@@ -161,17 +157,7 @@ class Dict {
         template<typename T, typename U>
         inline UValue(const std::map<T, U>& value) :
             _array(new array_t()) {
-            typename std::map<T, U>::const_iterator it;
-            for (it = value.begin(); it != value.end(); ++it) {
-                if (static_cast<std::size_t>(it->first) < _array->size()) {
-                    (*_array)[static_cast<std::size_t>(it->first)] = it->second;
-                    continue;
-                }
-                while (_array->size() < static_cast<std::size_t>(it->first)) {
-                    _array->push_back(Dict());
-                }
-                _array->push_back(it->second);
-            }
+            extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
@@ -179,11 +165,7 @@ class Dict {
         template<typename T>
         inline UValue(const std::queue<T>& value) :
             _array(new array_t()) {
-            std::queue<T> copy = value;
-            while (!copy.empty()) {
-                _array->push_back(copy.front());
-                copy.pop();
-            }
+            extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
@@ -191,10 +173,7 @@ class Dict {
         template<typename T>
         inline UValue(const std::set<T>& value) :
             _array(new array_t()) {
-            typename std::set<T>::const_iterator it;
-            for (it = value.begin(); it != value.end(); ++it) {
-                _array->push_back(*it);
-            }
+            extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
@@ -202,11 +181,7 @@ class Dict {
         template<typename T>
         inline UValue(const std::stack<T>& value) :
             _array(new array_t()) {
-            std::stack<T> copy = value;
-            while (!copy.empty()) {
-                _array->push_back(copy.top());
-                copy.pop();
-            }
+            extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
@@ -214,10 +189,7 @@ class Dict {
         template<typename T>
         inline UValue(const std::vector<T>& value) :
             _array(new array_t()) {
-            typename std::vector<T>::const_iterator it;
-            for (it = value.begin(); it != value.end(); ++it) {
-                _array->push_back(*it);
-            }
+            extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a object.
@@ -225,10 +197,7 @@ class Dict {
         template<typename T>
         inline UValue(const std::map<std::string, T>& value) :
             _object(new object_t()) {
-            typename std::map<std::string, T>::const_iterator it;
-            for (it = value.begin(); it != value.end(); ++it) {
-                _object->insert(std::pair<std::string, Dict>(it->first, it->second));
-            }
+            extendToObject(value);
         }
 
         /**
@@ -329,6 +298,153 @@ class Dict {
          */
         inline void newObject(const object_t& value = object_t()) {
             _object = new object_t(value);
+        }
+
+        /**
+         * @brief Add the items of deque in array.
+         *
+         * @tparam T Type of deque item.
+         * @param value A deque.
+         */
+        template<typename T>
+        inline void extendToArray(const std::deque<T>& value) {
+            std::size_t size = _array->size() + value.size();
+            if (_array->capacity() < size) {
+                _array->reserve(size);
+            }
+            typename std::deque<T>::const_iterator it;
+            for (it = value.begin(); it != value.end(); ++it) {
+                _array->push_back(*it);
+            }
+        }
+
+        /**
+         * @brief Add the items of list in array.
+         *
+         * @tparam T Type of list item.
+         * @param value A list.
+         */
+        template<typename T>
+        inline void extendToArray(const std::list<T>& value) {
+            std::size_t size = _array->size() + value.size();
+            if (_array->capacity() < size) {
+                _array->reserve(size);
+            }
+            typename std::list<T>::const_iterator it;
+            for (it = value.begin(); it != value.end(); ++it) {
+                _array->push_back(*it);
+            }
+        }
+
+        /**
+         * @brief Add the items of map in array.
+         *
+         * @tparam T Type of map key.
+         * @tparam U Type of map item.
+         * @param value A map.
+         */
+        template<typename T, typename U>
+        inline void extendToArray(const std::map<T, U>& value) {
+            typename std::map<T, U>::const_iterator it;
+            for (it = value.begin(); it != value.end(); ++it) {
+                if (static_cast<std::size_t>(it->first) < _array->size()) {
+                    _array->operator[](static_cast<std::size_t>(it->first)) = it->second;
+                    continue;
+                }
+                while (_array->size() < static_cast<std::size_t>(it->first)) {
+                    _array->push_back(Dict());
+                }
+                _array->push_back(it->second);
+            }
+        }
+
+        /**
+         * @brief Add the items of queue in array.
+         *
+         * @tparam T Type of queue item.
+         * @param value A queue.
+         */
+        template<typename T>
+        inline void extendToArray(const std::queue<T>& value) {
+            std::size_t size = _array->size() + value.size();
+            if (_array->capacity() < size) {
+                _array->reserve(size);
+            }
+            std::queue<T> copy = value;
+            while (!copy.empty()) {
+                _array->push_back(copy.front());
+                copy.pop();
+            }
+        }
+
+        /**
+         * @brief Add the items of set in array.
+         *
+         * @tparam T Type of set item.
+         * @param value A set.
+         */
+        template<typename T>
+        inline void extendToArray(const std::set<T>& value) {
+            std::size_t size = _array->size() + value.size();
+            if (_array->capacity() < size) {
+                _array->reserve(size);
+            }
+            typename std::set<T>::const_iterator it;
+            for (it = value.begin(); it != value.end(); ++it) {
+                _array->push_back(*it);
+            }
+        }
+
+        /**
+         * @brief Add the items of stack in array.
+         *
+         * @tparam T Type of stack item.
+         * @param value A stack.
+         */
+        template<typename T>
+        inline void extendToArray(const std::stack<T>& value) {
+            std::size_t size = _array->size() + value.size();
+            if (_array->capacity() < size) {
+                _array->reserve(size);
+            }
+            std::stack<T> copy = value;
+            while (!copy.empty()) {
+                _array->push_back(copy.top());
+                copy.pop();
+            }
+        }
+
+        /**
+         * @brief Add the items of vector in array.
+         *
+         * @tparam T Type of vector item.
+         * @param value A vector.
+         */
+        template<typename T>
+        inline void extendToArray(const std::vector<T>& value) {
+            std::size_t size = _array->size() + value.size();
+            if (_array->capacity() < size) {
+                _array->reserve(size);
+            }
+            typename std::vector<T>::const_iterator it;
+            for (it = value.begin(); it != value.end(); ++it) {
+                _array->push_back(*it);
+            }
+        }
+
+        /**
+         * @brief Add the items of map in object.
+         *
+         * @tparam T Type of map key.
+         * @tparam U Type of map item.
+         * @param value A map.
+         */
+        template<typename T>
+        inline void extendToObject(const std::map<std::string, T>& value) {
+            typename std::map<std::string, T>::const_iterator it;
+            for (it = value.begin(); it != value.end(); ++it) {
+                _object->insert(std::pair<std::string, Dict>(it->first, it->second));
+            }
         }
 
         /**
@@ -859,7 +975,7 @@ class Dict {
     }
 
     /**
-     * @brief Get the Value object (unsafe)
+     * @brief Get the Value object (unsafe).
      *
      * @return UValue& Reference of value.
      */
@@ -868,7 +984,7 @@ class Dict {
     }
 
     /**
-     * @brief Get the Value object
+     * @brief Get the Value object.
      *
      * @return UValue& the read-only (constant) reference of value.
      */
@@ -932,7 +1048,7 @@ class Dict {
     /**
      * @brief Create null.
      *
-     * @throw AccessException if type is not a null.
+     * @throw AccessException if dict type is not a null.
      */
     inline void newNull() const {
         if (!isNull()) {
@@ -992,7 +1108,7 @@ class Dict {
      *
      * @param value New value.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a boolean.
+     * @throw AccessException if dict type is not null or not a boolean.
      */
     inline Dict& operator=(const boolean_t& value) {
         newBoolean<boolean_t>(value);
@@ -1003,10 +1119,25 @@ class Dict {
      * @brief Convert to boolean.
      *
      * @return const boolean_t& Read-only (constant) reference to this boolean.
-     * @throw AccessException if type is not a boolean.
+     * @throw AccessException if dict type is not a boolean.
      */
     inline operator const boolean_t&() const {
         return getBoolean();
+    }
+
+    /**
+     * @brief Create bool with false.
+     *
+     * @throw AccessException if dict type is not a null and not a boolean.
+     */
+    inline void newBoolean() {
+        if (!isNull() && !isBoolean()) {
+            throw AccessException(*this, "is not a boolean");
+        }
+        if (isNull()) {
+            _type = BOOLEAN_TYPE;
+            _value.getBoolean() = false;
+        }
     }
 
     /**
@@ -1014,7 +1145,7 @@ class Dict {
      *
      * @tparam T Type of value.
      * @param value New value.
-     * @throw AccessException if type is not a null and not a boolean.
+     * @throw AccessException if dict type is not a null and not a boolean.
      */
     template<typename T>
     inline void newBoolean(const T& value) {
@@ -1171,7 +1302,7 @@ class Dict {
      * @brief Get the number of dict.
      *
      * @return number_t& Reference to this number.
-     * @throw AccessException if dict type is not null or not a number.
+     * @throw AccessException if dict type is not null and not a number.
      */
     inline number_t& getNumber() {
         if (!isNull() && !isNumber()) {
@@ -1203,7 +1334,7 @@ class Dict {
      * @tparam T Type of template.
      * @param value New value.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a number.
+     * @throw AccessException if dict type is not null and not a number.
      */
     template<typename T>
     inline Dict& operator=(const T& value) {
@@ -1216,7 +1347,7 @@ class Dict {
      *
      * @tparam T Type of template.
      * @return Number of this dictionnary.
-     * @throw AccessException if type is not a number.
+     * @throw AccessException if dict type is not a number.
      */
     template<typename T>
     inline operator T() const {
@@ -1224,11 +1355,26 @@ class Dict {
     }
 
     /**
+     * @brief Create number with 0.
+     *
+     * @throw AccessException if dict type is not a null and not a number.
+     */
+    inline void newNumber() {
+        if (!isNull() && !isNumber()) {
+            throw AccessException(*this, "is not a number");
+        }
+        if (isNull()) {
+            _type = NUMBER_TYPE;
+            _value.getNumber() = 0;
+        }
+    }
+
+    /**
      * @brief Create number from @p value.
      *
      * @tparam T Type of value.
      * @param value New value.
-     * @throw AccessException if type is not a null and not a number.
+     * @throw AccessException if dict type is not a null and not a number.
      */
     template<typename T>
     inline void newNumber(const T& value) {
@@ -1393,7 +1539,7 @@ class Dict {
      * @brief Get the string of dict.
      *
      * @return string_t& Reference to this string.
-     * @throw AccessException If dict type is not null or not a string.
+     * @throw AccessException If dict type is not null and not a string.
      */
     inline string_t& getString() {
         if (!isNull() && !isString()) {
@@ -1424,7 +1570,7 @@ class Dict {
      *
      * @param value New value.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException If type is not null or not a string.
+     * @throw AccessException If dict type is not null and not a string.
      */
     inline Dict& operator=(const std::string& value) {
         newString<std::string>(value);
@@ -1436,7 +1582,7 @@ class Dict {
      *
      * @param value New value.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException If type is not null or not a string.
+     * @throw AccessException If dict type is not null and not a string.
      */
     inline Dict& operator=(const char* value) {
         newString<std::string>(value);
@@ -1449,7 +1595,7 @@ class Dict {
      * @tparam Size Size of value.
      * @param value New value.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException If type is not null or not a string.
+     * @throw AccessException If dict type is not null and not a string.
      */
     template<std::size_t Size>
     inline Dict& operator=(const char (&value)[Size]) {
@@ -1481,9 +1627,9 @@ class Dict {
      * @brief Create string from @p value.
      *
      * @param value New value.
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
-    inline void newString(const std::string& value) {
+    inline void newString(const std::string& value = std::string("")) {
         if (!isNull() && !isString()) {
             throw AccessException(*this, "is not a string");
         }
@@ -1501,7 +1647,7 @@ class Dict {
      *
      * @tparam T Type of value.
      * @param value New value.
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     template<typename T>
     inline void newString(const T& value) {
@@ -1524,7 +1670,7 @@ class Dict {
      *
      * @param str The string to append.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& append(const std::string& str) {
         getString().append(str);
@@ -1541,7 +1687,7 @@ class Dict {
      * @param __n The number of characters to append.
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range if __pos is not a valid index.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& append(const std::string& __str, std::size_t __pos, std::size_t __n = std::string::npos) {
         getString().append(__str, __pos, __n);
@@ -1554,7 +1700,7 @@ class Dict {
      * @param __s The C string to append.
      * @param __n The number of characters to append.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& append(const char* __s, std::size_t __n) {
         getString().append(__s, __n);
@@ -1566,7 +1712,7 @@ class Dict {
      *
      * @param __s The C string to append.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& append(const char* __s) {
         getString().append(__s);
@@ -1580,7 +1726,7 @@ class Dict {
      * @param __n The number of characters to append.
      * @param __c The character to use.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& append(std::size_t __n, char __c) {
         getString().append(__n, __c);
@@ -1595,7 +1741,7 @@ class Dict {
      * @param __first Iterator referencing the first character to append.
      * @param __last Iterator marking the end of the range.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     template<typename _InputIterator>
     inline Dict& string_append(_InputIterator __first, _InputIterator __last) {
@@ -1608,7 +1754,7 @@ class Dict {
      *
      * @param __str Source string to use.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& assign(const std::string& __str) {
         getString().assign(__str);
@@ -1625,7 +1771,7 @@ class Dict {
      * @param __n Number of characters to use.
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range if pos is not a valid index.
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& assign(const std::string& __str, std::size_t __pos, std::size_t __n = std::string::npos) {
         getString().assign(__str, __pos, __n);
@@ -1640,7 +1786,7 @@ class Dict {
      * @param __s The C string to use.
      * @param __n Number of characters to use.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& assign(const char* __s, std::size_t __n) {
         getString().assign(__s, __n);
@@ -1654,7 +1800,7 @@ class Dict {
      *
      * @param __s The C string to use.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& assign(const char* __s) {
         getString().assign(__s);
@@ -1668,7 +1814,7 @@ class Dict {
      * @param __n Length of the resulting string.
      * @param __c The character to use.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& assign(std::size_t __n, char __c) {
         getString().assign(__n, __c);
@@ -1681,7 +1827,7 @@ class Dict {
      *
      * @param __first Iterator referencing the first character to append.
      * @param __last Iterator marking the end of the range.
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     template<typename _InputIterator>
     inline void string_assign(_InputIterator __first, _InputIterator __last) {
@@ -1691,7 +1837,7 @@ class Dict {
     /**
      * @brief Returns a read/write iterator that points to the first character in the %string.
      *
-     * @throw AccessException if type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline string_t::iterator string_begin() {
         return getString().begin();
@@ -1700,7 +1846,7 @@ class Dict {
     /**
      * @brief Returns a read-only (constant) iterator that points to the first character in the %string.
      *
-     * @throw AccessException if type is not a string.
+     * @throw AccessException if dict type is not a string.
      */
     inline string_t::const_iterator string_begin() const {
         return getString().begin();
@@ -1875,7 +2021,7 @@ class Dict {
     /**
      * @brief Return a read/write iterator that points one past the last character in the %string.
      *
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline string_t::iterator string_end() {
         return getString().end();
@@ -1897,7 +2043,7 @@ class Dict {
      * @param __pos Index of first character to remove (default 0).
      * @param __n Number of characters to remove (default remainder).
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& erase(std::size_t __pos = 0, std::size_t __n = std::string::npos) {
         getString().erase(__pos, __n);
@@ -1911,7 +2057,7 @@ class Dict {
      *
      * @param __position Iterator referencing the character to remove.
      * @return string_t::iterator iterator referencing same location after removal.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline string_t::iterator erase(string_t::iterator __position) {
         return getString().erase(__position);
@@ -1925,7 +2071,7 @@ class Dict {
      * @param __first Iterator referencing the first character to remove.
      * @param __last Iterator referencing the end of the range.
      * @return string_t::iterator Iterator referencing location of first after removal.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline string_t::iterator erase(string_t::iterator __first, string_t::iterator __last) {
         return getString().erase(__first, __last);
@@ -2276,7 +2422,7 @@ class Dict {
      * @param __n Number of characters to insert.
      * @param __c The character to insert.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline void insert(string_t::iterator __p, std::size_t __n, char __c) {
         getString().insert(__p, __n, __c);
@@ -2292,7 +2438,7 @@ class Dict {
      * @param __beg Start of range.
      * @param __end End of range.
      * @throw std::length_error If new length exceeds @c max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     template<class _InputIterator>
     inline void insert(string_t::iterator __p, _InputIterator __beg, _InputIterator __end) {
@@ -2309,7 +2455,7 @@ class Dict {
      * @param __str The string to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& insert(std::size_t __pos1, const string_t& __str) {
         getString().insert(__pos1, __str);
@@ -2330,7 +2476,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw std::out_of_range If pos1 > size() or __pos2 > str.size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& insert(std::size_t __pos1, const string_t& __str, std::size_t __pos2,
                         std::size_t __n = std::string::npos) {
@@ -2351,7 +2497,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw std::out_of_range If __pos is beyond the end of this string.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& insert(std::size_t __pos, const char* __s, std::size_t __n) {
         getString().insert(__pos, __s, __n);
@@ -2370,7 +2516,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw std::out_of_range If pos is beyond the end of this string.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& insert(std::size_t __pos, const char* __s) {
         getString().insert(__pos, __s);
@@ -2390,7 +2536,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw std::out_of_range If __pos is beyond the end of this string.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& insert(std::size_t __pos, std::size_t __n, char __c) {
         getString().insert(__pos, __n, __c);
@@ -2408,7 +2554,7 @@ class Dict {
      * @param __c The character to insert.
      * @return string_t::iterator Iterator referencing newly inserted char.
      * @throw std::length_error If new length exceeds max_size()
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline string_t::iterator insert(string_t::iterator __p, char __c) {
         return getString().insert(__p, __c);
@@ -2427,7 +2573,7 @@ class Dict {
      *
      * @param __str The string to append.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& operator+=(const string_t& __str) {
         getString().operator+=(__str);
@@ -2439,7 +2585,7 @@ class Dict {
      *
      * @param __s The C string to append.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& operator+=(const char* __s) {
         getString().operator+=(__s);
@@ -2451,7 +2597,7 @@ class Dict {
      *
      * @param __c The character to append.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& operator+=(char __c) {
         getString().operator+=(__c);
@@ -2462,7 +2608,7 @@ class Dict {
      * @brief Append a single character.
      *
      * @param __c Character to append.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline void string_push_back(char __c) {
         getString().push_back(__c);
@@ -2471,7 +2617,7 @@ class Dict {
     /**
      * @brief Returns a read/write reverse iterator that points to the last character in the %string.
      * Iteration is done in reverse element order.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline string_t::reverse_iterator string_rbegin() {
         return getString().rbegin();
@@ -2489,7 +2635,7 @@ class Dict {
     /**
      * @brief Returns a read/write reverse iterator that points to one before the first character in the %string.
      * Iteration is done in reverse element order.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline string_t::reverse_iterator string_rend() {
         return getString().rend();
@@ -2519,7 +2665,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If pos is beyond the end of this string.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(std::size_t __pos, std::size_t __n, const string_t& __str) {
         getString().replace(__pos, __n, __str);
@@ -2542,7 +2688,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If __pos1 > size() or __pos2 > __str.size().
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(std::size_t __pos1, std::size_t __n1, const string_t& __str, std::size_t __pos2,
                          std::size_t __n2 = std::string::npos) {
@@ -2565,7 +2711,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If pos1 > size().
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(std::size_t __pos, std::size_t __n1, const char* __s, std::size_t __n2) {
         getString().replace(__pos, __n1, __s, __n2);
@@ -2586,7 +2732,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If pos1 > size().
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(std::size_t __pos, std::size_t __n1, const char* __s) {
         getString().replace(__pos, __n1, __s);
@@ -2608,7 +2754,7 @@ class Dict {
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If pos1 > size().
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(std::size_t __pos, std::size_t __n1, std::size_t __n2, char __c) {
         getString().replace(__pos, __n1, __n2, __c);
@@ -2627,7 +2773,7 @@ class Dict {
      * @param __str String value to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, const string_t& __str) {
         getString().replace(__i1, __i2, __str);
@@ -2647,7 +2793,7 @@ class Dict {
      * @param __n Number of characters from s to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, const char* __s, std::size_t __n) {
         getString().replace(__i1, __i2, __s, __n);
@@ -2666,7 +2812,7 @@ class Dict {
      * @param __s C string value to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, const char* __s) {
         getString().replace(__i1, __i2, __s);
@@ -2686,7 +2832,7 @@ class Dict {
      * @param __c Character to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, std::size_t __n, char __c) {
         getString().replace(__i1, __i2, __n, __c);
@@ -2707,7 +2853,7 @@ class Dict {
      * @param __k2 Iterator referencing end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     template<class _InputIterator>
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, _InputIterator __k1, _InputIterator __k2) {
@@ -2728,7 +2874,7 @@ class Dict {
      * @param __k2 Pointer end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, char* __k1, char* __k2) {
         getString().replace(__i1, __i2, __k1, __k2);
@@ -2748,7 +2894,7 @@ class Dict {
      * @param __k2 Const pointer end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, const char* __k1, const char* __k2) {
         getString().replace(__i1, __i2, __k1, __k2);
@@ -2768,7 +2914,7 @@ class Dict {
      * @param __k2 Iterator referencing end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, string_t::iterator __k1,
                          string_t::iterator __k2) {
@@ -2789,7 +2935,7 @@ class Dict {
      * @param __k2 Const iIterator referencing end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, string_t::const_iterator __k1,
                          string_t::const_iterator __k2) {
@@ -2805,7 +2951,7 @@ class Dict {
      *
      * @param __n Number of elements the %list should contain.
      * @param __c Data with which new elements should be populated.
-     * @throw AccessException if dict type is not null or not a string.
+     * @throw AccessException if dict type is not null and not a string.
      */
     inline void resize(std::size_t __n, char __c) {
         getString().resize(__n, __c);
@@ -3286,36 +3432,28 @@ class Dict {
     // -------------------------------------------------------------------------
 
     /**
-     * @brief check if type of jsonator is a array
-     *
-     * @return true if type is a array else false
+     * @brief Return true if type is array else false.
      */
     inline bool isArray() const {
         return _type == ARRAY_TYPE;
     }
 
     /**
-     * @brief get the array of dict object
+     * @brief Get the array of dict.
      *
-     * @return array_t&
-     * @throw AccessException if dict type is not a array
+     * @return array_t& Reference to this array.
+     * @throw AccessException if dict type is not null and not a array.
      */
     inline array_t& getArray() {
-        if (!isNull() && !isArray()) {
-            throw AccessException(*this, "is not a array");
-        }
-        if (isNull()) {
-            _type = ARRAY_TYPE;
-            _value.newArray();
-        }
+        createArray();
         return _value.getArray();
     }
 
     /**
-     * @brief get the array of dict object
+     * @brief Get the array of dict.
      *
-     * @return const array_t&
-     * @throw AccessException if dict type is not a array
+     * @return const array_t& Read-only (constant) reference to this array.
+     * @throw AccessException if dict type is not a array.
      */
     inline const array_t& getArray() const {
         if (!isArray()) {
@@ -3325,153 +3463,250 @@ class Dict {
     }
 
     /**
-     * @brief set value from deque
+     * @brief Set value from deque.
      *
-     * @tparam T
-     * @param value
-     * @throw AccessException if type is not null or not a array
+     * @tparam T Type of deque item.
+     * @param value A deque.
+     * @throw AccessException if dict type is not null and not a array.
      */
     template<typename T>
     inline Dict& operator=(const std::deque<T>& value) {
         newArray();
-        typename std::deque<T>::const_iterator it;
-        for (it = value.begin(); it != value.end(); ++it) {
-            _value.getArray().push_back(*it);
-        }
+        _value.extendToArray(value);
         return *this;
     }
 
     /**
-     * @brief set value from list
+     * @brief Set value from list.
      *
-     * @tparam T
-     * @param value
-     * @throw AccessException if type is not null or not a array
+     * @tparam T Type of list item.
+     * @param value A list.
+     * @throw AccessException if dict type is not null and not a array.
      */
     template<typename T>
     inline Dict& operator=(const std::list<T>& value) {
         newArray();
-        typename std::list<T>::const_iterator it;
-        for (it = value.begin(); it != value.end(); ++it) {
-            _value.getArray().push_back(*it);
-        }
+        _value.extendToArray(value);
         return *this;
     }
 
     /**
-     * @brief set value from map
+     * @brief Set value from map.
      *
-     * @tparam T key
-     * @tparam U value
-     * @param value
-     * @throw AccessException if type is not null or not a array or not a object
+     * @tparam T Type of map key.
+     * @tparam U Type of map item.
+     * @param value A map.
+     * @throw AccessException if dict type is not null and not a array.
      */
     template<typename T, typename U>
     inline Dict& operator=(const std::map<T, U>& value) {
         newArray();
-        typename std::map<T, U>::const_iterator it;
-        for (it = value.begin(); it != value.end(); ++it) {
-            operator[](it->first) = it->second;
-        }
+        _value.extendToArray(value);
         return *this;
     }
 
     /**
-     * @brief set value from queue
+     * @brief Set value from queue.
      *
-     * @tparam T
-     * @param value
-     * @throw AccessException if type is not null or not a array
+     * @tparam T Type of queue item.
+     * @param value A queue.
+     * @throw AccessException if dict type is not null and not a array.
      */
     template<typename T>
     inline Dict& operator=(const std::queue<T>& value) {
         newArray();
-        std::queue<T> copy = value;
-        while (!copy.empty()) {
-            _value.getArray().push_back(copy.front());
-            copy.pop();
-        }
+        _value.extendToArray(value);
         return *this;
     }
 
     /**
-     * @brief set value from set
+     * @brief Set value from set.
      *
-     * @tparam T
-     * @param value
-     * @throw AccessException if type is not null or not a array
+     * @tparam T Type of set item.
+     * @param value A set.
+     * @throw AccessException if dict type is not null and not a array.
      */
     template<typename T>
     inline Dict& operator=(const std::set<T>& value) {
         newArray();
-        typename std::set<T>::const_iterator it;
-        for (it = value.begin(); it != value.end(); ++it) {
-            _value.getArray().push_back(*it);
-        }
+        _value.extendToArray(value);
         return *this;
     }
 
     /**
-     * @brief set value from stack
+     * @brief Set value from stack.
      *
-     * @tparam T
-     * @param value
-     * @throw AccessException if type is not null or not a array
+     * @tparam T Type of stack item.
+     * @param value A stack.
+     * @throw AccessException if dict type is not null and not a array.
      */
     template<typename T>
     inline Dict& operator=(const std::stack<T>& value) {
         newArray();
-        std::stack<T> copy = value;
-        while (!copy.empty()) {
-            _value.getArray().push_back(copy.top());
-            copy.pop();
-        }
+        _value.extendToArray(value);
         return *this;
     }
 
     /**
-     * @brief set value from vector
+     * @brief Set value from vector.
      *
-     * @tparam T
-     * @param value
-     * @throw AccessException if type is not null or not a array
+     * @tparam T Type of vector item.
+     * @param value A vector.
+     * @throw AccessException if dict type is not null and not a array.
      */
     template<typename T>
     inline Dict& operator=(const std::vector<T>& value) {
         newArray();
-        typename std::vector<T>::const_iterator it;
-        for (it = value.begin(); it != value.end(); ++it) {
-            _value.getArray().push_back(*it);
-        }
+        _value.extendToArray(value);
         return *this;
     }
 
     /**
-     * @brief create array
+     * @brief Extend value from deque.
      *
-     * @throw AccessException if type is not a null and not a array
+     * @tparam T Type of deque item.
+     * @param value A deque.
+     * @throw AccessException if dict type is not null and not a array.
+     */
+    template<typename T>
+    inline Dict& operator+=(const std::deque<T>& value) {
+        createArray();
+        _value.extendToArray(value);
+        return *this;
+    }
+
+    /**
+     * @brief Extend value from list.
+     *
+     * @tparam T Type of list item.
+     * @param value A list.
+     * @throw AccessException if dict type is not null and not a array.
+     */
+    template<typename T>
+    inline Dict& operator+=(const std::list<T>& value) {
+        createArray();
+        _value.extendToArray(value);
+        return *this;
+    }
+
+    /**
+     * @brief Extend value from map.
+     *
+     * @tparam T Type of map key.
+     * @tparam U Type of map item.
+     * @param value A map.
+     * @throw AccessException if dict type is not null and not a array.
+     */
+    template<typename T, typename U>
+    inline Dict& operator+=(const std::map<T, U>& value) {
+        createArray();
+        _value.extendToArray(value);
+        return *this;
+    }
+
+    /**
+     * @brief Extend value from queue.
+     *
+     * @tparam T Type of queue item.
+     * @param value A queue.
+     * @throw AccessException if dict type is not null and not a array.
+     */
+    template<typename T>
+    inline Dict& operator+=(const std::queue<T>& value) {
+        createArray();
+        _value.extendToArray(value);
+        return *this;
+    }
+
+    /**
+     * @brief Extend value from set.
+     *
+     * @tparam T Type of set item.
+     * @param value A set.
+     * @throw AccessException if dict type is not null and not a array.
+     */
+    template<typename T>
+    inline Dict& operator+=(const std::set<T>& value) {
+        createArray();
+        _value.extendToArray(value);
+        return *this;
+    }
+
+    /**
+     * @brief Extend value from stack.
+     *
+     * @tparam T Type of stack item.
+     * @param value A stack.
+     * @throw AccessException if dict type is not null and not a array.
+     */
+    template<typename T>
+    inline Dict& operator+=(const std::stack<T>& value) {
+        createArray();
+        _value.extendToArray(value);
+        return *this;
+    }
+
+    /**
+     * @brief Extend value from vector.
+     *
+     * @tparam T Type of vector item.
+     * @param value A vector.
+     * @throw AccessException if dict type is not null and not a array.
+     */
+    template<typename T>
+    inline Dict& operator+=(const std::vector<T>& value) {
+        createArray();
+        _value.extendToArray(value);
+        return *this;
+    }
+
+    /**
+     * @brief Create array or clear current array.
+     *
+     * @throw AccessException if dict type is not a null and not a array.
      */
     inline void newArray() {
-        if (!isNull() && !isArray()) {
-            throw AccessException(*this, "is not a array");
-        }
-        if (isNull()) {
-            _type = ARRAY_TYPE;
-            _value.newArray();
+        switch (_type) {
+            case NULL_TYPE:
+                _type = ARRAY_TYPE;
+                _value.newArray();
+                break;
+            case ARRAY_TYPE:
+                _value.getArray().clear();
+                break;
+            case BOOLEAN_TYPE:
+            case NUMBER_TYPE:
+            case STRING_TYPE:
+            case OBJECT_TYPE:
+                throw AccessException(*this, "is not a array");
+                break;
         }
     }
 
     /**
-     * @brief get dict from @p index if the lowers indexies not exists create of null object
+     * @brief Create array from value.
+     *
+     * @tparam T Type of value.
+     * @param value A value.
+     * @throw AccessException if dict type is not a null and not a array
+     */
+    template<typename T>
+    inline void newArray(const T& value) {
+        newArray();
+        _value.extendToArray(value);
+    }
+
+    /**
+     * @brief Get dict from @p index if the lowers indexies not exists create of null object.
      *
      * @param index
      * @return Dict& data associated with the index or if the index does not exist,
-     * a dict object with that index is created using default values, which is then returned
-     * @throw AccessException if type is not a null and not a array
+     * a dict object with that index is created using default values, which is then returned.
+     * @throw AccessException if dict type is not a null and not a array.
      */
     template<typename T>
     inline Dict& operator[](const T& index) {
-        newArray();
+        createArray();
         if (static_cast<std::size_t>(index) < _value.getArray().size()) {
             return _value.getArray()[static_cast<std::size_t>(index)];
         }
@@ -3487,7 +3722,7 @@ class Dict {
      *
      * @param index
      * @return const Dict&
-     * @throw AccessException if type is not a array
+     * @throw AccessException if dict type is not a array
      * @throw ChildException if index is not exists
      */
     template<typename T>
@@ -3495,10 +3730,10 @@ class Dict {
         if (!isArray()) {
             throw AccessException(*this, "is not a array");
         }
-        if (static_cast<std::size_t>(index) < _value.getArray().size()) {
-            return _value.getArray()[static_cast<std::size_t>(index)];
+        if (static_cast<std::size_t>(index) >= _value.getArray().size()) {
+            throw ChildException(*this, static_cast<unsigned long>(index));
         }
-        throw ChildException(*this, static_cast<unsigned long>(index));
+        return _value.getArray()[static_cast<std::size_t>(index)];
     }
 
     /**
@@ -3506,7 +3741,7 @@ class Dict {
      *
      * @param index
      * @return true if array has index else false
-     * @throw AccessException if type is not a array
+     * @throw AccessException if dict type is not a array
      */
     template<typename T>
     inline bool contains(const T& index) const {
@@ -3524,7 +3759,7 @@ class Dict {
      *
      * @param __n Number of elements to be assigned.
      * @param __val Value to be assigned.
-     * @throw AccessException if type is not null or not a array
+     * @throw AccessException if dict type is not null or not a array
      */
     inline void assign(std::size_t __n, const Dict& __val) {
         getArray().assign(__n, __val);
@@ -3541,7 +3776,7 @@ class Dict {
      *
      * @param __first An input iterator.
      * @param __last An input iterator.
-     * @throw AccessException if type is not null or not a array
+     * @throw AccessException if dict type is not null or not a array
      */
     template<typename _InputIterator>
     inline void array_assign(_InputIterator __first, _InputIterator __last) {
@@ -3557,7 +3792,7 @@ class Dict {
      * @tparam T
      * @param index The index of the element for which data should be accessed.
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a array
+     * @throw AccessException if dict type is not null or not a array
      */
     template<typename T>
     inline Dict& at(const T& index) {
@@ -3573,7 +3808,7 @@ class Dict {
      * @tparam T
      * @param index The index of the element for which data should be accessed.
      * @return const Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a array
+     * @throw AccessException if dict type is not null or not a array
      */
     template<typename T>
     inline const Dict& at(const T& index) const {
@@ -3584,7 +3819,7 @@ class Dict {
      * @brief Returns a read/write reference to the data at the last element of the %vector.
      *
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not null or not a array
+     * @throw AccessException if dict type is not null or not a array
      */
     inline Dict& back() {
         return getArray().back();
@@ -3594,7 +3829,7 @@ class Dict {
      * @brief Returns a read-only (constant) reference to the data at the last element of the %vector.
      *
      * @return Dict& Reference to this dictionnary.
-     * @throw AccessException if type is not a array
+     * @throw AccessException if dict type is not a array
      */
     inline const Dict& back() const {
         return getArray().back();
@@ -3605,7 +3840,7 @@ class Dict {
      * Iteration is done in ordinary element order.
      *
      * @return array_t::iterator
-     * @throw AccessException if type is not null or not a array
+     * @throw AccessException if dict type is not null or not a array
      */
     inline array_t::iterator array_begin() {
         return getArray().begin();
@@ -3616,7 +3851,7 @@ class Dict {
      * Iteration is done in ordinary element order.
      *
      * @return array_t::const_iterator
-     * @throw AccessException if type is not a array
+     * @throw AccessException if dict type is not a array
      */
     inline array_t::const_iterator array_begin() const {
         return getArray().begin();
@@ -3821,36 +4056,28 @@ class Dict {
     // -------------------------------------------------------------------------
 
     /**
-     * @brief check if type of jsonator is a object
-     *
-     * @return true if type is a object else false
+     * @brief Return true if type is object else false.
      */
     inline bool isObject() const {
         return _type == OBJECT_TYPE;
     }
 
     /**
-     * @brief get the object of dict object
+     * @brief Get the object of dict.
      *
-     * @return object_t&
-     * @throw AccessException if dict type is not a object
+     * @return object_t& Reference to this object.
+     * @throw AccessException if dict type is not null and not a object.
      */
     inline object_t& getObject() {
-        if (!isNull() && !isObject()) {
-            throw AccessException(*this, "is not a object");
-        }
-        if (isNull()) {
-            _type = OBJECT_TYPE;
-            _value.newObject();
-        }
+        createObject();
         return _value.getObject();
     }
 
     /**
-     * @brief get the object of dict object
+     * @brief Get the object of dict.
      *
-     * @return const object_t&
-     * @throw AccessException if dict type is not a object
+     * @return const object_t& Read-only (constant) reference to this object.
+     * @throw AccessException if dict type is not a object.
      */
     inline const object_t& getObject() const {
         if (!isObject()) {
@@ -3860,47 +4087,79 @@ class Dict {
     }
 
     /**
-     * @brief set value from map
+     * @brief Set value from map.
      *
-     * @tparam T key
-     * @tparam U value
-     * @param value
-     * @throw AccessException if type is not null or not a object
+     * @tparam T Type of map item.
+     * @param value A map.
+     * @throw AccessException if dict type is not null and not a object.
      */
     template<typename T>
     inline Dict& operator=(const std::map<std::string, T>& value) {
         newObject();
-        typename std::map<std::string, T>::const_iterator it;
-        for (it = value.begin(); it != value.end(); ++it) {
-            _value.getObject().insert(std::pair<std::string, Dict>(it->first, it->second));
-        }
+        _value.extendToObject(value);
         return *this;
     }
 
     /**
-     * @brief create object
-     * @throw AccessException if type is not a null and not a object
+     * @brief Extend value from map.
+     *
+     * @tparam T Type of map item.
+     * @param value A map.
+     * @throw AccessException if dict type is not null and not a object.
+     */
+    template<typename T>
+    inline Dict& operator+=(const std::map<std::string, T>& value) {
+        createObject();
+        _value.extendToObject(value);
+        return *this;
+    }
+
+    /**
+     * @brief Create object or clear current object.
+     *
+     * @throw AccessException if dict type is not a null and not a object.
      */
     inline void newObject() {
-        if (!isNull() && !isObject()) {
-            throw AccessException(*this, "is not a object");
-        }
-        if (isNull()) {
-            _type = OBJECT_TYPE;
-            _value.newObject();
+        switch (_type) {
+            case NULL_TYPE:
+                _type = OBJECT_TYPE;
+                _value.newObject();
+                break;
+            case OBJECT_TYPE:
+                _value.getObject().clear();
+                break;
+            case BOOLEAN_TYPE:
+            case NUMBER_TYPE:
+            case STRING_TYPE:
+            case ARRAY_TYPE:
+                throw AccessException(*this, "is not a object");
+                break;
         }
     }
 
     /**
-     * @brief get dict from @p key
+     * @brief Create object or clear current object.
+     *
+     * @tparam T Type of map item.
+     * @param value A map.
+     * @throw AccessException if dict type is not null and not a object.
+     */
+    template<typename T>
+    inline void newObject(const std::map<std::string, T>& value) {
+        newObject();
+        _value.extendToObject(value);
+    }
+
+    /**
+     * @brief Get dict from @p key.
      *
      * @param key
      * @return Dict& data associated with the key or if the key does not exist,
-     * a dict object with that key is created using default values, which is then returned
-     * @throw AccessException if type is not a null and not a object
+     * a dict object with that key is created using default values, which is then returned.
+     * @throw AccessException if dict type is not a null and not a object.
      */
     inline Dict& operator[](const std::string& key) {
-        newObject();
+        createObject();
         object_t::iterator it = _value.getObject().find(key);
         if (it != _value.getObject().end()) {
             return it->second;
@@ -3909,31 +4168,31 @@ class Dict {
     }
 
     /**
-     * @brief get const dict from @p key
+     * @brief Get const dict from @p key.
      *
-     * @param key
-     * @return const Dict&
-     * @throw AccessException if type is not a object
-     * @throw ChildException if key is not exists
+     * @param key A string key.
+     * @return const Dict& Data associated with the key.
+     * @throw AccessException if dict type is not a object.
+     * @throw ChildException if key is not exists.
      */
     inline const Dict& operator[](const std::string& key) const {
         if (!isObject()) {
             throw AccessException(*this, "is not a object");
         }
         object_t::const_iterator it = _value.getObject().find(key);
-        if (it != _value.getObject().end()) {
-            return it->second;
+        if (it == _value.getObject().end()) {
+            throw ChildException(*this, key);
         }
-        throw ChildException(*this, key);
+        return it->second;
     }
 
     /**
-     * @brief get dict from @p key
+     * @brief Get dict from @p key.
      *
-     * @param key
+     * @param key A C string key.
      * @return Dict& data associated with the key or if the key does not exist,
-     * a dict object with that key is created using default values, which is then returned
-     * @throw AccessException if type is not a null and not a object
+     * a dict object with that key is created using default values, which is then returned.
+     * @throw AccessException if dict type is not a null and not a object.
      */
     inline Dict& operator[](const char* key) {
         return operator[](std::string(key));
@@ -3944,7 +4203,7 @@ class Dict {
      *
      * @param key
      * @return const Dict&
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      * @throw ChildException if key is not exists
      */
     inline const Dict& operator[](const char* key) const {
@@ -3957,7 +4216,7 @@ class Dict {
      * @param key
      * @return Dict& data associated with the key or if the key does not exist,
      * a dict object with that key is created using default values, which is then returned
-     * @throw AccessException if type is not a null and not a object
+     * @throw AccessException if dict type is not a null and not a object
      */
     template<std::size_t Size>
     inline Dict& operator[](const char (&key)[Size]) {
@@ -3969,7 +4228,7 @@ class Dict {
      *
      * @param key
      * @return const Dict&
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      * @throw ChildException if key is not exists
      */
     template<std::size_t Size>
@@ -3982,7 +4241,7 @@ class Dict {
      *
      * @param key
      * @return true if object has key else false
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      */
     inline bool contains(const std::string& key) const {
         if (!isObject()) {
@@ -3996,7 +4255,7 @@ class Dict {
      *
      * @param key
      * @return true if object has key else false
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      */
     inline bool contains(const char* key) const {
         return contains(std::string(key));
@@ -4007,7 +4266,7 @@ class Dict {
      *
      * @param key
      * @return true if object has key else false
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      */
     template<std::size_t Size>
     inline bool contains(const char (&key)[Size]) const {
@@ -4020,7 +4279,7 @@ class Dict {
      * @param key The key for which data should be retrieved.
      * @return Dict& A reference to the data whose key is equivalent to @a key,
      * if such a data is present in the %map.
-     * @throw AccessException if type is not null or not a object
+     * @throw AccessException if dict type is not null or not a object
      */
     inline Dict& at(const std::string& key) {
         return getObject().at(key);
@@ -4032,7 +4291,7 @@ class Dict {
      * @param key The key for which data should be retrieved.
      * @return const Dict& A reference to the data whose key is equivalent to @a key,
      * if such a data is present in the %map.
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      */
     inline const Dict& at(const std::string& key) const {
         return getObject().at(key);
@@ -4044,7 +4303,7 @@ class Dict {
      * @param key The key for which data should be retrieved.
      * @return Dict& A reference to the data whose key is equivalent to @a key,
      * if such a data is present in the %map.
-     * @throw AccessException if type is not null or not a object
+     * @throw AccessException if dict type is not null or not a object
      */
     inline Dict& at(const char* key) {
         return getObject().at(key);
@@ -4056,7 +4315,7 @@ class Dict {
      * @param key The key for which data should be retrieved.
      * @return const Dict& A reference to the data whose key is equivalent to @a key,
      * if such a data is present in the %map.
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      */
     inline const Dict& at(const char* key) const {
         return getObject().at(key);
@@ -4068,7 +4327,7 @@ class Dict {
      * @param key The key for which data should be retrieved.
      * @return Dict& A reference to the data whose key is equivalent to @a key,
      * if such a data is present in the %map.
-     * @throw AccessException if type is not null or not a object
+     * @throw AccessException if dict type is not null or not a object
      */
     template<std::size_t Size>
     inline Dict& at(const char* (&key)[Size]) {
@@ -4081,7 +4340,7 @@ class Dict {
      * @param key The key for which data should be retrieved.
      * @return const Dict& A reference to the data whose key is equivalent to @a key,
      * if such a data is present in the %map.
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      */
     template<std::size_t Size>
     inline const Dict& at(const char* (&key)[Size]) const {
@@ -4093,7 +4352,7 @@ class Dict {
      * Iteration is done in ascending order according to the keys.
      *
      * @return object_t::iterator
-     * @throw AccessException if type is not null or not a object
+     * @throw AccessException if dict type is not null or not a object
      */
     inline object_t::iterator object_begin() {
         return getObject().begin();
@@ -4104,7 +4363,7 @@ class Dict {
      * Iteration is done in ascending order according to the keys.
      *
      * @return object_t::const_iterator
-     * @throw AccessException if type is not a object
+     * @throw AccessException if dict type is not a object
      */
     inline object_t::const_iterator object_begin() const {
         return getObject().begin();
@@ -5306,11 +5565,64 @@ class Dict {
         }
         return ret;
     }
+
+  private:
+    /**
+     * @brief Create a Array.
+     *
+     * @throw AccessException If dict type is not a null and not a array.
+     */
+    inline void createArray() {
+        switch (_type) {
+            case NULL_TYPE:
+                _type = ARRAY_TYPE;
+                _value.newArray();
+                break;
+            case ARRAY_TYPE:
+                break;
+            case BOOLEAN_TYPE:
+            case NUMBER_TYPE:
+            case STRING_TYPE:
+            case OBJECT_TYPE:
+                throw AccessException(*this, "is not a array");
+                break;
+        }
+    }
+
+    /**
+     * @brief Create a Object.
+     *
+     * @throw AccessException If dict type is not a null and not a object.
+     */
+    inline void createObject() {
+        switch (_type) {
+            case NULL_TYPE:
+                _type = OBJECT_TYPE;
+                _value.newObject();
+                break;
+            case OBJECT_TYPE:
+                break;
+            case BOOLEAN_TYPE:
+            case NUMBER_TYPE:
+            case STRING_TYPE:
+            case ARRAY_TYPE:
+                throw AccessException(*this, "is not a object");
+                break;
+        }
+    }
 };
 
 } // namespace blet
 
 #endif // _BLET_DICT_H_
+
+// ----------------------------------
+// End third/Dict/include/blet/dict.h
+// ----------------------------------
+
+// ---------------------------
+// Content include/blet/json.h
+// ---------------------------
 
 namespace blet {
 
@@ -5405,8 +5717,13 @@ blet::Dict parseData(const void* data, std::size_t size, bool comment = false, b
 
 #endif // #ifndef _BLET_JSON_H_
 
-// Copy from src/exception.cpp
+// -----------------------
+// End include/blet/json.h
+// -----------------------
 
+// -----------------------
+// Start src/exception.cpp
+// -----------------------
 /**
  * exception.cpp
  *
@@ -5432,7 +5749,7 @@ blet::Dict parseData(const void* data, std::size_t size, bool comment = false, b
  * SOFTWARE.
  */
 
-// #include "blet/json.h"
+// #include "blet/json.h" (already included)
 
 namespace blet {
 
@@ -5495,8 +5812,13 @@ inline const std::size_t& ParseException::column() const throw() {
 
 } // namespace blet
 
-// Copy from src/json.cpp
+// ---------------------
+// End src/exception.cpp
+// ---------------------
 
+// ------------------
+// Start src/json.cpp
+// ------------------
 /**
  * json.cpp
  *
@@ -5522,10 +5844,7 @@ inline const std::size_t& ParseException::column() const throw() {
  * SOFTWARE.
  */
 
-// #include "blet/json.h"
-
-#include <ctype.h>  // ::isdigit, ::isspace
-#include <stdlib.h> // ::strtod
+// #include "blet/json.h" (already included)
 
 #include <fstream> // std::ifstream
 #include <iomanip> // std::setprecision
@@ -5816,7 +6135,8 @@ static inline std::string s_replaceEscapeChar(const std::string& str) {
 }
 
 static inline void s_stringJumpSpace(const std::string& str, std::size_t& index) {
-    while (::isspace(str[index])) {
+    // isspace
+    while ((str[index] >= '\t' && str[index] <= '\r') || str[index] == ' ') {
         ++index;
     }
 }
@@ -5837,17 +6157,20 @@ static inline void s_parseBool(bool boolean, std::size_t& i, blet::Dict& dict) {
 }
 
 static inline void s_parseNumber(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
-    if (str[i] == '0' && ::isdigit(str[i + 1])) {
+    if (str[i] == '0' && str[i + 1] >= '0' && str[i + 1] <= '9') {
         throw ParseException(info.filename, info.line(i), info.column(i), "Octal number not allowed");
     }
-    char* ret = NULL;
-    double number = ::strtod(str.c_str() + i, &ret);
-    dict.newNumber(number);
-    std::size_t jump = ret - (str.c_str() + i);
-    if (jump == 0) {
+    double number;
+    std::istringstream iss(str.substr(i));
+    std::streampos pos = iss.tellg();
+    if (iss >> number) {
+        dict.newNumber(number);
+        // jump of string number size
+        i += (iss.tellg() - pos);
+    }
+    else {
         throw ParseException(info.filename, info.line(i), info.column(i), "Bad number");
     }
-    i += jump;
 }
 
 static inline void s_parseString(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
@@ -5998,7 +6321,7 @@ inline bool s_parseType(const JsonParseInfo& info, const std::string& str, std::
             s_parseNumber(info, str, i, dict);
             break;
         case 't':
-            if (!str.compare(i, 4, "true", 4)) {
+            if (!str.compare(i, sizeof("true") - 1, "true", sizeof("true") - 1)) {
                 s_parseBool(true, i, dict);
             }
             else {
@@ -6006,7 +6329,7 @@ inline bool s_parseType(const JsonParseInfo& info, const std::string& str, std::
             }
             break;
         case 'f':
-            if (!str.compare(i, 5, "false", 5)) {
+            if (!str.compare(i, sizeof("false") - 1, "false", sizeof("false") - 1)) {
                 s_parseBool(false, i, dict);
             }
             else {
@@ -6014,7 +6337,7 @@ inline bool s_parseType(const JsonParseInfo& info, const std::string& str, std::
             }
             break;
         case 'n':
-            if (!str.compare(i, 4, "null", 4)) {
+            if (!str.compare(i, sizeof("null") - 1, "null", sizeof("null") - 1)) {
                 s_parseNull(i, dict);
             }
             else {
@@ -6147,5 +6470,9 @@ inline blet::Dict parseData(const void* data, std::size_t size, bool comment, bo
 } // namespace json
 
 } // namespace blet
+
+// ----------------
+// End src/json.cpp
+// ----------------
 
 #endif // #ifndef _AMALGAMATE_GUARD__SINGLE_INCLUDE_BLET_JSON_H_
