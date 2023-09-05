@@ -58,7 +58,7 @@ static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
                 oss << '\\' << 'v';
                 break;
             case '\'':
-                oss << '\\' << '\'';
+                oss << '\'';
                 break;
             case '"':
                 oss << '\\' << '"';
@@ -75,25 +75,11 @@ static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
 
 static inline void s_newlineDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent) {
     if (indent != 0) {
-        switch (dict.getType()) {
-            case blet::Dict::NULL_TYPE:
-                break;
-            case blet::Dict::OBJECT_TYPE:
-                if (!dict.getValue().getObject().empty()) {
-                    oss << '\n';
-                }
-                break;
-            case blet::Dict::ARRAY_TYPE:
-                if (!dict.getValue().getArray().empty()) {
-                    oss << '\n';
-                }
-                break;
-            case blet::Dict::STRING_TYPE:
-                break;
-            case blet::Dict::NUMBER_TYPE:
-                break;
-            case blet::Dict::BOOLEAN_TYPE:
-                break;
+        if (dict.getType() == blet::Dict::OBJECT_TYPE && !dict.getValue().getObject().empty()) {
+            oss << '\n';
+        }
+        if (dict.getType() == blet::Dict::ARRAY_TYPE && !dict.getValue().getArray().empty()) {
+            oss << '\n';
         }
     }
 }
@@ -101,21 +87,8 @@ static inline void s_newlineDump(std::ostream& oss, const blet::Dict& dict, std:
 static inline void s_indentDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent, char indentCharacter,
                                 std::size_t index) {
     if (indent != 0) {
-        switch (dict.getType()) {
-            case blet::Dict::NULL_TYPE:
-                break;
-            case blet::Dict::OBJECT_TYPE:
-                oss << std::string(indent * index, indentCharacter);
-                break;
-            case blet::Dict::ARRAY_TYPE:
-                oss << std::string(indent * index, indentCharacter);
-                break;
-            case blet::Dict::STRING_TYPE:
-                break;
-            case blet::Dict::NUMBER_TYPE:
-                break;
-            case blet::Dict::BOOLEAN_TYPE:
-                break;
+        if (dict.getType() == blet::Dict::OBJECT_TYPE || dict.getType() == blet::Dict::ARRAY_TYPE) {
+            oss << std::string(indent * index, indentCharacter);
         }
     }
 }
