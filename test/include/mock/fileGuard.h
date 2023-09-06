@@ -1,11 +1,12 @@
-#ifndef _MBLET_FILE_GUARD_H_
-#define _MBLET_FILE_GUARD_H_
+#ifndef _TEST_BLET_FILE_GUARD_H_
+#define _TEST_BLET_FILE_GUARD_H_
 
 #include <cstdio>
 #include <fstream>
 #include <string>
 
-namespace mblet {
+namespace test {
+namespace blet {
 
 class FileGuard : public std::ofstream {
   public:
@@ -23,6 +24,7 @@ class FileGuard : public std::ofstream {
     std::string _filename;
 };
 
-} // namespace mblet
+} // namespace blet
+} // namespace test
 
-#endif // _MBLET_FILE_GUARD_HPP_
+#endif // _TEST_BLET_FILE_GUARD_H_

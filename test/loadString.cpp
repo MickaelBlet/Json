@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "mblet/jsonator.h"
+#include "blet/json.h"
 #include "mock/jsonToString.h"
 
-GTEST_TEST(parseString, comment) {
+GTEST_TEST(loadString, comment) {
     // clang-format off
     const char jsonStr[]= \
         "{\n" \
@@ -12,28 +12,36 @@ GTEST_TEST(parseString, comment) {
         "}";
     // clang-format on
 
-    blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+    blet::Dict json = blet::json::loadString(jsonStr, true);
     EXPECT_EQ(json.size(), 0);
 }
 
-GTEST_TEST(parseString, empty) {
-    blet::Jsonator json = blet::Jsonator::parseString("");
-    EXPECT_EQ(json.size(), 0);
-    json = json.parseString("  ");
-    EXPECT_EQ(json.size(), 0);
-    json = json.parseString("\t");
-    EXPECT_EQ(json.size(), 0);
-    json = json.parseString("\n");
-    EXPECT_EQ(json.size(), 0);
+GTEST_TEST(loadString, empty) {
+    {
+        blet::Dict json = blet::json::loadString("");
+        EXPECT_TRUE(json.isNull());
+    }
+    {
+        blet::Dict json = blet::json::loadString("  ");
+        EXPECT_TRUE(json.isNull());
+    }
+    {
+        blet::Dict json = blet::json::loadString("\t");
+        EXPECT_TRUE(json.isNull());
+    }
+    {
+        blet::Dict json = blet::json::loadString("\n");
+        EXPECT_TRUE(json.isNull());
+    }
 }
 
-GTEST_TEST(parseString, Not_a_valid_start_character) {
+GTEST_TEST(loadString, Not_a_valid_start_character) {
     EXPECT_THROW(
         {
             try {
-                blet::Jsonator json = blet::Jsonator::parseString("Oo");
+                blet::Dict json = blet::json::loadString("Oo");
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:1 (Not a valid start character).");
                 EXPECT_EQ(e.message(), "Not a valid start character");
                 EXPECT_EQ(e.filename(), "");
@@ -42,13 +50,13 @@ GTEST_TEST(parseString, Not_a_valid_start_character) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
     EXPECT_THROW(
         {
             try {
-                blet::Jsonator json = blet::Jsonator::parseString("\tOo");
+                blet::Dict json = blet::json::loadString("\tOo");
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (Not a valid start character).");
                 EXPECT_EQ(e.message(), "Not a valid start character");
                 EXPECT_EQ(e.filename(), "");
@@ -57,13 +65,13 @@ GTEST_TEST(parseString, Not_a_valid_start_character) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
     EXPECT_THROW(
         {
             try {
-                blet::Jsonator json = blet::Jsonator::parseString("   Oo   ");
+                blet::Dict json = blet::json::loadString("   Oo   ");
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:4 (Not a valid start character).");
                 EXPECT_EQ(e.message(), "Not a valid start character");
                 EXPECT_EQ(e.filename(), "");
@@ -72,16 +80,16 @@ GTEST_TEST(parseString, Not_a_valid_start_character) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, Not_a_valid_end_character) {
+GTEST_TEST(loadString, Not_a_valid_end_character) {
     EXPECT_THROW(
         {
             try {
-                blet::Jsonator json = blet::Jsonator::parseString("{})");
+                blet::Dict json = blet::json::loadString("{})");
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:3 (Not a valid end character).");
                 EXPECT_EQ(e.message(), "Not a valid end character");
                 EXPECT_EQ(e.filename(), "");
@@ -90,13 +98,13 @@ GTEST_TEST(parseString, Not_a_valid_end_character) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
     EXPECT_THROW(
         {
             try {
-                blet::Jsonator json = blet::Jsonator::parseString("{}-");
+                blet::Dict json = blet::json::loadString("{}-");
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:3 (Not a valid end character).");
                 EXPECT_EQ(e.message(), "Not a valid end character");
                 EXPECT_EQ(e.filename(), "");
@@ -105,13 +113,13 @@ GTEST_TEST(parseString, Not_a_valid_end_character) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
     EXPECT_THROW(
         {
             try {
-                blet::Jsonator json = blet::Jsonator::parseString("{}}");
+                blet::Dict json = blet::json::loadString("{}}");
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:3 (Not a valid end character).");
                 EXPECT_EQ(e.message(), "Not a valid end character");
                 EXPECT_EQ(e.filename(), "");
@@ -120,10 +128,10 @@ GTEST_TEST(parseString, Not_a_valid_end_character) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, parseType_False) {
+GTEST_TEST(loadString, parseType_False) {
     EXPECT_THROW(
         {
             try {
@@ -134,9 +142,9 @@ GTEST_TEST(parseString, parseType_False) {
                     ]
                 ));
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
@@ -145,7 +153,7 @@ GTEST_TEST(parseString, parseType_False) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
     EXPECT_THROW(
         {
             try {
@@ -156,9 +164,9 @@ GTEST_TEST(parseString, parseType_False) {
                     ]
                 ));
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
@@ -167,7 +175,7 @@ GTEST_TEST(parseString, parseType_False) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
     EXPECT_THROW(
         {
             try {
@@ -178,9 +186,9 @@ GTEST_TEST(parseString, parseType_False) {
                     ]
                 ));
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
@@ -189,7 +197,7 @@ GTEST_TEST(parseString, parseType_False) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
     EXPECT_THROW(
         {
             try {
@@ -200,9 +208,9 @@ GTEST_TEST(parseString, parseType_False) {
                     ]
                 ));
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
@@ -211,19 +219,19 @@ GTEST_TEST(parseString, parseType_False) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, End_of_object_not_found) {
+GTEST_TEST(loadString, End_of_object_not_found) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 std::string jsonStr = "{";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (End of object not found).");
                 EXPECT_EQ(e.message(), "End of object not found");
                 EXPECT_EQ(e.filename(), "");
@@ -232,10 +240,10 @@ GTEST_TEST(parseString, End_of_object_not_found) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, Bad_element_in_the_key) {
+GTEST_TEST(loadString, Bad_element_in_the_key) {
     EXPECT_THROW(
         {
             try {
@@ -246,9 +254,9 @@ GTEST_TEST(parseString, Bad_element_in_the_key) {
                     }
                 ));
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:8 (Bad element in the key).");
                 EXPECT_EQ(e.message(), "Bad element in the key");
                 EXPECT_EQ(e.filename(), "");
@@ -257,10 +265,10 @@ GTEST_TEST(parseString, Bad_element_in_the_key) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, Key_of_object_not_found) {
+GTEST_TEST(loadString, Key_of_object_not_found) {
     EXPECT_THROW(
         {
             try {
@@ -271,9 +279,9 @@ GTEST_TEST(parseString, Key_of_object_not_found) {
                     }
                 ));
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (Key of object not found).");
                 EXPECT_EQ(e.message(), "Key of object not found");
                 EXPECT_EQ(e.filename(), "");
@@ -282,19 +290,19 @@ GTEST_TEST(parseString, Key_of_object_not_found) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, End_of_array_not_found) {
+GTEST_TEST(loadString, End_of_array_not_found) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 std::string jsonStr = "[";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (End of array not found).");
                 EXPECT_EQ(e.message(), "End of array not found");
                 EXPECT_EQ(e.filename(), "");
@@ -303,19 +311,19 @@ GTEST_TEST(parseString, End_of_array_not_found) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, End_of_key) {
+GTEST_TEST(loadString, End_of_key) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="{\"";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:3 (End of key).");
                 EXPECT_EQ(e.message(), "End of key");
                 EXPECT_EQ(e.filename(), "");
@@ -324,19 +332,19 @@ GTEST_TEST(parseString, End_of_key) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, New_line_in_key) {
+GTEST_TEST(loadString, New_line_in_key) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="{\"\n\"";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:3 (New line in key).");
                 EXPECT_EQ(e.message(), "New line in key");
                 EXPECT_EQ(e.filename(), "");
@@ -345,19 +353,19 @@ GTEST_TEST(parseString, New_line_in_key) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, Need_definition_of_object) {
+GTEST_TEST(loadString, Need_definition_of_object) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="{\"key\"}";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:7 (Need definition of object).");
                 EXPECT_EQ(e.message(), "Need definition of object");
                 EXPECT_EQ(e.filename(), "");
@@ -366,19 +374,19 @@ GTEST_TEST(parseString, Need_definition_of_object) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, Key_already_exist) {
+GTEST_TEST(loadString, Key_already_exist) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="{\"key\": null,\"key\": null}";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:15 (Key already exist).");
                 EXPECT_EQ(e.message(), "Key already exist");
                 EXPECT_EQ(e.filename(), "");
@@ -387,19 +395,19 @@ GTEST_TEST(parseString, Key_already_exist) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, End_of_string) {
+GTEST_TEST(loadString, End_of_string) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="[\"";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:3 (End of string).");
                 EXPECT_EQ(e.message(), "End of string");
                 EXPECT_EQ(e.filename(), "");
@@ -408,19 +416,19 @@ GTEST_TEST(parseString, End_of_string) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, New_line_in_string) {
+GTEST_TEST(loadString, New_line_in_string) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="[\"\n\"]";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:3 (New line in string).");
                 EXPECT_EQ(e.message(), "New line in string");
                 EXPECT_EQ(e.filename(), "");
@@ -429,19 +437,19 @@ GTEST_TEST(parseString, New_line_in_string) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, Octal_number_not_allowed) {
+GTEST_TEST(loadString, Octal_number_not_allowed) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="[076]";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:2 (Octal number not allowed).");
                 EXPECT_EQ(e.message(), "Octal number not allowed");
                 EXPECT_EQ(e.filename(), "");
@@ -450,19 +458,19 @@ GTEST_TEST(parseString, Octal_number_not_allowed) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }
 
-GTEST_TEST(parseString, Bad_number) {
+GTEST_TEST(loadString, Bad_number) {
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="[ - ]";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:3 (Bad number).");
                 EXPECT_EQ(e.message(), "Bad number");
                 EXPECT_EQ(e.filename(), "");
@@ -471,16 +479,16 @@ GTEST_TEST(parseString, Bad_number) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
     EXPECT_THROW(
         {
             try {
                 // clang-format off
                 const char jsonStr[]="[ 42toto ]";
                 // clang-format on
-                blet::Jsonator json = blet::Jsonator::parseString(jsonStr);
+                blet::Dict json = blet::json::loadString(jsonStr);
             }
-            catch (const blet::Jsonator::ParseException& e) {
+            catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(), "Parse at 1:5 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
@@ -489,5 +497,5 @@ GTEST_TEST(parseString, Bad_number) {
                 throw;
             }
         },
-        blet::Jsonator::ParseException);
+        blet::json::LoadException);
 }

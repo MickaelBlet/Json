@@ -4,10 +4,10 @@ get_target_property(library_include_dirs "${library_project_name}" INCLUDE_DIREC
 
 set(example_files
     "${CMAKE_CURRENT_SOURCE_DIR}/dump.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parseData.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parseFile.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parseStream.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parseString.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/loadData.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/loadFile.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/loadStream.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/loadString.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/quickstart.cpp"
 )
 

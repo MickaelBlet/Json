@@ -1,20 +1,14 @@
 # Json
 
-Json parse and dump library  
+Json load and dump library  
 Header only library at [single_include/blet/json.h](single_include/blet/json.h).  
 Examples at [docs/examples.md](docs/examples.md)
-
-## Clone
-
-```
-git clone --recurse-submodules "https://github.com/MickaelBlet/Json.git"
-```
 
 ## Quick start
 
 ```cpp
 /*
-** parse
+** load
 */
 const char jsonStr[] =
     "{"
@@ -29,7 +23,7 @@ const char jsonStr[] =
     "  \"null\": null,"
     "  \"boolean\": false"
     "}";
-const blet::Dict json = blet::json::parseString(jsonStr);
+const blet::Dict json = blet::json::loadString(jsonStr);
 
 std::cout << json["array"][0].getNumber() << '\n';
 std::cout << json["array"][1][0].getNumber() << '\n';
@@ -138,46 +132,46 @@ mkdir build; pushd build; cmake -DCMAKE_INSTALL_PREFIX="YOUR_INSTALL_PATH" .. &&
 mkdir build; pushd build; cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_EXAMPLE=1 -DBUILD_TESTING=1 -DBUILD_COVERAGE=1 -DCMAKE_CXX_STANDARD=98 .. && make -j && make test -j; popd
 ```
 
-## Parse Functions
+## Load Functions
 
-### parseFile
-
-```cpp
-blet::Dict parseFile(const char* filename, bool comment = false, bool additionalNext = false);
-```
-Take a path of json file and parse them for create a Dict object.  
-You can enable options `comment` and `additionnalNext` for a better parsing.  
-Example at [docs/examples.md#ParseFile](docs/examples.md#parsefile).
-
-### parseStream
+### loadFile
 
 ```cpp
-blet::Dict parseStream(std::istream& stream, bool comment = false, bool additionalNext = false);
+blet::Dict loadFile(const char* filename, bool comment = false, bool additionalNext = false);
 ```
-
-Take a std::istream and parse them for create a Dict object.  
+Take a path of json file and load them for create a Dict object.  
 You can enable options `comment` and `additionnalNext` for a better parsing.  
-Example at [docs/examples.md#ParseStream](docs/examples.md#parsestream).
+Example at [docs/examples.md#loadFile](docs/examples.md#loadfile).
 
-### parseString
+### loadStream
 
 ```cpp
-blet::Dict parseString(const std::string& str, bool comment = false, bool additionalNext = false);
+blet::Dict loadStream(std::istream& stream, bool comment = false, bool additionalNext = false);
 ```
 
-Take a std::string and parse them for create a Dict object.  
+Take a std::istream and load them for create a Dict object.  
 You can enable options `comment` and `additionnalNext` for a better parsing.  
-Example at [docs/examples.md#ParseString](docs/examples.md#parsestring).
+Example at [docs/examples.md#loadStream](docs/examples.md#loadstream).
 
-### parseData
+### loadString
 
 ```cpp
-blet::Dict parseData(const void* data, std::size_t size, bool comment = false, bool additionalNext = false);
+blet::Dict loadString(const std::string& str, bool comment = false, bool additionalNext = false);
 ```
 
-Take a data and size and parse them for create a Dict object.  
+Take a std::string and load them for create a Dict object.  
 You can enable options `comment` and `additionnalNext` for a better parsing.  
-Example at [docs/examples.md#ParseData](docs/examples.md#parsedata).
+Example at [docs/examples.md#loadString](docs/examples.md#loadstring).
+
+### loadData
+
+```cpp
+blet::Dict loadData(const void* data, std::size_t size, bool comment = false, bool additionalNext = false);
+```
+
+Take a data and size and load them for create a Dict object.  
+You can enable options `comment` and `additionnalNext` for a better parsing.  
+Example at [docs/examples.md#loadData](docs/examples.md#loaddata).
 
 ## Dump Functions
 

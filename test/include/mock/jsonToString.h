@@ -1,5 +1,5 @@
-#ifndef _MBLET_JSON_TO_STRING_H_
-#define _MBLET_JSON_TO_STRING_H_
+#ifndef _TEST_BLET_JSON_TO_STRING_H_
+#define _TEST_BLET_JSON_TO_STRING_H_
 
 #include <string>
 
@@ -34,4 +34,4 @@ inline std::string removeSpaces(const std::string& str) {
     return ret;
 }
 
-#endif
+#endif // #ifndef _TEST_BLET_JSON_TO_STRING_H_

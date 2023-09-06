@@ -3,8 +3,8 @@
 #include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
-    std::string jsonStr("{/*comment*/\"hello\":\"world\"}");
-    blet::Dict  json = blet::json::parseData(jsonStr.c_str(), jsonStr.size(), true);
+    std::istringstream iss("{\"hello\":\"world\"}");
+    blet::Dict json = blet::json::loadStream(iss);
     // get value
     std::string str = json["hello"];
     // print result

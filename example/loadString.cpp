@@ -4,7 +4,7 @@
 
 int main(int /*argc*/, char* /*argv*/[]) {
     std::string jsonStr("{\"hello\":\"world\"}");
-    const blet::Dict json = blet::json::parseString(jsonStr);
+    const blet::Dict json = blet::json::loadString(jsonStr);
     // get value
     std::string str = json["hello"];
     // print result

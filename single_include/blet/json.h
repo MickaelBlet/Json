@@ -5,6 +5,31 @@
 // -------------------------
 // Start include/blet/json.h
 // -------------------------
+/**
+ * json.h
+ *
+ * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
+ * Copyright (c) 2023 BLET Mickaël.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #ifndef _BLET_JSON_H_
 #define _BLET_JSON_H_
 
@@ -5631,11 +5656,11 @@ namespace json {
 /**
  * @brief Parse exception from std::exception
  */
-class ParseException : public std::exception {
+class LoadException : public std::exception {
   public:
-    ParseException(const std::string& filename, const std::string& message);
-    ParseException(const std::string& filename, std::size_t line, std::size_t column, const std::string& message);
-    virtual ~ParseException() throw();
+    LoadException(const std::string& filename, const std::string& message);
+    LoadException(const std::string& filename, std::size_t line, std::size_t column, const std::string& message);
+    virtual ~LoadException() throw();
     const char* what() const throw();
     const std::string& filename() const throw();
     const std::string& message() const throw();
@@ -5671,37 +5696,37 @@ void dump(const blet::Dict& dict, std::ostream& os, std::size_t indent = 0, char
 std::string dump(const blet::Dict& dict, std::size_t indent = 0, char indentCharacter = ' ');
 
 /**
- * @brief Parse a json from filename.
+ * @brief Parse and load a json from filename.
  *
  * @param filename A filename.
  * @param comment Option for accept the comment (style C/C++) in json.
  * @param additionalNext Option for accept the bad commat at end of json object.
  * @return blet::Dict Dictionnary of json.
  */
-blet::Dict parseFile(const char* filename, bool comment = false, bool additionalNext = false);
+blet::Dict loadFile(const char* filename, bool comment = false, bool additionalNext = false);
 
 /**
- * @brief Parse a json from stream.
+ * @brief Parse and load a json from stream.
  *
  * @param stream A stream.
  * @param comment Option for accept the comment (style C/C++) in json.
  * @param additionalNext Option for accept the bad commat at end of json object.
  * @return blet::Dict Dictionnary of json.
  */
-blet::Dict parseStream(std::istream& stream, bool comment = false, bool additionalNext = false);
+blet::Dict loadStream(std::istream& stream, bool comment = false, bool additionalNext = false);
 
 /**
- * @brief Parse a json from string.
+ * @brief Parse and load a json from string.
  *
  * @param str A string.
  * @param comment Option for accept the comment (style C/C++) in json.
  * @param additionalNext Option for accept the bad commat at end of json object.
  * @return blet::Dict Dictionnary of json.
  */
-blet::Dict parseString(const std::string& str, bool comment = false, bool additionalNext = false);
+blet::Dict loadString(const std::string& str, bool comment = false, bool additionalNext = false);
 
 /**
- * @brief Parse a json from data.
+ * @brief Parse and load a json from data.
  *
  * @param data A data.
  * @param size Size of data.
@@ -5709,7 +5734,7 @@ blet::Dict parseString(const std::string& str, bool comment = false, bool additi
  * @param additionalNext Option for accept the bad commat at end of json object.
  * @return blet::Dict Dictionnary of json.
  */
-blet::Dict parseData(const void* data, std::size_t size, bool comment = false, bool additionalNext = false);
+blet::Dict loadData(const void* data, std::size_t size, bool comment = false, bool additionalNext = false);
 
 } // namespace json
 
@@ -5755,7 +5780,7 @@ namespace blet {
 
 namespace json {
 
-inline ParseException::ParseException(const std::string& filename, const std::string& message) :
+inline LoadException::LoadException(const std::string& filename, const std::string& message) :
     std::exception(),
     _filename(filename),
     _message(message),
@@ -5770,8 +5795,8 @@ inline ParseException::ParseException(const std::string& filename, const std::st
     _what = oss.str();
 }
 
-inline ParseException::ParseException(const std::string& filename, std::size_t line, std::size_t column,
-                                      const std::string& message) :
+inline LoadException::LoadException(const std::string& filename, std::size_t line, std::size_t column,
+                                    const std::string& message) :
     std::exception(),
     _filename(filename),
     _message(message),
@@ -5786,25 +5811,25 @@ inline ParseException::ParseException(const std::string& filename, std::size_t l
     _what = oss.str();
 }
 
-inline ParseException::~ParseException() throw() {}
+inline LoadException::~LoadException() throw() {}
 
-inline const char* ParseException::what() const throw() {
+inline const char* LoadException::what() const throw() {
     return _what.c_str();
 }
 
-inline const std::string& ParseException::filename() const throw() {
+inline const std::string& LoadException::filename() const throw() {
     return _filename;
 }
 
-inline const std::string& ParseException::message() const throw() {
+inline const std::string& LoadException::message() const throw() {
     return _message;
 }
 
-inline const std::size_t& ParseException::line() const throw() {
+inline const std::size_t& LoadException::line() const throw() {
     return _line;
 }
 
-inline const std::size_t& ParseException::column() const throw() {
+inline const std::size_t& LoadException::column() const throw() {
     return _column;
 }
 
@@ -5879,7 +5904,7 @@ static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
                 oss << '\\' << 'v';
                 break;
             case '\'':
-                oss << '\\' << '\'';
+                oss << '\'';
                 break;
             case '"':
                 oss << '\\' << '"';
@@ -5896,25 +5921,11 @@ static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
 
 static inline void s_newlineDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent) {
     if (indent != 0) {
-        switch (dict.getType()) {
-            case blet::Dict::NULL_TYPE:
-                break;
-            case blet::Dict::OBJECT_TYPE:
-                if (!dict.getValue().getObject().empty()) {
-                    oss << '\n';
-                }
-                break;
-            case blet::Dict::ARRAY_TYPE:
-                if (!dict.getValue().getArray().empty()) {
-                    oss << '\n';
-                }
-                break;
-            case blet::Dict::STRING_TYPE:
-                break;
-            case blet::Dict::NUMBER_TYPE:
-                break;
-            case blet::Dict::BOOLEAN_TYPE:
-                break;
+        if (dict.getType() == blet::Dict::OBJECT_TYPE && !dict.getValue().getObject().empty()) {
+            oss << '\n';
+        }
+        if (dict.getType() == blet::Dict::ARRAY_TYPE && !dict.getValue().getArray().empty()) {
+            oss << '\n';
         }
     }
 }
@@ -5922,21 +5933,8 @@ static inline void s_newlineDump(std::ostream& oss, const blet::Dict& dict, std:
 static inline void s_indentDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent, char indentCharacter,
                                 std::size_t index) {
     if (indent != 0) {
-        switch (dict.getType()) {
-            case blet::Dict::NULL_TYPE:
-                break;
-            case blet::Dict::OBJECT_TYPE:
-                oss << std::string(indent * index, indentCharacter);
-                break;
-            case blet::Dict::ARRAY_TYPE:
-                oss << std::string(indent * index, indentCharacter);
-                break;
-            case blet::Dict::STRING_TYPE:
-                break;
-            case blet::Dict::NUMBER_TYPE:
-                break;
-            case blet::Dict::BOOLEAN_TYPE:
-                break;
+        if (dict.getType() == blet::Dict::OBJECT_TYPE || dict.getType() == blet::Dict::ARRAY_TYPE) {
+            oss << std::string(indent * index, indentCharacter);
         }
     }
 }
@@ -6158,7 +6156,7 @@ static inline void s_parseBool(bool boolean, std::size_t& i, blet::Dict& dict) {
 
 static inline void s_parseNumber(const JsonParseInfo& info, const std::string& str, std::size_t& i, blet::Dict& dict) {
     if (str[i] == '0' && str[i + 1] >= '0' && str[i + 1] <= '9') {
-        throw ParseException(info.filename, info.line(i), info.column(i), "Octal number not allowed");
+        throw LoadException(info.filename, info.line(i), info.column(i), "Octal number not allowed");
     }
     double number;
     std::istringstream iss(str.substr(i));
@@ -6169,7 +6167,7 @@ static inline void s_parseNumber(const JsonParseInfo& info, const std::string& s
         i += (iss.tellg() - pos);
     }
     else {
-        throw ParseException(info.filename, info.line(i), info.column(i), "Bad number");
+        throw LoadException(info.filename, info.line(i), info.column(i), "Bad number");
     }
 }
 
@@ -6182,10 +6180,10 @@ static inline void s_parseString(const JsonParseInfo& info, const std::string& s
             ++i;
         }
         else if (str[i] == '\0') {
-            throw ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of string");
+            throw LoadException(info.filename, info.lastLine(i), info.lastColumn(i), "End of string");
         }
         else if (str[i] == '\n') {
-            throw ParseException(info.filename, info.line(start), info.column(start), "New line in string");
+            throw LoadException(info.filename, info.line(start), info.column(start), "New line in string");
         }
         ++i;
     }
@@ -6205,10 +6203,10 @@ static inline blet::Dict& s_createNewObjectElement(const JsonParseInfo& info, co
             ++i;
         }
         else if (str[i] == '\0') {
-            throw ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of key");
+            throw LoadException(info.filename, info.lastLine(i), info.lastColumn(i), "End of key");
         }
         else if (str[i] == '\n') {
-            throw ParseException(info.filename, info.line(start), info.column(start), "New line in key");
+            throw LoadException(info.filename, info.line(start), info.column(start), "New line in key");
         }
         ++i;
     }
@@ -6216,14 +6214,14 @@ static inline blet::Dict& s_createNewObjectElement(const JsonParseInfo& info, co
     ++i; // jump '"'
     s_stringJumpSpace(str, i);
     if (str[i] != ':') {
-        throw ParseException(info.filename, info.line(i), info.column(i), "Need definition of object");
+        throw LoadException(info.filename, info.line(i), info.column(i), "Need definition of object");
     }
     ++i; // jump ':'
     s_stringJumpSpace(str, i);
     // get key
     std::string key = s_replaceEscapeChar(str.substr(start, end - start));
     if (dict.getValue().getObject().find(key) != dict.getValue().getObject().end()) {
-        throw ParseException(info.filename, info.line(start), info.column(start), "Key already exist");
+        throw LoadException(info.filename, info.line(start), info.column(start), "Key already exist");
     }
     return dict.getValue().getObject()[key];
 }
@@ -6243,11 +6241,11 @@ static inline void s_parseArray(const JsonParseInfo& info, const std::string& st
     s_stringJumpSpace(str, i);
     while (str[i] != ']' || (next == true && info.additionalNext == false)) {
         if (str[i] == '\0') {
-            throw ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of array not found");
+            throw LoadException(info.filename, info.lastLine(i), info.lastColumn(i), "End of array not found");
         }
         // search array, object, string, number, bool or null
         if (!s_parseType(info, str, i, s_createNewArrayElement(dict))) {
-            throw ParseException(info.filename, info.line(i), info.column(i), "Bad element of array");
+            throw LoadException(info.filename, info.line(i), info.column(i), "Bad element of array");
         }
         s_stringJumpSpace(str, i);
         // next
@@ -6271,16 +6269,16 @@ static inline void s_parseObject(const JsonParseInfo& info, const std::string& s
     s_stringJumpSpace(str, i);
     while (str[i] != '}' || (next == true && info.additionalNext == false)) {
         if (str[i] == '\0') {
-            throw ParseException(info.filename, info.lastLine(i), info.lastColumn(i), "End of object not found");
+            throw LoadException(info.filename, info.lastLine(i), info.lastColumn(i), "End of object not found");
         }
         else if (str[i] == '"') {
             // search array, object, string, number, bool or null
             if (!s_parseType(info, str, i, s_createNewObjectElement(info, str, i, dict))) {
-                throw ParseException(info.filename, info.line(i), info.column(i), "Bad element in the key");
+                throw LoadException(info.filename, info.line(i), info.column(i), "Bad element in the key");
             }
         }
         else {
-            throw ParseException(info.filename, info.line(i), info.column(i), "Key of object not found");
+            throw LoadException(info.filename, info.line(i), info.column(i), "Key of object not found");
         }
         s_stringJumpSpace(str, i);
         // next
@@ -6411,8 +6409,8 @@ static inline std::string s_streamToStr(JsonParseInfo& info, std::istream& strea
     return oss.str();
 }
 
-static inline blet::Dict s_parseStream(std::istream& stream, const std::string& filename, bool comment,
-                                       bool additionalNext) {
+static inline blet::Dict s_loadStream(std::istream& stream, const std::string& filename, bool comment,
+                                      bool additionalNext) {
     JsonParseInfo info(filename, additionalNext);
     std::string str = s_streamToStr(info, stream);
     if (comment) {
@@ -6434,37 +6432,37 @@ static inline blet::Dict s_parseStream(std::istream& stream, const std::string& 
             case '\0':
                 return dict;
             default:
-                throw ParseException(info.filename, info.line(i), info.column(i), "Not a valid start character");
+                throw LoadException(info.filename, info.line(i), info.column(i), "Not a valid start character");
         }
         if (str[i] != '\0') {
-            throw ParseException(info.filename, info.line(i), info.column(i), "Not a valid end character");
+            throw LoadException(info.filename, info.line(i), info.column(i), "Not a valid end character");
         }
         return dict;
     }
-    catch (const ParseException& /*e*/) {
+    catch (const LoadException& /*e*/) {
         throw;
     }
 }
 
-inline blet::Dict parseFile(const char* filename, bool comment, bool additionalNext) {
+inline blet::Dict loadFile(const char* filename, bool comment, bool additionalNext) {
     std::ifstream fileStream(filename); // open file
     if (!fileStream.is_open()) {
-        throw ParseException(filename, "Open file failed");
+        throw LoadException(filename, "Open file failed");
     }
-    return s_parseStream(fileStream, filename, comment, additionalNext);
+    return s_loadStream(fileStream, filename, comment, additionalNext);
 }
 
-inline blet::Dict parseStream(std::istream& stream, bool comment, bool additionalNext) {
-    return s_parseStream(stream, std::string(), comment, additionalNext);
+inline blet::Dict loadStream(std::istream& stream, bool comment, bool additionalNext) {
+    return s_loadStream(stream, std::string(), comment, additionalNext);
 }
 
-inline blet::Dict parseString(const std::string& str, bool comment, bool additionalNext) {
+inline blet::Dict loadString(const std::string& str, bool comment, bool additionalNext) {
     std::istringstream iss(str);
-    return parseStream(iss, comment, additionalNext);
+    return loadStream(iss, comment, additionalNext);
 }
 
-inline blet::Dict parseData(const void* data, std::size_t size, bool comment, bool additionalNext) {
-    return parseString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
+inline blet::Dict loadData(const void* data, std::size_t size, bool comment, bool additionalNext) {
+    return loadString(std::string(static_cast<const char*>(data), size), comment, additionalNext);
 }
 
 } // namespace json

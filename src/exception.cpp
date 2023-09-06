@@ -29,7 +29,7 @@ namespace blet {
 
 namespace json {
 
-ParseException::ParseException(const std::string& filename, const std::string& message) :
+LoadException::LoadException(const std::string& filename, const std::string& message) :
     std::exception(),
     _filename(filename),
     _message(message),
@@ -44,8 +44,8 @@ ParseException::ParseException(const std::string& filename, const std::string& m
     _what = oss.str();
 }
 
-ParseException::ParseException(const std::string& filename, std::size_t line, std::size_t column,
-                               const std::string& message) :
+LoadException::LoadException(const std::string& filename, std::size_t line, std::size_t column,
+                             const std::string& message) :
     std::exception(),
     _filename(filename),
     _message(message),
@@ -60,25 +60,25 @@ ParseException::ParseException(const std::string& filename, std::size_t line, st
     _what = oss.str();
 }
 
-ParseException::~ParseException() throw() {}
+LoadException::~LoadException() throw() {}
 
-const char* ParseException::what() const throw() {
+const char* LoadException::what() const throw() {
     return _what.c_str();
 }
 
-const std::string& ParseException::filename() const throw() {
+const std::string& LoadException::filename() const throw() {
     return _filename;
 }
 
-const std::string& ParseException::message() const throw() {
+const std::string& LoadException::message() const throw() {
     return _message;
 }
 
-const std::size_t& ParseException::line() const throw() {
+const std::size_t& LoadException::line() const throw() {
     return _line;
 }
 
-const std::size_t& ParseException::column() const throw() {
+const std::size_t& LoadException::column() const throw() {
     return _column;
 }
 
