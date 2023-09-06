@@ -1,6 +1,6 @@
 # Examples
 
-## ParseFile
+## LoadFile
 
 ```jsonc
 $ cat ./example/example.jsonc
@@ -29,7 +29,7 @@ $ cat ./example/example.jsonc
 #include "blet/json.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
-    const blet::Dict json = blet::json::parseFile("./example/example.jsonc", true, true);
+    const blet::Dict json = blet::json::loadFile("./example/example.jsonc", true, true);
     // get value
     std::string str = json["string"];
     unsigned int number = json["number"];
@@ -51,7 +51,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
 ```
 
 ```
-$ ./build/example/parseFile.example
+$ ./build/example/loadFile.example
 string:      foobar
 number:      42
 boolean:     1
@@ -61,7 +61,7 @@ object[key]: value
 object[key]: value
 ```
 
-## ParseStream
+## LoadStream
 
 ```cpp
 #include <iostream>
@@ -70,7 +70,7 @@ object[key]: value
 
 int main(int /*argc*/, char* /*argv*/[]) {
     std::istringstream iss("{\"hello\":\"world\"}");
-    const blet::Dict json = blet::json::parseStream(iss);
+    const blet::Dict json = blet::json::loadStream(iss);
     // get value
     std::string str = json["hello"];
     // print result
@@ -80,15 +80,15 @@ int main(int /*argc*/, char* /*argv*/[]) {
 ```
 
 ```
-$ ./build/example/parseStream.example
+$ ./build/example/loadStream.example
 world
 ```
 
-## ParseString
+## LoadString
 
 ```cpp
 std::string jsonStr("{\"hello\":\"world\"}");
-const blet::Dict json = blet::json::parseString(jsonStr);
+const blet::Dict json = blet::json::loadString(jsonStr);
 // get value
 std::string str = json["hello"];
 // print result
@@ -96,15 +96,15 @@ std::cout << str << std::endl;
 ```
 
 ```
-$ ./build/example/parseString.example
+$ ./build/example/loadString.example
 world
 ```
 
-## ParseData
+## LoadData
 
 ```cpp
 std::string jsonStr("{\"hello\":\"world\"}");
-const blet::Dict json = blet::json::parseData(jsonStr.c_str(), jsonStr.size());
+const blet::Dict json = blet::json::loadData(jsonStr.c_str(), jsonStr.size());
 // get value
 std::string str = json["hello"];
 // print result
@@ -112,7 +112,7 @@ std::cout << str << std::endl;
 ```
 
 ```
-$ ./build/example/parseData.example
+$ ./build/example/loadData.example
 world
 ```
 
