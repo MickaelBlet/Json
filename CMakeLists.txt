@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 add_subdirectory("third/Dict")
 
-project(blet_json VERSION 4.0.0 LANGUAGES CXX)
+project(blet_json VERSION 4.0.2 LANGUAGES CXX)
 
 # OPTIONS
 option(BUILD_EXAMPLE "Build example binaries" OFF)
