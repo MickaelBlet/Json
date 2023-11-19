@@ -1,7 +1,5 @@
 set(library_project_name "${PROJECT_NAME}")
 
-get_target_property(library_include_dirs "${library_project_name}" INCLUDE_DIRECTORIES)
-
 set(example_files
     "${CMAKE_CURRENT_SOURCE_DIR}/dump.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/loadData.cpp"
@@ -21,7 +19,6 @@ foreach(file ${example_files})
             CXX_EXTENSIONS OFF
             NO_SYSTEM_FROM_IMPORTED ON
             COMPILE_FLAGS "-pedantic -Wall -Wextra -Werror"
-            INCLUDE_DIRECTORIES "${library_include_dirs}"
-            LINK_LIBRARIES "${library_project_name}"
     )
+    target_link_libraries("${filenamewe}.${library_project_name}.example" PUBLIC "${library_project_name}_single_include")
 endforeach()

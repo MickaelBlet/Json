@@ -33,6 +33,59 @@ namespace blet {
 
 namespace json {
 
+LoadException::LoadException(const std::string& filename, const std::string& message) :
+    std::exception(),
+    _filename(filename),
+    _message(message),
+    _line(0),
+    _column(0) {
+    std::ostringstream oss("");
+    oss << "Parse ";
+    if (!_filename.empty()) {
+        oss << _filename << ": ";
+    }
+    oss << '(' << _message << ").";
+    _what = oss.str();
+}
+
+LoadException::LoadException(const std::string& filename, std::size_t line, std::size_t column,
+                             const std::string& message) :
+    std::exception(),
+    _filename(filename),
+    _message(message),
+    _line(line),
+    _column(column) {
+    std::ostringstream oss("");
+    oss << "Parse at ";
+    if (!_filename.empty()) {
+        oss << _filename << ':';
+    }
+    oss << _line << ':' << _column << " (" << _message << ").";
+    _what = oss.str();
+}
+
+LoadException::~LoadException() throw() {}
+
+const char* LoadException::what() const throw() {
+    return _what.c_str();
+}
+
+const std::string& LoadException::filename() const throw() {
+    return _filename;
+}
+
+const std::string& LoadException::message() const throw() {
+    return _message;
+}
+
+const std::size_t& LoadException::line() const throw() {
+    return _line;
+}
+
+const std::size_t& LoadException::column() const throw() {
+    return _column;
+}
+
 static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
     for (std::size_t i = 0; i < str.size(); ++i) {
         switch (str[i]) {
@@ -75,10 +128,8 @@ static inline void s_stringEscape(std::ostream& oss, const std::string& str) {
 
 static inline void s_newlineDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent) {
     if (indent != 0) {
-        if (dict.getType() == blet::Dict::OBJECT_TYPE && !dict.getValue().getObject().empty()) {
-            oss << '\n';
-        }
-        if (dict.getType() == blet::Dict::ARRAY_TYPE && !dict.getValue().getArray().empty()) {
+        if ((dict.getType() == blet::Dict::OBJECT_TYPE && !dict.getValue().getObject().empty()) ||
+            (dict.getType() == blet::Dict::ARRAY_TYPE && !dict.getValue().getArray().empty())) {
             oss << '\n';
         }
     }
@@ -87,7 +138,8 @@ static inline void s_newlineDump(std::ostream& oss, const blet::Dict& dict, std:
 static inline void s_indentDump(std::ostream& oss, const blet::Dict& dict, std::size_t indent, char indentCharacter,
                                 std::size_t index) {
     if (indent != 0) {
-        if (dict.getType() == blet::Dict::OBJECT_TYPE || dict.getType() == blet::Dict::ARRAY_TYPE) {
+        if ((dict.getType() == blet::Dict::OBJECT_TYPE && !dict.getValue().getObject().empty()) ||
+            (dict.getType() == blet::Dict::ARRAY_TYPE && !dict.getValue().getArray().empty())) {
             oss << std::string(indent * index, indentCharacter);
         }
     }

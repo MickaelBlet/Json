@@ -182,7 +182,7 @@ void dump(const blet::Dict& dict, std::ostream& os, std::size_t indent = 0, char
 ```
 
 Dump from a Dict to json format in stream.  
-You can set the `indent` and `indentCharacter` for better formating.  
+You can set the `indent` and `indentCharacter` for better formatting.  
 Example at [docs/examples.md#DumpStream](docs/examples.md#dumpstream).
 
 ``` cpp
@@ -190,5 +190,5 @@ std::string dump(const blet::Dict& dict, std::size_t indent = 0, char indentChar
 ```
 
 Dump from a Dict to json format in string.  
-You can set the `indent` and `indentCharacter` for better formating.  
+You can set the `indent` and `indentCharacter` for better formatting.  
 Example at [docs/examples.md#DumpStream](docs/examples.md#dumpstring).

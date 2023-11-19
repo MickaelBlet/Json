@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 add_subdirectory("third/Dict")
 
-project(blet_json VERSION 4.0.2 LANGUAGES CXX)
+project(blet_json VERSION 4.0.3 LANGUAGES CXX)
 
 # OPTIONS
 option(BUILD_EXAMPLE "Build example binaries" OFF)
@@ -23,7 +23,6 @@ if(NOT CMAKE_INSTALL_INCLUDEDIR)
 endif()
 
 add_library("${PROJECT_NAME}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/exception.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/json.cpp"
 )
 

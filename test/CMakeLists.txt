@@ -1,7 +1,5 @@
 set(library_project_name "${PROJECT_NAME}")
 
-get_target_property(library_include_dirs "${library_project_name}" INCLUDE_DIRECTORIES)
-
 set(test_source_files
     "${CMAKE_CURRENT_SOURCE_DIR}/dump.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/example.cpp"
@@ -23,9 +21,10 @@ foreach(file ${test_source_files})
         CXX_EXTENSIONS OFF
         NO_SYSTEM_FROM_IMPORTED ON
         COMPILE_FLAGS "-pedantic -Wall -Wextra -Werror"
-        INCLUDE_DIRECTORIES "${library_include_dirs};${CMAKE_CURRENT_SOURCE_DIR}/include"
-        LINK_LIBRARIES "gmock_main;gmock;pthread;${library_project_name}"
+        INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        LINK_LIBRARIES "gmock_main;gmock;pthread"
     )
+    target_link_libraries("${filenamewe}.${library_project_name}.gtest" PUBLIC "${library_project_name}")
     add_test(NAME "${filenamewe}.${library_project_name}.gtest" COMMAND "$<TARGET_FILE:${filenamewe}.${library_project_name}.gtest>")
     if(BUILD_COVERAGE)
         set_property(TEST "${filenamewe}.${library_project_name}.gtest" PROPERTY FIXTURES_SETUP "${filenamewe}.${library_project_name}.gtest.fixture")

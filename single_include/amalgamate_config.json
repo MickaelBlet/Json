@@ -7,7 +7,6 @@
     ],
     "sources": [
         "include/blet/json.h",
-        "src/exception.cpp",
         "src/json.cpp"
     ]
 }
