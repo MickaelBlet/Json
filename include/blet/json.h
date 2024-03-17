@@ -23,8 +23,8 @@
  * SOFTWARE.
  */
 
-#ifndef _BLET_JSON_H_
-#define _BLET_JSON_H_
+#ifndef BLET_JSON_H_
+#define BLET_JSON_H_
 
 #include <exception> // std::exception
 #include <sstream>   // std::istream, std::ostream
@@ -43,7 +43,8 @@ class LoadException : public std::exception {
   public:
     LoadException(const std::string& filename, const std::string& message);
     LoadException(const std::string& filename, std::size_t line, std::size_t column, const std::string& message);
-    virtual ~LoadException() throw();
+    ~LoadException() throw();
+
     const char* what() const throw();
     const std::string& filename() const throw();
     const std::string& message() const throw();
@@ -51,11 +52,11 @@ class LoadException : public std::exception {
     const std::size_t& column() const throw();
 
   protected:
-    std::string _what;
-    std::string _filename;
-    std::string _message;
-    std::size_t _line;
-    std::size_t _column;
+    std::string what_;
+    std::string filename_;
+    std::string message_;
+    std::size_t line_;
+    std::size_t column_;
 };
 
 /**
@@ -123,4 +124,4 @@ blet::Dict loadData(const void* data, std::size_t size, bool comment = false, bo
 
 } // namespace blet
 
-#endif // #ifndef _BLET_JSON_H_
+#endif // #ifndef BLET_JSON_H_

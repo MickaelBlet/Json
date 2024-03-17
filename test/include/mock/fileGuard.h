@@ -12,16 +12,16 @@ class FileGuard : public std::ofstream {
   public:
     FileGuard(const char* filename, std::ios_base::openmode openMode) :
         std::ofstream(filename, openMode),
-        _filename(filename) {}
+        filename_(filename) {}
     ~FileGuard() {
         if (is_open()) {
             close();
         }
-        ::remove(_filename.c_str());
+        ::remove(filename_.c_str());
     }
 
   private:
-    std::string _filename;
+    std::string filename_;
 };
 
 } // namespace blet

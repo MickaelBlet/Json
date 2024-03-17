@@ -35,55 +35,55 @@ namespace json {
 
 LoadException::LoadException(const std::string& filename, const std::string& message) :
     std::exception(),
-    _filename(filename),
-    _message(message),
-    _line(0),
-    _column(0) {
+    filename_(filename),
+    message_(message),
+    line_(0),
+    column_(0) {
     std::ostringstream oss("");
     oss << "Parse ";
-    if (!_filename.empty()) {
-        oss << _filename << ": ";
+    if (!filename_.empty()) {
+        oss << filename_ << ": ";
     }
-    oss << '(' << _message << ").";
-    _what = oss.str();
+    oss << '(' << message_ << ").";
+    what_ = oss.str();
 }
 
 LoadException::LoadException(const std::string& filename, std::size_t line, std::size_t column,
                              const std::string& message) :
     std::exception(),
-    _filename(filename),
-    _message(message),
-    _line(line),
-    _column(column) {
+    filename_(filename),
+    message_(message),
+    line_(line),
+    column_(column) {
     std::ostringstream oss("");
     oss << "Parse at ";
-    if (!_filename.empty()) {
-        oss << _filename << ':';
+    if (!filename_.empty()) {
+        oss << filename_ << ':';
     }
-    oss << _line << ':' << _column << " (" << _message << ").";
-    _what = oss.str();
+    oss << line_ << ':' << column_ << " (" << message_ << ").";
+    what_ = oss.str();
 }
 
 LoadException::~LoadException() throw() {}
 
 const char* LoadException::what() const throw() {
-    return _what.c_str();
+    return what_.c_str();
 }
 
 const std::string& LoadException::filename() const throw() {
-    return _filename;
+    return filename_;
 }
 
 const std::string& LoadException::message() const throw() {
-    return _message;
+    return message_;
 }
 
 const std::size_t& LoadException::line() const throw() {
-    return _line;
+    return line_;
 }
 
 const std::size_t& LoadException::column() const throw() {
-    return _column;
+    return column_;
 }
 
 static inline void s_stringEscape(std::ostream& oss, const std::string& str) {

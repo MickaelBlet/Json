@@ -80,7 +80,7 @@ if(library_type STREQUAL "STATIC_LIBRARY" AND
    CMAKE_BUILD_TYPE STREQUAL "Debug" AND
    BUILD_TESTING)
     if(BUILD_COVERAGE)
-        target_compile_options("${PROJECT_NAME}" PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
+        target_compile_options("${PROJECT_NAME}" PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions -fno-default-inline -fno-elide-constructors)
         target_link_libraries("${PROJECT_NAME}" PRIVATE gcov)
     endif()
     add_subdirectory(test)
