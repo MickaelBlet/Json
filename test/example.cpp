@@ -120,7 +120,7 @@ GTEST_TEST(example, test3) {
                 blet::Dict dict = blet::json::loadString(jsonStr, true);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:23 (New line in string).");
+                EXPECT_STREQ(e.what(), "Load at 1:23 (New line in string).");
                 EXPECT_EQ(e.message(), "New line in string");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);

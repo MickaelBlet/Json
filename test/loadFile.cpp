@@ -17,7 +17,7 @@ GTEST_TEST(loadFile, except_open_file) {
                 blet::Dict json = blet::json::loadFile(testFile);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse /tmp/blet_test_loadFile_except_open_file.json: (Open file failed).");
+                EXPECT_STREQ(e.what(), "Load /tmp/blet_test_loadFile_except_open_file.json: (Open file failed).");
                 EXPECT_EQ(e.message(), "Open file failed");
                 EXPECT_EQ(e.filename(), "/tmp/blet_test_loadFile_except_open_file.json");
                 EXPECT_EQ(e.line(), 0);
@@ -53,7 +53,7 @@ GTEST_TEST(loadFile, except_parsing) {
             }
             catch (const blet::json::LoadException& e) {
                 EXPECT_STREQ(e.what(),
-                             "Parse at /tmp/blet_test_loadFile_except_parsing.json:1:15 (Key of object not found).");
+                             "Load at /tmp/blet_test_loadFile_except_parsing.json:1:15 (Key of object not found).");
                 EXPECT_EQ(e.message(), "Key of object not found");
                 EXPECT_EQ(e.filename(), "/tmp/blet_test_loadFile_except_parsing.json");
                 EXPECT_EQ(e.line(), 1);

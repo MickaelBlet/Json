@@ -42,7 +42,7 @@ GTEST_TEST(loadString, Not_a_valid_start_character) {
                 blet::Dict json = blet::json::loadString("Oo");
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:1 (Not a valid start character).");
+                EXPECT_STREQ(e.what(), "Load at 1:1 (Not a valid start character).");
                 EXPECT_EQ(e.message(), "Not a valid start character");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -57,7 +57,7 @@ GTEST_TEST(loadString, Not_a_valid_start_character) {
                 blet::Dict json = blet::json::loadString("\tOo");
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (Not a valid start character).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (Not a valid start character).");
                 EXPECT_EQ(e.message(), "Not a valid start character");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -72,7 +72,7 @@ GTEST_TEST(loadString, Not_a_valid_start_character) {
                 blet::Dict json = blet::json::loadString("   Oo   ");
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:4 (Not a valid start character).");
+                EXPECT_STREQ(e.what(), "Load at 1:4 (Not a valid start character).");
                 EXPECT_EQ(e.message(), "Not a valid start character");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -90,7 +90,7 @@ GTEST_TEST(loadString, Not_a_valid_end_character) {
                 blet::Dict json = blet::json::loadString("{})");
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:3 (Not a valid end character).");
+                EXPECT_STREQ(e.what(), "Load at 1:3 (Not a valid end character).");
                 EXPECT_EQ(e.message(), "Not a valid end character");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -105,7 +105,7 @@ GTEST_TEST(loadString, Not_a_valid_end_character) {
                 blet::Dict json = blet::json::loadString("{}-");
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:3 (Not a valid end character).");
+                EXPECT_STREQ(e.what(), "Load at 1:3 (Not a valid end character).");
                 EXPECT_EQ(e.message(), "Not a valid end character");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -120,7 +120,7 @@ GTEST_TEST(loadString, Not_a_valid_end_character) {
                 blet::Dict json = blet::json::loadString("{}}");
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:3 (Not a valid end character).");
+                EXPECT_STREQ(e.what(), "Load at 1:3 (Not a valid end character).");
                 EXPECT_EQ(e.message(), "Not a valid end character");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -145,7 +145,7 @@ GTEST_TEST(loadString, parseType_False) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (Bad element of array).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -167,7 +167,7 @@ GTEST_TEST(loadString, parseType_False) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (Bad element of array).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -189,7 +189,7 @@ GTEST_TEST(loadString, parseType_False) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (Bad element of array).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -211,7 +211,7 @@ GTEST_TEST(loadString, parseType_False) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (Bad element of array).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -232,7 +232,7 @@ GTEST_TEST(loadString, End_of_object_not_found) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (End of object not found).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (End of object not found).");
                 EXPECT_EQ(e.message(), "End of object not found");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -257,7 +257,7 @@ GTEST_TEST(loadString, Bad_element_in_the_key) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:8 (Bad element in the key).");
+                EXPECT_STREQ(e.what(), "Load at 1:8 (Bad element in the key).");
                 EXPECT_EQ(e.message(), "Bad element in the key");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -282,7 +282,7 @@ GTEST_TEST(loadString, Key_of_object_not_found) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (Key of object not found).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (Key of object not found).");
                 EXPECT_EQ(e.message(), "Key of object not found");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -303,7 +303,7 @@ GTEST_TEST(loadString, End_of_array_not_found) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (End of array not found).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (End of array not found).");
                 EXPECT_EQ(e.message(), "End of array not found");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -324,7 +324,7 @@ GTEST_TEST(loadString, End_of_key) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:3 (End of key).");
+                EXPECT_STREQ(e.what(), "Load at 1:3 (End of key).");
                 EXPECT_EQ(e.message(), "End of key");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -345,7 +345,7 @@ GTEST_TEST(loadString, New_line_in_key) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:3 (New line in key).");
+                EXPECT_STREQ(e.what(), "Load at 1:3 (New line in key).");
                 EXPECT_EQ(e.message(), "New line in key");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -366,7 +366,7 @@ GTEST_TEST(loadString, Need_definition_of_object) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:7 (Need definition of object).");
+                EXPECT_STREQ(e.what(), "Load at 1:7 (Need definition of object).");
                 EXPECT_EQ(e.message(), "Need definition of object");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -387,7 +387,7 @@ GTEST_TEST(loadString, Key_already_exist) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:15 (Key already exist).");
+                EXPECT_STREQ(e.what(), "Load at 1:15 (Key already exist).");
                 EXPECT_EQ(e.message(), "Key already exist");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -408,7 +408,7 @@ GTEST_TEST(loadString, End_of_string) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:3 (End of string).");
+                EXPECT_STREQ(e.what(), "Load at 1:3 (End of string).");
                 EXPECT_EQ(e.message(), "End of string");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -429,7 +429,7 @@ GTEST_TEST(loadString, New_line_in_string) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:3 (New line in string).");
+                EXPECT_STREQ(e.what(), "Load at 1:3 (New line in string).");
                 EXPECT_EQ(e.message(), "New line in string");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -450,7 +450,7 @@ GTEST_TEST(loadString, Octal_number_not_allowed) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:2 (Octal number not allowed).");
+                EXPECT_STREQ(e.what(), "Load at 1:2 (Octal number not allowed).");
                 EXPECT_EQ(e.message(), "Octal number not allowed");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -471,7 +471,7 @@ GTEST_TEST(loadString, Bad_number) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:3 (Bad number).");
+                EXPECT_STREQ(e.what(), "Load at 1:3 (Bad number).");
                 EXPECT_EQ(e.message(), "Bad number");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);
@@ -489,7 +489,7 @@ GTEST_TEST(loadString, Bad_number) {
                 blet::Dict json = blet::json::loadString(jsonStr);
             }
             catch (const blet::json::LoadException& e) {
-                EXPECT_STREQ(e.what(), "Parse at 1:5 (Bad element of array).");
+                EXPECT_STREQ(e.what(), "Load at 1:5 (Bad element of array).");
                 EXPECT_EQ(e.message(), "Bad element of array");
                 EXPECT_EQ(e.filename(), "");
                 EXPECT_EQ(e.line(), 1);

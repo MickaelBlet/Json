@@ -7,6 +7,8 @@
     ],
     "sources": [
         "include/blet/json.h",
-        "src/json.cpp"
+        "src/dump.cpp",
+        "src/load.cpp",
+        "src/loadException.cpp"
     ]
 }

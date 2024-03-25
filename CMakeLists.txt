@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 add_subdirectory("third/Dict")
 
-project(blet_json VERSION 4.0.3 LANGUAGES CXX)
+project(blet_json VERSION 4.1.0 LANGUAGES CXX)
 
 # OPTIONS
 option(BUILD_EXAMPLE "Build example binaries" OFF)
@@ -23,7 +23,9 @@ if(NOT CMAKE_INSTALL_INCLUDEDIR)
 endif()
 
 add_library("${PROJECT_NAME}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/json.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/dump.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/load.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/loadException.cpp"
 )
 
 set_target_properties("${PROJECT_NAME}"

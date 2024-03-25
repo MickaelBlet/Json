@@ -37,7 +37,7 @@ namespace blet {
 namespace json {
 
 /**
- * @brief Parse exception from std::exception
+ * @brief Load exception from std::exception
  */
 class LoadException : public std::exception {
   public:
@@ -80,7 +80,7 @@ void dump(const blet::Dict& dict, std::ostream& os, std::size_t indent = 0, char
 std::string dump(const blet::Dict& dict, std::size_t indent = 0, char indentCharacter = ' ');
 
 /**
- * @brief Parse and load a json from filename.
+ * @brief Load a json from filename.
  *
  * @param filename A filename.
  * @param comment Option for accept the comment (style C/C++) in json.
@@ -90,7 +90,7 @@ std::string dump(const blet::Dict& dict, std::size_t indent = 0, char indentChar
 blet::Dict loadFile(const char* filename, bool comment = false, bool additionalNext = false);
 
 /**
- * @brief Parse and load a json from stream.
+ * @brief Load a json from stream.
  *
  * @param stream A stream.
  * @param comment Option for accept the comment (style C/C++) in json.
@@ -100,7 +100,7 @@ blet::Dict loadFile(const char* filename, bool comment = false, bool additionalN
 blet::Dict loadStream(std::istream& stream, bool comment = false, bool additionalNext = false);
 
 /**
- * @brief Parse and load a json from string.
+ * @brief Load a json from string.
  *
  * @param str A string.
  * @param comment Option for accept the comment (style C/C++) in json.
@@ -110,7 +110,7 @@ blet::Dict loadStream(std::istream& stream, bool comment = false, bool additiona
 blet::Dict loadString(const std::string& str, bool comment = false, bool additionalNext = false);
 
 /**
- * @brief Parse and load a json from data.
+ * @brief Load a json from data.
  *
  * @param data A data.
  * @param size Size of data.
