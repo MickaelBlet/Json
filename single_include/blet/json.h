@@ -6299,8 +6299,7 @@ class StringReader {
         stream_(stream),
         pos_(0),
         line_(1),
-        posColumn_(0),
-        nl_('\n') {
+        posColumn_(0) {
         stream_.seekg(0, stream_.end);
         std::size_t streamLength = stream_.tellg();
         stream_.seekg(0, stream_.beg);
@@ -6358,10 +6357,8 @@ class StringReader {
     std::istream& stream_;
     std::string str_;
     std::size_t pos_;
-    std::string sLine_;
     std::size_t line_;
     std::size_t posColumn_;
-    const char nl_;
 };
 
 class Loader {
