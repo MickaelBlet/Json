@@ -131,7 +131,8 @@ class Loader {
     }
 
     void loadObject(blet::Dict& dict) {
-        dict.newObject();
+        dict.getType() = blet::Dict::OBJECT_TYPE;
+        dict.getValue().newObject();
         bool next = false;
         ++reader_; // jump '{'
         spaceJump();
@@ -163,7 +164,8 @@ class Loader {
     }
 
     void loadArray(blet::Dict& dict) {
-        dict.newArray();
+        dict.getType() = blet::Dict::ARRAY_TYPE;
+        dict.getValue().newArray();
         bool next = false;
 
         ++reader_; // jump '['
@@ -282,13 +284,13 @@ class Loader {
         return true;
     }
 
-    void loadNull(blet::Dict& dict) {
-        dict.newNull();
+    void loadNull(blet::Dict& /*dict*/) {
         reader_ += (sizeof("null") - 1);
     }
 
     void loadBool(bool boolean, blet::Dict& dict) {
-        dict.newBoolean(boolean);
+        dict.getType() = blet::Dict::BOOLEAN_TYPE;
+        dict.getValue().getBoolean() = boolean;
         if (boolean) {
             reader_ += (sizeof("true") - 1);
         }
@@ -304,7 +306,8 @@ class Loader {
         double number;
         std::istream& ris = reader_.streamOffset(reader_.index());
         if (ris >> number) {
-            dict.newNumber(number);
+            dict.getType() = blet::Dict::NUMBER_TYPE;
+            dict.getValue().getNumber() = number;
             // jump of string number size
             reader_ += (ris.tellg() - std::streampos(reader_.index()));
         }
@@ -329,7 +332,8 @@ class Loader {
             }
             ++reader_;
         }
-        dict.newString(stringEscape(reader_.substr(start, reader_.index())));
+        dict.getType() = blet::Dict::STRING_TYPE;
+        dict.getValue().newString(stringEscape(reader_.substr(start, reader_.index())));
         ++reader_; // jump '"'
     }
 

@@ -46,7 +46,7 @@
  * dict.h
  *
  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
- * Copyright (c) 2023 BLET Mickaël.
+ * Copyright (c) 2024 BLET Mickaël.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -120,109 +120,117 @@ class Dict {
     /**
      * @brief Union of value.
      */
-    union UValue {
+    class UValue {
       private:
-        boolean_t boolean_;
-        number_t number_;
-        string_t* string_;
-        array_t* array_;
-        object_t* object_;
+        union {
+            boolean_t boolean_;
+            number_t number_;
+            string_t* string_;
+            array_t* array_;
+            object_t* object_;
+        } u_;
 
       public:
         /**
          * @brief Construct a new UValue with boolean at false.
          */
-        inline UValue() :
-            boolean_(false) {}
+        inline UValue() {
+            u_.boolean_ = false;
+        }
         /**
          * @brief Construct a new UValue with a boolean.
          */
-        inline UValue(const boolean_t& value) :
-            boolean_(value) {}
+        inline UValue(const boolean_t& value) {
+            u_.boolean_ = value;
+        }
         /**
          * @brief Construct a new UValue with a number.
          */
         template<typename T>
-        inline UValue(const T& value) :
-            number_(value) {}
+        inline UValue(const T& value) {
+            u_.number_ = value;
+        }
         /**
          * @brief Construct a new UValue with a string.
          */
-        inline UValue(const std::string& value) :
-            string_(new string_t(value)) {}
+        inline UValue(const std::string& value) {
+            u_.string_ = new string_t(value);
+        }
         /**
          * @brief Construct a new UValue with a string.
          */
-        inline UValue(const char* value) :
-            string_(new string_t(value)) {}
+        inline UValue(const char* value) {
+            u_.string_ = new string_t(value);
+        }
         /**
          * @brief Construct a new UValue with a string.
          */
         template<std::size_t Size>
-        inline UValue(const char (&value)[Size]) :
-            string_(new string_t(value)) {}
+        inline UValue(const char (&value)[Size]) {
+            u_.string_ = new string_t(value);
+        }
         /**
          * @brief Construct a new UValue with a array.
          */
         template<typename T>
-        inline UValue(const std::deque<T>& value) :
-            array_(new array_t()) {
+        inline UValue(const std::deque<T>& value) {
+            u_.array_ = new array_t();
             extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
          */
         template<typename T>
-        inline UValue(const std::list<T>& value) :
-            array_(new array_t()) {
+        inline UValue(const std::list<T>& value) {
+            u_.array_ = new array_t();
             extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
          */
         template<typename T, typename U>
-        inline UValue(const std::map<T, U>& value) :
-            array_(new array_t()) {
+        inline UValue(const std::map<T, U>& value) {
+            u_.array_ = new array_t();
             extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
          */
         template<typename T>
-        inline UValue(const std::queue<T>& value) :
-            array_(new array_t()) {
+        inline UValue(const std::queue<T>& value) {
+            u_.array_ = new array_t();
             extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
          */
         template<typename T>
-        inline UValue(const std::set<T>& value) :
-            array_(new array_t()) {
+        inline UValue(const std::set<T>& value) {
+            u_.array_ = new array_t();
             extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
          */
         template<typename T>
-        inline UValue(const std::stack<T>& value) :
-            array_(new array_t()) {
+        inline UValue(const std::stack<T>& value) {
+            u_.array_ = new array_t();
             extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a array.
          */
         template<typename T>
-        inline UValue(const std::vector<T>& value) :
-            array_(new array_t()) {
+        inline UValue(const std::vector<T>& value) {
+            u_.array_ = new array_t();
             extendToArray(value);
         }
         /**
          * @brief Construct a new UValue with a object.
          */
         template<typename T>
-        inline UValue(const std::map<std::string, T>& value) :
-            object_(new object_t()) {
+        inline UValue(const std::map<std::string, T>& value) {
+            u_.object_ = new object_t();
             extendToObject(value);
         }
 
@@ -230,70 +238,70 @@ class Dict {
          * @brief Return boolean_t& Reference of boolean.
          */
         inline boolean_t& getBoolean() {
-            return boolean_;
+            return u_.boolean_;
         }
 
         /**
          * @brief Return const boolean_t& Const reference of boolean.
          */
         inline const boolean_t& getBoolean() const {
-            return boolean_;
+            return u_.boolean_;
         }
 
         /**
          * @brief Return number_t& Reference of number.
          */
         inline number_t& getNumber() {
-            return number_;
+            return u_.number_;
         }
 
         /**
          * @brief Return const number_t& Const reference of number.
          */
         inline const number_t& getNumber() const {
-            return number_;
+            return u_.number_;
         }
 
         /**
          * @brief Return reference of string.
          */
         inline string_t& getString() {
-            return *string_;
+            return *u_.string_;
         }
 
         /**
          * @brief Return the read-only (constant) reference of string.
          */
         inline const string_t& getString() const {
-            return *string_;
+            return *u_.string_;
         }
 
         /**
          * @brief Return reference of array.
          */
         inline array_t& getArray() {
-            return *array_;
+            return *u_.array_;
         }
 
         /**
          * @brief Return the read-only (constant) reference of array.
          */
         inline const array_t& getArray() const {
-            return *array_;
+            return *u_.array_;
         }
 
         /**
          * @brief Return reference of object.
          */
         inline object_t& getObject() {
-            return *object_;
+            return *u_.object_;
         }
 
         /**
          * @brief Return the read-only (constant) reference of object.
          */
         inline const object_t& getObject() const {
-            return *object_;
+            return *u_.object_;
         }
 
         /**
@@ -303,7 +311,7 @@ class Dict {
          * @param value Source string to use.
          */
         inline void newString(const string_t& value = string_t()) {
-            string_ = new string_t(value);
+            u_.string_ = new string_t(value);
         }
 
         /**
@@ -313,7 +321,7 @@ class Dict {
          * @param value Source array to use.
          */
         inline void newArray(const array_t& value = array_t()) {
-            array_ = new array_t(value);
+            u_.array_ = new array_t(value);
         }
 
         /**
@@ -323,7 +331,7 @@ class Dict {
          * @param value Source object to use.
          */
         inline void newObject(const object_t& value = object_t()) {
-            object_ = new object_t(value);
+            u_.object_ = new object_t(value);
         }
 
         /**
@@ -334,13 +342,13 @@ class Dict {
          */
         template<typename T>
         inline void extendToArray(const std::deque<T>& value) {
-            std::size_t size = array_->size() + value.size();
-            if (array_->capacity() < size) {
-                array_->reserve(size);
+            std::size_t size = u_.array_->size() + value.size();
+            if (u_.array_->capacity() < size) {
+                u_.array_->reserve(size);
             }
             typename std::deque<T>::const_iterator it;
             for (it = value.begin(); it != value.end(); ++it) {
-                array_->push_back(*it);
+                u_.array_->push_back(*it);
             }
         }
 
@@ -352,13 +360,13 @@ class Dict {
          */
         template<typename T>
         inline void extendToArray(const std::list<T>& value) {
-            std::size_t size = array_->size() + value.size();
-            if (array_->capacity() < size) {
-                array_->reserve(size);
+            std::size_t size = u_.array_->size() + value.size();
+            if (u_.array_->capacity() < size) {
+                u_.array_->reserve(size);
             }
             typename std::list<T>::const_iterator it;
             for (it = value.begin(); it != value.end(); ++it) {
-                array_->push_back(*it);
+                u_.array_->push_back(*it);
             }
         }
 
@@ -373,14 +381,14 @@ class Dict {
         inline void extendToArray(const std::map<T, U>& value) {
             typename std::map<T, U>::const_iterator it;
             for (it = value.begin(); it != value.end(); ++it) {
-                if (static_cast<std::size_t>(it->first) < array_->size()) {
-                    array_->operator[](static_cast<std::size_t>(it->first)) = it->second;
+                if (static_cast<std::size_t>(it->first) < u_.array_->size()) {
+                    u_.array_->operator[](static_cast<std::size_t>(it->first)) = it->second;
                     continue;
                 }
-                while (array_->size() < static_cast<std::size_t>(it->first)) {
-                    array_->push_back(Dict());
+                while (u_.array_->size() < static_cast<std::size_t>(it->first)) {
+                    u_.array_->push_back(Dict());
                 }
-                array_->push_back(it->second);
+                u_.array_->push_back(it->second);
             }
         }
 
@@ -392,13 +400,13 @@ class Dict {
          */
         template<typename T>
         inline void extendToArray(const std::queue<T>& value) {
-            std::size_t size = array_->size() + value.size();
-            if (array_->capacity() < size) {
-                array_->reserve(size);
+            std::size_t size = u_.array_->size() + value.size();
+            if (u_.array_->capacity() < size) {
+                u_.array_->reserve(size);
             }
             std::queue<T> copy = value;
             while (!copy.empty()) {
-                array_->push_back(copy.front());
+                u_.array_->push_back(copy.front());
                 copy.pop();
             }
         }
@@ -411,13 +419,13 @@ class Dict {
          */
         template<typename T>
         inline void extendToArray(const std::set<T>& value) {
-            std::size_t size = array_->size() + value.size();
-            if (array_->capacity() < size) {
-                array_->reserve(size);
+            std::size_t size = u_.array_->size() + value.size();
+            if (u_.array_->capacity() < size) {
+                u_.array_->reserve(size);
             }
             typename std::set<T>::const_iterator it;
             for (it = value.begin(); it != value.end(); ++it) {
-                array_->push_back(*it);
+                u_.array_->push_back(*it);
             }
         }
 
@@ -429,13 +437,13 @@ class Dict {
          */
         template<typename T>
         inline void extendToArray(const std::stack<T>& value) {
-            std::size_t size = array_->size() + value.size();
-            if (array_->capacity() < size) {
-                array_->reserve(size);
+            std::size_t size = u_.array_->size() + value.size();
+            if (u_.array_->capacity() < size) {
+                u_.array_->reserve(size);
             }
             std::stack<T> copy = value;
             while (!copy.empty()) {
-                array_->push_back(copy.top());
+                u_.array_->push_back(copy.top());
                 copy.pop();
             }
         }
@@ -448,13 +456,13 @@ class Dict {
          */
         template<typename T>
         inline void extendToArray(const std::vector<T>& value) {
-            std::size_t size = array_->size() + value.size();
-            if (array_->capacity() < size) {
-                array_->reserve(size);
+            std::size_t size = u_.array_->size() + value.size();
+            if (u_.array_->capacity() < size) {
+                u_.array_->reserve(size);
             }
             typename std::vector<T>::const_iterator it;
             for (it = value.begin(); it != value.end(); ++it) {
-                array_->push_back(*it);
+                u_.array_->push_back(*it);
             }
         }
 
@@ -469,7 +477,7 @@ class Dict {
         inline void extendToObject(const std::map<object_t::key_type, T>& value) {
             typename std::map<object_t::key_type, T>::const_iterator it;
             for (it = value.begin(); it != value.end(); ++it) {
-                object_->insert(object_t::value_type(it->first, it->second));
+                u_.object_->insert(object_t::value_type(it->first, it->second));
             }
         }
 
@@ -477,21 +485,21 @@ class Dict {
          * @brief Delete String.
          */
         inline void delString() {
-            delete string_;
+            delete u_.string_;
         }
 
         /**
          * @brief Delete Array.
          */
         inline void delArray() {
-            delete array_;
+            delete u_.array_;
         }
 
         /**
          * @brief Delete Object.
          */
         inline void delObject() {
-            delete object_;
+            delete u_.object_;
         }
     };
 
@@ -592,7 +600,7 @@ class Dict {
         }
 
         /**
-         * @brief Construct a new Child Exception object
+         * @brief Construct a new Child Exception object.
          *
          * @param dict A dictionnary.
          * @param key A key.
@@ -631,7 +639,7 @@ class Dict {
     };
 
     /**
-     * @brief Method exception from AccessException
+     * @brief Method exception from AccessException.
      */
     class MethodException : public AccessException {
       public:
@@ -666,13 +674,13 @@ class Dict {
     };
 
     // -------------------------------------------------------------------------
-    // ................................
-    // .#####....####...######..##..##.
-    // .##..##..##..##....##....##..##.
-    // .#####...######....##....######.
-    // .##......##..##....##....##..##.
-    // .##......##..##....##....##..##.
-    // ................................
+    //  ................................
+    //  .#####....####...######..##..##.
+    //  .##..##..##..##....##....##..##.
+    //  .#####...######....##....######.
+    //  .##......##..##....##....##..##.
+    //  .##......##..##....##....##..##.
+    //  ................................
     // -------------------------------------------------------------------------
 
     /**
@@ -680,10 +688,11 @@ class Dict {
      */
     struct Path : public std::list<Dict> {
         /**
-         * @brief Add @p index in path
+         * @brief Add @p index in path.
          *
-         * @param index
-         * @return Path& current Path
+         * @tparam T Type of index.
+         * @param index Index of search.
+         * @return Path& current Path.
          */
         template<typename T>
         inline Path& operator[](const T& index) {
@@ -693,13 +702,13 @@ class Dict {
     };
 
     // -------------------------------------------------------------------------
-    // ................................................
-    // ..####...######...####...######..######...####..
-    // .##........##....##..##....##......##....##..##.
-    // ..####.....##....######....##......##....##.....
-    // .....##....##....##..##....##......##....##..##.
-    // ..####.....##....##..##....##....######...####..
-    // ................................................
+    //  ................................................
+    //  ..####...######...####...######..######...####..
+    //  .##........##....##..##....##......##....##..##.
+    //  ..####.....##....######....##......##....##.....
+    //  .....##....##....##..##....##......##....##..##.
+    //  ..####.....##....##..##....##....######...####..
+    //  ................................................
     // -------------------------------------------------------------------------
 
     /**
@@ -734,13 +743,13 @@ class Dict {
     }
 
     // -------------------------------------------------------------------------
-    // ................................................
-    // .######..#####...######..######..##..##..#####..
-    // .##......##..##....##....##......###.##..##..##.
-    // .####....#####.....##....####....##.###..##..##.
-    // .##......##..##....##....##......##..##..##..##.
-    // .##......##..##..######..######..##..##..#####..
-    // ................................................
+    //  ................................................
+    //  .######..#####...######..######..##..##..#####..
+    //  .##......##..##....##....##......###.##..##..##.
+    //  .####....#####.....##....####....##.###..##..##.
+    //  .##......##..##....##....##......##..##..##..##.
+    //  .##......##..##..######..######..##..##..#####..
+    //  ................................................
     // -------------------------------------------------------------------------
 
     /**
@@ -775,13 +784,13 @@ class Dict {
     }
 
     // -------------------------------------------------------------------------
-    // ................................
-    // .#####...######...####...######.
-    // .##..##....##....##..##....##...
-    // .##..##....##....##........##...
-    // .##..##....##....##..##....##...
-    // .#####...######...####.....##...
-    // ................................
+    //  ................................
+    //  .#####...######...####...######.
+    //  .##..##....##....##..##....##...
+    //  .##..##....##....##........##...
+    //  .##..##....##....##..##....##...
+    //  .#####...######...####.....##...
+    //  ................................
     // -------------------------------------------------------------------------
 
     /**
@@ -1247,7 +1256,7 @@ class Dict {
      * @return True if dict is boolean and with value are equal.
      */
     inline bool operator==(const boolean_t& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -1281,7 +1290,7 @@ class Dict {
      * value.
      */
     inline bool operator>(const boolean_t& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -1304,7 +1313,7 @@ class Dict {
      * @return True if dict is boolean and is lexicographically less than value.
      */
     inline bool operator<(const boolean_t& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -1328,7 +1337,7 @@ class Dict {
      * than value.
      */
     inline bool operator>=(const boolean_t& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -1352,7 +1361,7 @@ class Dict {
      * value.
      */
     inline bool operator<=(const boolean_t& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -1481,7 +1490,7 @@ class Dict {
      */
     template<typename T>
     inline bool operator==(const T& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case BOOLEAN_TYPE:
@@ -1517,7 +1526,7 @@ class Dict {
      */
     template<typename T>
     inline bool operator>(const T& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case ARRAY_TYPE:
@@ -1541,7 +1550,7 @@ class Dict {
      */
     template<typename T>
     inline bool operator<(const T& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case ARRAY_TYPE:
@@ -1566,7 +1575,7 @@ class Dict {
      */
     template<typename T>
     inline bool operator>=(const T& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case ARRAY_TYPE:
@@ -1591,7 +1600,7 @@ class Dict {
      */
     template<typename T>
     inline bool operator<=(const T& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case ARRAY_TYPE:
@@ -1768,163 +1777,163 @@ class Dict {
 
     /**
      * @brief Append a substring.
-     * This function appends __n characters from __str starting at __pos to this
-     * string. If __n is is larger than the number of available characters in
-     * __str, the remainder of __str is appended.
+     * This function appends n characters from str starting at pos to this
+     * string. If n is is larger than the number of available characters in
+     * str, the remainder of str is appended.
      *
-     * @param __str The string to append.
-     * @param __pos Index of the first character of str to append.
-     * @param __n The number of characters to append.
+     * @param str The string to append.
+     * @param pos Index of the first character of str to append.
+     * @param n The number of characters to append.
      * @return Dict& Reference to this dictionnary.
-     * @throw std::out_of_range if __pos is not a valid index.
+     * @throw std::out_of_range if pos is not a valid index.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& append(const std::string& __str, std::size_t __pos, std::size_t __n = std::string::npos) {
-        getString().append(__str, __pos, __n);
+    inline Dict& append(const std::string& str, std::size_t pos, std::size_t n = std::string::npos) {
+        getString().append(str, pos, n);
         return *this;
     }
 
     /**
      * @brief Append a C substring.
      *
-     * @param __s The C string to append.
-     * @param __n The number of characters to append.
+     * @param s The C string to append.
+     * @param n The number of characters to append.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& append(const char* __s, std::size_t __n) {
-        getString().append(__s, __n);
+    inline Dict& append(const char* s, std::size_t n) {
+        getString().append(s, n);
         return *this;
     }
 
     /**
      * @brief Append a C string.
      *
-     * @param __s The C string to append.
+     * @param s The C string to append.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& append(const char* __s) {
-        getString().append(__s);
+    inline Dict& append(const char* s) {
+        getString().append(s);
         return *this;
     }
 
     /**
      * @brief Append multiple characters.
-     * Appends __n copies of __c to this string.
+     * Appends n copies of c to this string.
      *
-     * @param __n The number of characters to append.
-     * @param __c The character to use.
+     * @param n The number of characters to append.
+     * @param c The character to use.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& append(std::size_t __n, char __c) {
-        getString().append(__n, __c);
+    inline Dict& append(std::size_t n, char c) {
+        getString().append(n, c);
         return *this;
     }
 
     /**
      * @brief Append a range of characters.
-     * Appends characters in the range (__first,__last) to this string.
+     * Appends characters in the range (first,last) to this string.
      *
      * @tparam InputIterator
-     * @param __first Iterator referencing the first character to append.
-     * @param __last Iterator marking the end of the range.
+     * @param first Iterator referencing the first character to append.
+     * @param last Iterator marking the end of the range.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
     template<typename InputIterator>
-    inline Dict& string_append(InputIterator __first, InputIterator __last) {
-        getString().append(__first, __last);
+    inline Dict& string_append(InputIterator first, InputIterator last) {
+        getString().append(first, last);
         return *this;
     }
 
     /**
      * @brief Set value to contents of another string.
      *
-     * @param __str Source string to use.
+     * @param str Source string to use.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& assign(const std::string& __str) {
-        getString().assign(__str);
+    inline Dict& assign(const std::string& str) {
+        getString().assign(str);
         return *this;
     }
 
     /**
      * @brief Set value to a substring of a string.
-     * This function sets this string to the substring of __str consisting of __n
-     * characters at __pos. If __n is is larger than the number of available
-     * characters in __str, the remainder of __str is used.
+     * This function sets this string to the substring of str consisting of n
+     * characters at pos. If n is is larger than the number of available
+     * characters in str, the remainder of str is used.
      *
-     * @param __str The string to use.
-     * @param __pos Index of the first character of str.
-     * @param __n Number of characters to use.
+     * @param str The string to use.
+     * @param pos Index of the first character of str.
+     * @param n Number of characters to use.
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range if pos is not a valid index.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& assign(const std::string& __str, std::size_t __pos, std::size_t __n = std::string::npos) {
-        getString().assign(__str, __pos, __n);
+    inline Dict& assign(const std::string& str, std::size_t pos, std::size_t n = std::string::npos) {
+        getString().assign(str, pos, n);
         return *this;
     }
 
     /**
      * @brief Set value to a C substring.
-     * This function sets the value of this string to the first __n characters of
-     * __s. If __n is is larger than the number of available characters in __s,
-     * the remainder of __s is used.
+     * This function sets the value of this string to the first n characters of
+     * s. If n is is larger than the number of available characters in s,
+     * the remainder of s is used.
      *
-     * @param __s The C string to use.
-     * @param __n Number of characters to use.
+     * @param s The C string to use.
+     * @param n Number of characters to use.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& assign(const char* __s, std::size_t __n) {
-        getString().assign(__s, __n);
+    inline Dict& assign(const char* s, std::size_t n) {
+        getString().assign(s, n);
         return *this;
     }
 
     /**
      * @brief Set value to contents of a C string.
-     * This function sets the value of this string to the value of __s.
-     * The data is copied, so there is no dependence on __s once the function
+     * This function sets the value of this string to the value of s.
+     * The data is copied, so there is no dependence on s once the function
      * returns.
      *
-     * @param __s The C string to use.
+     * @param s The C string to use.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& assign(const char* __s) {
-        getString().assign(__s);
+    inline Dict& assign(const char* s) {
+        getString().assign(s);
         return *this;
     }
 
     /**
      * @brief Set value to multiple characters.
-     * This function sets the value of this string to __n copies of character __c.
+     * This function sets the value of this string to n copies of character c.
      *
-     * @param __n Length of the resulting string.
-     * @param __c The character to use.
+     * @param n Length of the resulting string.
+     * @param c The character to use.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& assign(std::size_t __n, char __c) {
-        getString().assign(__n, __c);
+    inline Dict& assign(std::size_t n, char c) {
+        getString().assign(n, c);
         return *this;
     }
 
     /**
      * @brief Set value to a range of characters.
-     * Sets value of string to characters in the range (__first,__last).
+     * Sets value of string to characters in the range (first,last).
      *
-     * @param __first Iterator referencing the first character to append.
-     * @param __last Iterator marking the end of the range.
+     * @param first Iterator referencing the first character to append.
+     * @param last Iterator marking the end of the range.
      * @throw AccessException if dict type is not null and not a string.
      */
     template<typename InputIterator>
-    inline void string_assign(InputIterator __first, InputIterator __last) {
-        getString().assign(__first, __last);
+    inline void string_assign(InputIterator first, InputIterator last) {
+        getString().assign(first, last);
     }
 
     /**
@@ -1966,38 +1975,38 @@ class Dict {
      * of the comparison is nonzero returns it, otherwise the shorter one is
      * ordered first.
      *
-     * @param __str String to compare against.
+     * @param str String to compare against.
      * @return int Integer < 0, 0, or > 0.
-     * Returns an integer < 0 if this string is ordered before __str,
+     * Returns an integer < 0 if this string is ordered before str,
      * 0 if their values are equivalent,
-     * or > 0 if this string is ordered after __str.
+     * or > 0 if this string is ordered after str.
      * @throw AccessException if dict type is not a string.
      */
-    inline int compare(const std::string& __str) const {
-        return getString().compare(__str);
+    inline int compare(const std::string& str) const {
+        return getString().compare(str);
     }
 
     /**
      * @brief Compare substring to a string.
      * Determines the effective length rlen of the strings to compare as the
      * smallest of the length of the substring and
-     * __str.size(). The function then compares the two strings by calling
+     * str.size(). The function then compares the two strings by calling
      * traits::compare(substring.data(),str.data(),rlen). If the result of the
      * comparison is nonzero returns it, otherwise the shorter one is ordered
      * first.
      *
-     * @param __pos Index of first character of substring.
-     * @param __n Number of characters in substring.
-     * @param __str String to compare against.
+     * @param pos Index of first character of substring.
+     * @param n Number of characters in substring.
+     * @param str String to compare against.
      * @return int Integer < 0, 0, or > 0.
-     * Form the substring of this string from the __n characters starting at
-     * __pos. Returns an integer < 0 if the substring is ordered before __str, 0
+     * Form the substring of this string from the n characters starting at
+     * pos. Returns an integer < 0 if the substring is ordered before str, 0
      * if their values are equivalent, or > 0 if the substring is ordered after *
-     * __str.
+     * str.
      * @throw AccessException if dict type is not a string.
      */
-    inline int compare(std::size_t __pos, std::size_t __n, const std::string& __str) const {
-        return getString().compare(__pos, __n, __str);
+    inline int compare(std::size_t pos, std::size_t n, const std::string& str) const {
+        return getString().compare(pos, n, str);
     }
 
     /**
@@ -2009,70 +2018,70 @@ class Dict {
      * result of the comparison is nonzero returns it, otherwise the shorter one
      * is ordered first.
      *
-     * @param __pos1 Index of first character of substring.
-     * @param __n1 Number of characters in substring.
-     * @param __str String to compare against.
-     * @param __pos2 Index of first character of substring of str.
-     * @param __n2 Number of characters in substring of str.
+     * @param pos1 Index of first character of substring.
+     * @param n1 Number of characters in substring.
+     * @param str String to compare against.
+     * @param pos2 Index of first character of substring of str.
+     * @param n2 Number of characters in substring of str.
      * @return int Integer < 0, 0, or > 0.
-     * Form the substring of this string from the __n1 characters starting at
-     * __pos1. Form the substring of * __str from the __n2 characters starting at
-     * __pos2. Returns an integer < 0 if this substring is ordered before the
-     * substring of __str, 0 if their values are equivalent, or > 0 if this
-     * substring is ordered after the substring of __str.
+     * Form the substring of this string from the n1 characters starting at
+     * pos1. Form the substring of * str from the n2 characters starting at
+     * pos2. Returns an integer < 0 if this substring is ordered before the
+     * substring of str, 0 if their values are equivalent, or > 0 if this
+     * substring is ordered after the substring of str.
      * @throw AccessException if dict type is not a string.
      */
-    inline int compare(std::size_t __pos1, std::size_t __n1, const std::string& __str, std::size_t __pos2,
-                       std::size_t __n2 = std::string::npos) const {
-        return getString().compare(__pos1, __n1, __str, __pos2, __n2);
+    inline int compare(std::size_t pos1, std::size_t n1, const std::string& str, std::size_t pos2,
+                       std::size_t n2 = std::string::npos) const {
+        return getString().compare(pos1, n1, str, pos2, n2);
     }
 
     /**
      * @brief Compare to a C string.
      * Determines the effective length rlen of the strings to compare as the
-     * smallest of size() and the length of a string constructed from __s. The
+     * smallest of size() and the length of a string constructed from s. The
      * function then compares the two strings by calling
      * traits::compare(data(),s,rlen). If the result of the comparison is nonzero
      * returns it, otherwise the shorter one is ordered first.
      *
-     * @param __s C string to compare against.
+     * @param s C string to compare against.
      * @return int Integer < 0, 0, or > 0.
-     * Returns an integer < 0 if this string is ordered before __s,
+     * Returns an integer < 0 if this string is ordered before s,
      * 0 if their values are equivalent, or > 0 if this string is ordered after
-     * __s.
+     * s.
      * @throw AccessException if dict type is not a string.
      */
-    inline int compare(const char* __s) const {
-        return getString().compare(__s);
+    inline int compare(const char* s) const {
+        return getString().compare(s);
     }
 
     /**
      * @brief Compare substring to a string.
      * Determines the effective length rlen of the strings to compare as the
      * smallest of the length of the substring and the length of a string
-     * constructed from @a __s. The function then compares the two string by
-     * calling traits::compare(substring.data(),__s,rlen). If the result of the
+     * constructed from @a s. The function then compares the two string by
+     * calling traits::compare(substring.data(),s,rlen). If the result of the
      * comparison is nonzero returns it, otherwise the shorter one is ordered
      * first.
      *
-     * @param __pos Index of first character of substring.
-     * @param __n1 Number of characters in substring.
-     * @param __s C string to compare against.
+     * @param pos Index of first character of substring.
+     * @param n1 Number of characters in substring.
+     * @param s C string to compare against.
      * @return int Integer < 0, 0, or > 0.
-     * Form the substring of this string from the @a __n1 characters starting at
-     * @a pos. Returns an integer < 0 if the substring is ordered before @a __s,
+     * Form the substring of this string from the @a n1 characters starting at
+     * @a pos. Returns an integer < 0 if the substring is ordered before @a s,
      * 0 if their values are equivalent, or > 0 if the substring is ordered after
-     * @a __s.
+     * @a s.
      * @throw AccessException if dict type is not a string.
      */
-    inline int compare(std::size_t __pos, std::size_t __n1, const char* __s) const {
-        return getString().compare(__pos, __n1, __s);
+    inline int compare(std::size_t pos, std::size_t n1, const char* s) const {
+        return getString().compare(pos, n1, s);
     }
 
     /**
      * @brief Compare substring against a character %array.
      * Determines the effective length rlen of the strings to compare as the
-     * smallest of the length of the substring and @a __n2.
+     * smallest of the length of the substring and @a n2.
      * The function then compares the two strings by calling
      * traits::compare(substring.data(),s,rlen). If the result of the comparison
      * is nonzero returns it, otherwise the shorter one is ordered first.
@@ -2080,36 +2089,36 @@ class Dict {
      * NB: s must have at least n2 characters, &apos;\\0&apos; has
      * no special meaning.
      *
-     * @param __pos Index of first character of substring.
-     * @param __n1 Number of characters in substring.
-     * @param __s character %array to compare against.
-     * @param __n2 Number of characters of s.
+     * @param pos Index of first character of substring.
+     * @param n1 Number of characters in substring.
+     * @param s character %array to compare against.
+     * @param n2 Number of characters of s.
      * @return int Integer < 0, 0, or > 0.
-     * Form the substring of this string from the @a __n1 characters starting at
-     * @a __pos. Form a string from the first @a __n2 characters of @a __s.
+     * Form the substring of this string from the @a n1 characters starting at
+     * @a pos. Form a string from the first @a n2 characters of @a s.
      * Returns an integer < 0 if this substring is ordered before the string from
-     * @a __s, 0 if their values are equivalent, or > 0 if this substring is
-     * ordered after the string from @a __s.
+     * @a s, 0 if their values are equivalent, or > 0 if this substring is
+     * ordered after the string from @a s.
      * @throw AccessException if dict type is not a string.
      */
-    inline int compare(std::size_t __pos, std::size_t __n1, const char* __s, std::size_t __n2) const {
-        return getString().compare(__pos, __n1, __s, __n2);
+    inline int compare(std::size_t pos, std::size_t n1, const char* s, std::size_t n2) const {
+        return getString().compare(pos, n1, s, n2);
     }
 
     /**
      * @brief Copy substring into C string.
-     * Copies up to @p __n characters starting at @p __pos into the C string @p
-     * __s. If @p __pos is %greater than size(), out_of_range is thrown.
+     * Copies up to @p n characters starting at @p pos into the C string @p
+     * s. If @p pos is %greater than size(), out_of_range is thrown.
      *
-     * @param __s C string to copy value into.
-     * @param __n Number of characters to copy.
-     * @param __pos Index of first character to copy.
+     * @param s C string to copy value into.
+     * @param n Number of characters to copy.
+     * @param pos Index of first character to copy.
      * @return std::size_t Number of characters actually copied.
-     * @throw std::out_of_range If @p __pos > size().
+     * @throw std::out_of_range If @p pos > size().
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t copy(char* __s, std::size_t __n, std::size_t __pos = 0) const {
-        return getString().copy(__s, __n, __pos);
+    inline std::size_t copy(char* s, std::size_t n, std::size_t pos = 0) const {
+        return getString().copy(s, n, pos);
     }
 
     /**
@@ -2147,28 +2156,28 @@ class Dict {
     /**
      * @brief Remove characters.
      *
-     * @param __pos Index of first character to remove (default 0).
-     * @param __n Number of characters to remove (default remainder).
+     * @param pos Index of first character to remove (default 0).
+     * @param n Number of characters to remove (default remainder).
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& erase(std::size_t __pos = 0, std::size_t __n = std::string::npos) {
-        getString().erase(__pos, __n);
+    inline Dict& erase(std::size_t pos = 0, std::size_t n = std::string::npos) {
+        getString().erase(pos, n);
         return *this;
     }
 
     /**
      * @brief Remove one character.
-     * Removes the character at @p __position from this string.
+     * Removes the character at @p position from this string.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __position Iterator referencing the character to remove.
+     * @param position Iterator referencing the character to remove.
      * @return string_t::iterator iterator referencing same location after
      * removal.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline string_t::iterator erase(string_t::iterator __position) {
-        return getString().erase(__position);
+    inline string_t::iterator erase(string_t::iterator position) {
+        return getString().erase(position);
     }
 
     /**
@@ -2176,341 +2185,341 @@ class Dict {
      * Removes the characters in the range (first,last) from this string.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __first Iterator referencing the first character to remove.
-     * @param __last Iterator referencing the end of the range.
+     * @param first Iterator referencing the first character to remove.
+     * @param last Iterator referencing the end of the range.
      * @return string_t::iterator Iterator referencing location of first after
      * removal.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline string_t::iterator erase(string_t::iterator __first, string_t::iterator __last) {
-        return getString().erase(__first, __last);
+    inline string_t::iterator erase(string_t::iterator first, string_t::iterator last) {
+        return getString().erase(first, last);
     }
 
     /**
      * @brief Find position of a C substring.
-     * Starting from @p __pos,
-     * searches forward for the first @p __n characters in @p __s within this
+     * Starting from @p pos,
+     * searches forward for the first @p n characters in @p s within this
      * string. If found, returns the index where it begins. If not found, returns
      * npos.
      *
-     * @param __s C string to locate.
-     * @param __pos Index of character to search from.
-     * @param __n Number of characters from s to search for.
+     * @param s C string to locate.
+     * @param pos Index of character to search from.
+     * @param n Number of characters from s to search for.
      * @return std::size_t Index of start of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find(const char* __s, std::size_t __pos, std::size_t __n) const {
-        return getString().find(__s, __pos, __n);
+    inline std::size_t find(const char* s, std::size_t pos, std::size_t n) const {
+        return getString().find(s, pos, n);
     }
 
     /**
      * @brief Find position of a string.
-     * Starting from @p __pos,
-     * searches forward for value of @p __str within this string.
+     * Starting from @p pos,
+     * searches forward for value of @p str within this string.
      * If found, returns the index where it begins.
      * If not found, returns npos.
      *
-     * @param __str String to locate.
-     * @param __pos Index of character to search from (default 0).
+     * @param str String to locate.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of start of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t string_find(const string_t& __str, std::size_t __pos = 0) const {
-        return getString().find(__str, __pos);
+    inline std::size_t string_find(const string_t& str, std::size_t pos = 0) const {
+        return getString().find(str, pos);
     }
 
     /**
      * @brief Find position of a string.
-     * Starting from @p __pos,
-     * searches forward for value of @p __str within this string.
+     * Starting from @p pos,
+     * searches forward for value of @p str within this string.
      * If found, returns the index where it begins.
      * If not found, returns npos.
      *
-     * @param __str C string to locate.
-     * @param __pos Index of character to search from (default 0).
+     * @param str C string to locate.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of start of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t string_find(const char* __str, std::size_t __pos = 0) const {
-        return getString().find(__str, __pos);
+    inline std::size_t string_find(const char* str, std::size_t pos = 0) const {
+        return getString().find(str, pos);
     }
 
     /**
      * @brief Find position of a character.
-     * Starting from @p __pos,
-     * searches forward for @p __c within this string.
+     * Starting from @p pos,
+     * searches forward for @p c within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __c Character to locate.
-     * @param __pos Index of character to search from (default 0).
+     * @param c Character to locate.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find(char __c, std::size_t __pos = 0) const {
-        return getString().find(__c, __pos);
+    inline std::size_t find(char c, std::size_t pos = 0) const {
+        return getString().find(c, pos);
     }
 
     /**
      * @brief Find position of a character not in string.
-     * Starting from @p __pos,
-     * searches forward for a character not contained in @p __str within this
+     * Starting from @p pos,
+     * searches forward for a character not contained in @p str within this
      * string. If found, returns the index where it was found. If not found,
      * returns npos.
      *
-     * @param __str String containing characters to avoid.
-     * @param __pos Index of character to search from (default 0).
+     * @param str String containing characters to avoid.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_first_not_of(const string_t& __str, std::size_t __pos = 0) const {
-        return getString().find_first_not_of(__str, __pos);
+    inline std::size_t find_first_not_of(const string_t& str, std::size_t pos = 0) const {
+        return getString().find_first_not_of(str, pos);
     }
 
     /**
      * @brief Find position of a character not in C substring.
-     * Starting from @p __pos,
-     * searches forward for a character not contained in the first @p __n
-     * characters of @p __s within this string. If found, returns the index where
+     * Starting from @p pos,
+     * searches forward for a character not contained in the first @p n
+     * characters of @p s within this string. If found, returns the index where
      * it was found. If not found, returns npos.
      *
-     * @param __s C string containing characters to avoid.
-     * @param __pos Index of character to search from.
-     * @param __n Number of characters from __s to consider.
+     * @param s C string containing characters to avoid.
+     * @param pos Index of character to search from.
+     * @param n Number of characters from s to consider.
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_first_not_of(const char* __s, std::size_t __pos, std::size_t __n) const {
-        return getString().find_first_not_of(__s, __pos, __n);
+    inline std::size_t find_first_not_of(const char* s, std::size_t pos, std::size_t n) const {
+        return getString().find_first_not_of(s, pos, n);
     }
 
     /**
      * @brief Find position of a character not in C string.
-     * Starting from @p __pos,
-     * searches forward for a character not contained in @p __s within this
+     * Starting from @p pos,
+     * searches forward for a character not contained in @p s within this
      * string. If found, returns the index where it was found. If not found,
      * returns npos.
      *
-     * @param __s C string containing characters to avoid.
-     * @param __pos Index of character to search from (default 0).
+     * @param s C string containing characters to avoid.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_first_not_of(const char* __s, std::size_t __pos = 0) const {
-        return getString().find_first_not_of(__s, __pos);
+    inline std::size_t find_first_not_of(const char* s, std::size_t pos = 0) const {
+        return getString().find_first_not_of(s, pos);
     }
 
     /**
      * @brief Find position of a different character.
-     * Starting from @p __pos,
-     * searches forward for a character other than @p __c within this string.
+     * Starting from @p pos,
+     * searches forward for a character other than @p c within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __c Character to avoid.
-     * @param __pos Index of character to search from (default 0).
+     * @param c Character to avoid.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_first_not_of(char __c, std::size_t __pos = 0) const {
-        return getString().find_first_not_of(__c, __pos);
+    inline std::size_t find_first_not_of(char c, std::size_t pos = 0) const {
+        return getString().find_first_not_of(c, pos);
     }
 
     /**
      * @brief Find position of a character of string.
-     * Starting from @p __pos,
-     * searches forward for one of the characters of @p __str within this string.
+     * Starting from @p pos,
+     * searches forward for one of the characters of @p str within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __str String containing characters to locate.
-     * @param __pos Index of character to search from (default 0).
+     * @param str String containing characters to locate.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_first_of(const string_t& __str, std::size_t __pos = 0) const {
-        return getString().find_first_of(__str, __pos);
+    inline std::size_t find_first_of(const string_t& str, std::size_t pos = 0) const {
+        return getString().find_first_of(str, pos);
     }
 
     /**
      * @brief Find position of a character of C substring.
-     * Starting from @p __pos,
-     * searches forward for one of the first @p __n characters of @p __s within
+     * Starting from @p pos,
+     * searches forward for one of the first @p n characters of @p s within
      * this string. If found, returns the index where it was found. If not found,
      * returns npos.
      *
-     * @param __s String containing characters to locate.
-     * @param __pos Index of character to search from.
-     * @param __n Number of characters from s to search for.
+     * @param s String containing characters to locate.
+     * @param pos Index of character to search from.
+     * @param n Number of characters from s to search for.
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_first_of(const char* __s, std::size_t __pos, std::size_t __n) const {
-        return getString().find_first_of(__s, __pos, __n);
+    inline std::size_t find_first_of(const char* s, std::size_t pos, std::size_t n) const {
+        return getString().find_first_of(s, pos, n);
     }
 
     /**
      * @brief Find position of a character of C string.
-     * Starting from __pos,
-     * searches forward for one of the characters of __s within this string.
+     * Starting from pos,
+     * searches forward for one of the characters of s within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __s String containing characters to locate.
-     * @param __pos Index of character to search from (default 0).
+     * @param s String containing characters to locate.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_first_of(const char* __s, std::size_t __pos = 0) const {
-        return getString().find_first_of(__s, __pos);
+    inline std::size_t find_first_of(const char* s, std::size_t pos = 0) const {
+        return getString().find_first_of(s, pos);
     }
 
     /**
      * @brief Find position of a character.
-     * Starting from __pos,
-     * searches forward for the character __c within this string.
+     * Starting from pos,
+     * searches forward for the character c within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
-     * Note: equivalent to find(__c, __pos).
+     * Note: equivalent to find(c, pos).
      *
-     * @param __c Character to locate.
-     * @param __pos Index of character to search from (default 0).
+     * @param c Character to locate.
+     * @param pos Index of character to search from (default 0).
      * @return std::size_t Index of first occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_first_of(char __c, std::size_t __pos = 0) const {
-        return getString().find_first_of(__c, __pos);
+    inline std::size_t find_first_of(char c, std::size_t pos = 0) const {
+        return getString().find_first_of(c, pos);
     }
 
     /**
      * @brief Find last position of a character not in string.
-     * Starting from __pos,
-     * searches backward for a character not contained in __str within this
+     * Starting from pos,
+     * searches backward for a character not contained in str within this
      * string. If found, returns the index where it was found. If not found,
      * returns npos.
      *
-     * @param __str String containing characters to avoid.
-     * @param __pos Index of character to search back from (default end).
+     * @param str String containing characters to avoid.
+     * @param pos Index of character to search back from (default end).
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_last_not_of(const string_t& __str, std::size_t __pos = std::string::npos) const {
-        return getString().find_last_not_of(__str, __pos);
+    inline std::size_t find_last_not_of(const string_t& str, std::size_t pos = std::string::npos) const {
+        return getString().find_last_not_of(str, pos);
     }
 
     /**
      * @brief Find last position of a character not in C substring.
-     * Starting from __pos,
-     * searches backward for a character not contained in the first __n characters
-     * of __s within this string. If found, returns the index where it was found.
+     * Starting from pos,
+     * searches backward for a character not contained in the first n characters
+     * of s within this string. If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __s C string containing characters to avoid.
-     * @param __pos Index of character to search back from.
-     * @param __n Number of characters from s to consider.
+     * @param s C string containing characters to avoid.
+     * @param pos Index of character to search back from.
+     * @param n Number of characters from s to consider.
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_last_not_of(const char* __s, std::size_t __pos, std::size_t __n) const {
-        return getString().find_last_not_of(__s, __pos, __n);
+    inline std::size_t find_last_not_of(const char* s, std::size_t pos, std::size_t n) const {
+        return getString().find_last_not_of(s, pos, n);
     }
 
     /**
      * @brief Find last position of a character not in C string.
-     * Starting from __pos,
-     * searches backward for a character not contained in __s within this string.
+     * Starting from pos,
+     * searches backward for a character not contained in s within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __s C string containing characters to avoid.
-     * @param __pos Index of character to search back from (default end).
+     * @param s C string containing characters to avoid.
+     * @param pos Index of character to search back from (default end).
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_last_not_of(const char* __s, std::size_t __pos = std::string::npos) const {
-        return getString().find_last_not_of(__s, __pos);
+    inline std::size_t find_last_not_of(const char* s, std::size_t pos = std::string::npos) const {
+        return getString().find_last_not_of(s, pos);
     }
 
     /**
      * @brief Find last position of a different character.
-     * Starting from __pos,
-     * searches backward for a character other than __c within this string.
+     * Starting from pos,
+     * searches backward for a character other than c within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __c Character to avoid.
-     * @param __pos Index of character to search back from (default end).
+     * @param c Character to avoid.
+     * @param pos Index of character to search back from (default end).
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_last_not_of(char __c, std::size_t __pos = std::string::npos) const {
-        return getString().find_last_not_of(__c, __pos);
+    inline std::size_t find_last_not_of(char c, std::size_t pos = std::string::npos) const {
+        return getString().find_last_not_of(c, pos);
     }
 
     /**
      * @brief Find last position of a character of string.
-     * Starting from __pos,
-     * searches backward for one of the characters of __str within this string.
+     * Starting from pos,
+     * searches backward for one of the characters of str within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __str String containing characters to locate.
-     * @param __pos Index of character to search back from (default end).
+     * @param str String containing characters to locate.
+     * @param pos Index of character to search back from (default end).
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_last_of(const string_t& __str, std::size_t __pos = std::string::npos) const {
-        return getString().find_last_of(__str, __pos);
+    inline std::size_t find_last_of(const string_t& str, std::size_t pos = std::string::npos) const {
+        return getString().find_last_of(str, pos);
     }
 
     /**
      * @brief Find last position of a character of C substring.
-     * Starting from __pos,
-     * searches backward for one of the first __n characters of __s within this
+     * Starting from pos,
+     * searches backward for one of the first n characters of s within this
      * string. If found, returns the index where it was found. If not found,
      * returns npos.
      *
-     * @param __s C string containing characters to locate.
-     * @param __pos Index of character to search back from.
-     * @param __n Number of characters from s to search for.
+     * @param s C string containing characters to locate.
+     * @param pos Index of character to search back from.
+     * @param n Number of characters from s to search for.
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_last_of(const char* __s, std::size_t __pos, std::size_t __n) const {
-        return getString().find_last_of(__s, __pos, __n);
+    inline std::size_t find_last_of(const char* s, std::size_t pos, std::size_t n) const {
+        return getString().find_last_of(s, pos, n);
     }
 
     /**
      * @brief Find last position of a character of C string.
-     * Starting from __pos,
-     * searches backward for one of the characters of __s within this string.
+     * Starting from pos,
+     * searches backward for one of the characters of s within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __s C string containing characters to locate.
-     * @param __pos Index of character to search back from (default end).
+     * @param s C string containing characters to locate.
+     * @param pos Index of character to search back from (default end).
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_last_of(const char* __s, std::size_t __pos = std::string::npos) const {
-        return getString().find_last_of(__s, __pos);
+    inline std::size_t find_last_of(const char* s, std::size_t pos = std::string::npos) const {
+        return getString().find_last_of(s, pos);
     }
 
     /**
      * @brief Find last position of a character.
-     * Starting from __pos,
-     * searches backward for __c within this string.
+     * Starting from pos,
+     * searches backward for c within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
-     * Note: equivalent to rfind(__c, __pos).
+     * Note: equivalent to rfind(c, pos).
      *
-     * @param __c Character to locate.
-     * @param __pos Index of character to search back from (default end).
+     * @param c Character to locate.
+     * @param pos Index of character to search back from (default end).
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t find_last_of(char __c, std::size_t __pos = std::string::npos) const {
-        return getString().find_last_of(__c, __pos);
+    inline std::size_t find_last_of(char c, std::size_t pos = std::string::npos) const {
+        return getString().find_last_of(c, pos);
     }
 
     /**
@@ -2523,152 +2532,151 @@ class Dict {
 
     /**
      * @brief Insert multiple characters.
-     * Inserts __n copies of character __c starting at the position referenced by
-     * iterator __p. If adding characters causes the length to exceed max_size(),
+     * Inserts n copies of character c starting at the position referenced by
+     * iterator p. If adding characters causes the length to exceed max_size(),
      * length_error is thrown. The value of the string doesn't change if an error
      * is thrown.
      *
-     * @param __p Iterator referencing location in string to insert at.
-     * @param __n Number of characters to insert.
-     * @param __c The character to insert.
+     * @param p Iterator referencing location in string to insert at.
+     * @param n Number of characters to insert.
+     * @param c The character to insert.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline void insert(string_t::iterator __p, std::size_t __n, char __c) {
-        getString().insert(__p, __n, __c);
+    inline void insert(string_t::iterator p, std::size_t n, char c) {
+        getString().insert(p, n, c);
     }
 
     /**
      * @brief  Insert a range of characters.
-     * Inserts characters in range (__beg,__end).
+     * Inserts characters in range (beg,end).
      * If adding characters causes the length to exceed max_size(), length_error
      * is thrown. The value of the string doesn't change if an error is thrown.
      *
-     * @param __p Iterator referencing location in string to insert at.
-     * @param __beg Start of range.
-     * @param __end End of range.
+     * @param p Iterator referencing location in string to insert at.
+     * @param beg Start of range.
+     * @param end End of range.
      * @throw std::length_error If new length exceeds @c max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
     template<class InputIterator>
-    inline void insert(string_t::iterator __p, InputIterator __beg, InputIterator __end) {
-        getString().insert(__p, __beg, __end);
+    inline void insert(string_t::iterator p, InputIterator beg, InputIterator end) {
+        getString().insert(p, beg, end);
     }
 
     /**
      * @brief Insert value of a string.
-     * Inserts value of __str starting at __pos1.
+     * Inserts value of str starting at pos1.
      * If adding characters causes the length to exceed max_size(), length_error
      * is thrown. The value of the string doesn't change if an error is thrown.
      *
-     * @param __pos1 Iterator referencing location in string to insert at.
-     * @param __str The string to insert.
+     * @param pos1 Iterator referencing location in string to insert at.
+     * @param str The string to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& insert(std::size_t __pos1, const string_t& __str) {
-        getString().insert(__pos1, __str);
+    inline Dict& insert(std::size_t pos1, const string_t& str) {
+        getString().insert(pos1, str);
         return *this;
     }
 
     /**
      * @brief Insert a substring.
-     * Starting at pos1, insert __n character of __str beginning with __pos2.
+     * Starting at pos1, insert n character of str beginning with pos2.
      * If adding characters causes the length to exceed max_size(), length_error
-     * is thrown. If __pos1 is beyond the end of this string or __pos2 is beyond
-     * the end of __str, out_of_range is thrown. The value of the string doesn't
+     * is thrown. If pos1 is beyond the end of this string or pos2 is beyond
+     * the end of str, out_of_range is thrown. The value of the string doesn't
      * change if an error is thrown.
      *
-     * @param __pos1 Iterator referencing location in string to insert at.
-     * @param __str The string to insert.
-     * @param __pos2 Start of characters in str to insert.
-     * @param __n Number of characters to insert.
+     * @param pos1 Iterator referencing location in string to insert at.
+     * @param str The string to insert.
+     * @param pos2 Start of characters in str to insert.
+     * @param n Number of characters to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw std::out_of_range If pos1 > size() or __pos2 > str.size().
+     * @throw std::out_of_range If pos1 > size() or pos2 > str.size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& insert(std::size_t __pos1, const string_t& __str, std::size_t __pos2,
-                        std::size_t __n = std::string::npos) {
-        getString().insert(__pos1, __str, __pos2, __n);
+    inline Dict& insert(std::size_t pos1, const string_t& str, std::size_t pos2, std::size_t n = std::string::npos) {
+        getString().insert(pos1, str, pos2, n);
         return *this;
     }
 
     /**
      * @brief Insert a C substring.
-     * Inserts the first __n characters of __s starting at __pos.
+     * Inserts the first n characters of s starting at pos.
      * If adding characters causes the length to exceed max_size(), length_error
-     * is thrown. If __pos is beyond end(), out_of_range is thrown. The value of
+     * is thrown. If pos is beyond end(), out_of_range is thrown. The value of
      * the string doesn't change if an error is thrown.
      *
-     * @param __pos Iterator referencing location in string to insert at.
-     * @param __s The C string to insert.
-     * @param __n The number of characters to insert.
-     * @return Dict& Reference to this dictionnary.
-     * @throw std::length_error If new length exceeds max_size().
-     * @throw std::out_of_range If __pos is beyond the end of this string.
-     * @throw AccessException if dict type is not null and not a string.
-     */
-    inline Dict& insert(std::size_t __pos, const char* __s, std::size_t __n) {
-        getString().insert(__pos, __s, __n);
-        return *this;
-    }
-
-    /**
-     * @brief Insert a C string.
-     * Inserts the first n characters of __s starting at __pos.
-     * If adding characters causes the length to exceed max_size(), length_error
-     * is thrown. If __pos is beyond end(), out_of_range is thrown. The value of
-     * the string doesn't change if an error is thrown.
-     *
-     * @param __pos Iterator referencing location in string to insert at.
-     * @param __s The C string to insert.
+     * @param pos Iterator referencing location in string to insert at.
+     * @param s The C string to insert.
+     * @param n The number of characters to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw std::out_of_range If pos is beyond the end of this string.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& insert(std::size_t __pos, const char* __s) {
-        getString().insert(__pos, __s);
+    inline Dict& insert(std::size_t pos, const char* s, std::size_t n) {
+        getString().insert(pos, s, n);
+        return *this;
+    }
+
+    /**
+     * @brief Insert a C string.
+     * Inserts the first n characters of s starting at pos.
+     * If adding characters causes the length to exceed max_size(), length_error
+     * is thrown. If pos is beyond end(), out_of_range is thrown. The value of
+     * the string doesn't change if an error is thrown.
+     *
+     * @param pos Iterator referencing location in string to insert at.
+     * @param s The C string to insert.
+     * @return Dict& Reference to this dictionnary.
+     * @throw std::length_error If new length exceeds max_size().
+     * @throw std::out_of_range If pos is beyond the end of this string.
+     * @throw AccessException if dict type is not null and not a string.
+     */
+    inline Dict& insert(std::size_t pos, const char* s) {
+        getString().insert(pos, s);
         return *this;
     }
 
     /**
      * @brief Insert multiple characters.
-     * Inserts __n copies of character __c starting at index __pos.
+     * Inserts n copies of character c starting at index pos.
      * If adding characters causes the length to exceed max_size(), length_error
-     * is thrown. If __pos > length(), out_of_range is thrown. The value of the
+     * is thrown. If pos > length(), out_of_range is thrown. The value of the
      * string doesn't change if an error is thrown.
      *
-     * @param __pos Index in string to insert at.
-     * @param __n Number of characters to insert.
-     * @param __c The character to insert.
+     * @param pos Index in string to insert at.
+     * @param n Number of characters to insert.
+     * @param c The character to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
-     * @throw std::out_of_range If __pos is beyond the end of this string.
+     * @throw std::out_of_range If pos is beyond the end of this string.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& insert(std::size_t __pos, std::size_t __n, char __c) {
-        getString().insert(__pos, __n, __c);
+    inline Dict& insert(std::size_t pos, std::size_t n, char c) {
+        getString().insert(pos, n, c);
         return *this;
     }
 
     /**
      * @brief Insert one character.
-     * Inserts character __c at position referenced by __p.
+     * Inserts character c at position referenced by p.
      * If adding character causes the length to exceed max_size(), length_error is
-     * thrown. If __p is beyond end of string, out_of_range is thrown. The value
+     * thrown. If p is beyond end of string, out_of_range is thrown. The value
      * of the string doesn't change if an error is thrown.
      *
-     * @param __p Iterator referencing position in string to insert at.
-     * @param __c The character to insert.
+     * @param p Iterator referencing position in string to insert at.
+     * @param c The character to insert.
      * @return string_t::iterator Iterator referencing newly inserted char.
      * @throw std::length_error If new length exceeds max_size()
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline string_t::iterator insert(string_t::iterator __p, char __c) {
-        return getString().insert(__p, __c);
+    inline string_t::iterator insert(string_t::iterator p, char c) {
+        return getString().insert(p, c);
     }
 
     /**
@@ -2683,47 +2691,47 @@ class Dict {
     /**
      * @brief Append a string to this string.
      *
-     * @param __str The string to append.
+     * @param str The string to append.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& operator+=(const string_t& __str) {
-        getString().operator+=(__str);
+    inline Dict& operator+=(const string_t& str) {
+        getString().operator+=(str);
         return *this;
     }
 
     /**
      * @brief Append a C string.
      *
-     * @param __s The C string to append.
+     * @param s The C string to append.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& operator+=(const char* __s) {
-        getString().operator+=(__s);
+    inline Dict& operator+=(const char* s) {
+        getString().operator+=(s);
         return *this;
     }
 
     /**
      * @brief Append a character.
      *
-     * @param __c The character to append.
+     * @param c The character to append.
      * @return Dict& Reference to this dictionnary.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& operator+=(char __c) {
-        getString().operator+=(__c);
+    inline Dict& operator+=(char c) {
+        getString().operator+=(c);
         return *this;
     }
 
     /**
      * @brief Append a single character.
      *
-     * @param __c Character to append.
+     * @param c Character to append.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline void string_push_back(char __c) {
-        getString().push_back(__c);
+    inline void string_push_back(char c) {
+        getString().push_back(c);
     }
 
     /**
@@ -2765,293 +2773,292 @@ class Dict {
 
     /**
      * @brief Replace characters with value from another string.
-     * Removes the characters in the range (__pos,__pos+__n) from this string.
-     * In place, the value of __str is inserted.
-     * If __pos is beyond end of string, out_of_range is thrown.
+     * Removes the characters in the range (pos,pos+n) from this string.
+     * In place, the value of str is inserted.
+     * If pos is beyond end of string, out_of_range is thrown.
      * If the length of the result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __pos Index of first character to replace.
-     * @param __n Number of characters to be replaced.
-     * @param __str String to insert.
+     * @param pos Index of first character to replace.
+     * @param n Number of characters to be replaced.
+     * @param str String to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If pos is beyond the end of this string.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(std::size_t __pos, std::size_t __n, const string_t& __str) {
-        getString().replace(__pos, __n, __str);
+    inline Dict& replace(std::size_t pos, std::size_t n, const string_t& str) {
+        getString().replace(pos, n, str);
         return *this;
     }
 
     /**
      * @brief Replace characters with value from another string.
-     * Removes the characters in the range (__pos1,__pos1 + n) from this string.
-     * In place, the value of __str is inserted.
-     * If __pos is beyond end of string, out_of_range is thrown.
+     * Removes the characters in the range (pos1,pos1 + n) from this string.
+     * In place, the value of str is inserted.
+     * If pos is beyond end of string, out_of_range is thrown.
      * If the length of the result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __pos1 Index of first character to replace.
-     * @param __n1 Number of characters to be replaced.
-     * @param __str String to insert.
-     * @param __pos2 Index of first character of str to use.
-     * @param __n2 Number of characters from str to use.
+     * @param pos1 Index of first character to replace.
+     * @param n1 Number of characters to be replaced.
+     * @param str String to insert.
+     * @param pos2 Index of first character of str to use.
+     * @param n2 Number of characters from str to use.
      * @return Dict& Reference to this dictionnary.
-     * @throw std::out_of_range If __pos1 > size() or __pos2 > __str.size().
+     * @throw std::out_of_range If pos1 > size() or pos2 > str.size().
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(std::size_t __pos1, std::size_t __n1, const string_t& __str, std::size_t __pos2,
-                         std::size_t __n2 = std::string::npos) {
-        getString().replace(__pos1, __n1, __str, __pos2, __n2);
+    inline Dict& replace(std::size_t pos1, std::size_t n1, const string_t& str, std::size_t pos2,
+                         std::size_t n2 = std::string::npos) {
+        getString().replace(pos1, n1, str, pos2, n2);
         return *this;
     }
 
     /**
      * @brief Replace characters with value of a C substring.
-     * Removes the characters in the range (__pos,__pos + __n1) from this string.
-     * In place, the first __n2 characters of __s are inserted, or all of __s if
-     * __n2 is too large. If __pos is beyond end of string, out_of_range is
+     * Removes the characters in the range (pos,pos + n1) from this string.
+     * In place, the first n2 characters of s are inserted, or all of s if
+     * n2 is too large. If pos is beyond end of string, out_of_range is
      * thrown. If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __pos Index of first character to replace.
-     * @param __n1 Number of characters to be replaced.
-     * @param __s C string to insert.
-     * @param __n2 Number of characters from s to use.
+     * @param pos Index of first character to replace.
+     * @param n1 Number of characters to be replaced.
+     * @param s C string to insert.
+     * @param n2 Number of characters from s to use.
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If pos1 > size().
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(std::size_t __pos, std::size_t __n1, const char* __s, std::size_t __n2) {
-        getString().replace(__pos, __n1, __s, __n2);
+    inline Dict& replace(std::size_t pos, std::size_t n1, const char* s, std::size_t n2) {
+        getString().replace(pos, n1, s, n2);
         return *this;
     }
 
     /**
      * @brief Replace characters with value of a C string.
-     * Removes the characters in the range (__pos,__pos + __n1) from this string.
-     * In place, the characters of __s are inserted.
-     * If __pos is beyond end of string, out_of_range is thrown.
+     * Removes the characters in the range (pos,pos + n1) from this string.
+     * In place, the characters of s are inserted.
+     * If pos is beyond end of string, out_of_range is thrown.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __pos Index of first character to replace.
-     * @param __n1 Number of characters to be replaced.
-     * @param __s C string to insert.
+     * @param pos Index of first character to replace.
+     * @param n1 Number of characters to be replaced.
+     * @param s C string to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If pos1 > size().
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(std::size_t __pos, std::size_t __n1, const char* __s) {
-        getString().replace(__pos, __n1, __s);
+    inline Dict& replace(std::size_t pos, std::size_t n1, const char* s) {
+        getString().replace(pos, n1, s);
         return *this;
     }
 
     /**
      * @brief Replace characters with multiple characters.
      * Removes the characters in the range (pos,pos + n1) from this string.
-     * In place, __n2 copies of __c are inserted.
-     * If __pos is beyond end of string, out_of_range is thrown.
+     * In place, n2 copies of c are inserted.
+     * If pos is beyond end of string, out_of_range is thrown.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __pos Index of first character to replace.
-     * @param __n1 Number of characters to be replaced.
-     * @param __n2 Number of characters to insert.
-     * @param __c Character to insert.
+     * @param pos Index of first character to replace.
+     * @param n1 Number of characters to be replaced.
+     * @param n2 Number of characters to insert.
+     * @param c Character to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::out_of_range If pos1 > size().
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(std::size_t __pos, std::size_t __n1, std::size_t __n2, char __c) {
-        getString().replace(__pos, __n1, __n2, __c);
+    inline Dict& replace(std::size_t pos, std::size_t n1, std::size_t n2, char c) {
+        getString().replace(pos, n1, n2, c);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with string.
-     * Removes the characters in the range (__i1,__i2).
-     * In place, the value of __str is inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, the value of str is inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __str String value to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param str String value to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, const string_t& __str) {
-        getString().replace(__i1, __i2, __str);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, const string_t& str) {
+        getString().replace(i1, i2, str);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with C substring.
-     * Removes the characters in the range (__i1,__i2).
-     * In place, the first __n characters of __s are inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, the first n characters of s are inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown
      *
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __s C string value to insert.
-     * @param __n Number of characters from s to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param s C string value to insert.
+     * @param n Number of characters from s to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, const char* __s, std::size_t __n) {
-        getString().replace(__i1, __i2, __s, __n);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, const char* s, std::size_t n) {
+        getString().replace(i1, i2, s, n);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with C string.
-     * Removes the characters in the range (__i1,__i2).
-     * In place, the characters of __s are inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, the characters of s are inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __s C string value to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param s C string value to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, const char* __s) {
-        getString().replace(__i1, __i2, __s);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, const char* s) {
+        getString().replace(i1, i2, s);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with multiple characters
-     * Removes the characters in the range (__i1,__i2).
-     * In place, __n copies of __c are inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, n copies of c are inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __n Number of characters to insert.
-     * @param __c Character to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param n Number of characters to insert.
+     * @param c Character to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, std::size_t __n, char __c) {
-        getString().replace(__i1, __i2, __n, __c);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, std::size_t n, char c) {
+        getString().replace(i1, i2, n, c);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with range.
-     * Removes the characters in the range (__i1,__i2).
-     * In place, characters in the range [__k1,__k2) are inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, characters in the range [k1,k2) are inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
      * @tparam InputIterator
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __k1 Iterator referencing start of range to insert.
-     * @param __k2 Iterator referencing end of range to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param k1 Iterator referencing start of range to insert.
+     * @param k2 Iterator referencing end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
     template<class InputIterator>
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, InputIterator __k1, InputIterator __k2) {
-        getString().replace(__i1, __i2, __k1, __k2);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, InputIterator k1, InputIterator k2) {
+        getString().replace(i1, i2, k1, k2);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with range.
-     * Removes the characters in the range (__i1,__i2).
-     * In place, characters in the range [__k1,__k2) are inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, characters in the range [k1,k2) are inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __k1 Pointer start of range to insert.
-     * @param __k2 Pointer end of range to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param k1 Pointer start of range to insert.
+     * @param k2 Pointer end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, char* __k1, char* __k2) {
-        getString().replace(__i1, __i2, __k1, __k2);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, char* k1, char* k2) {
+        getString().replace(i1, i2, k1, k2);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with range.
-     * Removes the characters in the range (__i1,__i2).
-     * In place, characters in the range [__k1,__k2) are inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, characters in the range [k1,k2) are inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __k1 Const pointer start of range to insert.
-     * @param __k2 Const pointer end of range to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param k1 Const pointer start of range to insert.
+     * @param k2 Const pointer end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, const char* __k1, const char* __k2) {
-        getString().replace(__i1, __i2, __k1, __k2);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, const char* k1, const char* k2) {
+        getString().replace(i1, i2, k1, k2);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with range.
-     * Removes the characters in the range (__i1,__i2).
-     * In place, characters in the range [__k1,__k2) are inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, characters in the range [k1,k2) are inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __k1 Iterator referencing start of range to insert.
-     * @param __k2 Iterator referencing end of range to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param k1 Iterator referencing start of range to insert.
+     * @param k2 Iterator referencing end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, string_t::iterator __k1,
-                         string_t::iterator __k2) {
-        getString().replace(__i1, __i2, __k1, __k2);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, string_t::iterator k1, string_t::iterator k2) {
+        getString().replace(i1, i2, k1, k2);
         return *this;
     }
 
     /**
      * @brief Replace range of characters with range.
-     * Removes the characters in the range (__i1,__i2).
-     * In place, characters in the range [__k1,__k2) are inserted.
+     * Removes the characters in the range (i1,i2).
+     * In place, characters in the range [k1,k2) are inserted.
      * If the length of result exceeds max_size(), length_error is thrown.
      * The value of the string doesn't change if an error is thrown.
      *
-     * @param __i1 Iterator referencing start of range to replace.
-     * @param __i2 Iterator referencing end of range to replace.
-     * @param __k1 Const iterator referencing start of range to insert.
-     * @param __k2 Const iIterator referencing end of range to insert.
+     * @param i1 Iterator referencing start of range to replace.
+     * @param i2 Iterator referencing end of range to replace.
+     * @param k1 Const iterator referencing start of range to insert.
+     * @param k2 Const iIterator referencing end of range to insert.
      * @return Dict& Reference to this dictionnary.
      * @throw std::length_error If new length exceeds max_size().
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline Dict& replace(string_t::iterator __i1, string_t::iterator __i2, string_t::const_iterator __k1,
-                         string_t::const_iterator __k2) {
-        getString().replace(__i1, __i2, __k1, __k2);
+    inline Dict& replace(string_t::iterator i1, string_t::iterator i2, string_t::const_iterator k1,
+                         string_t::const_iterator k2) {
+        getString().replace(i1, i2, k1, k2);
         return *this;
     }
 
@@ -3062,89 +3069,89 @@ class Dict {
      * truncated, otherwise the %list is extended and new elements are populated
      * with given data.
      *
-     * @param __n Number of elements the %list should contain.
-     * @param __c Data with which new elements should be populated.
+     * @param n Number of elements the %list should contain.
+     * @param c Data with which new elements should be populated.
      * @throw AccessException if dict type is not null and not a string.
      */
-    inline void resize(std::size_t __n, char __c) {
-        getString().resize(__n, __c);
+    inline void resize(std::size_t n, char c) {
+        getString().resize(n, c);
     }
 
     /**
      * @brief Find last position of a string.
-     * Starting from __pos, searches backward for value of * __str within this
+     * Starting from pos, searches backward for value of * str within this
      * string. If found, returns the index where it begins. If not found, returns
      * npos.
      *
-     * @param __str String to locate.
-     * @param __pos Index of character to search back from (default end).
+     * @param str String to locate.
+     * @param pos Index of character to search back from (default end).
      * @return std::size_t Index of start of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t rfind(const string_t& __str, std::size_t __pos = std::string::npos) const {
-        return getString().rfind(__str, __pos);
+    inline std::size_t rfind(const string_t& str, std::size_t pos = std::string::npos) const {
+        return getString().rfind(str, pos);
     }
 
     /**
      * @brief Find last position of a C substring.
-     * Starting from __pos, searches backward for the first * __n characters in
-     * __s within this string. If found, returns the index where it begins. If not
+     * Starting from pos, searches backward for the first * n characters in
+     * s within this string. If found, returns the index where it begins. If not
      * found, returns npos.
      *
-     * @param __s C string to locate.
-     * @param __pos Index of character to search back from.
-     * @param __n Number of characters from s to search for.
+     * @param s C string to locate.
+     * @param pos Index of character to search back from.
+     * @param n Number of characters from s to search for.
      * @return std::size_t Index of start of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t rfind(const char* __s, std::size_t __pos, std::size_t __n) const {
-        return getString().rfind(__s, __pos, __n);
+    inline std::size_t rfind(const char* s, std::size_t pos, std::size_t n) const {
+        return getString().rfind(s, pos, n);
     }
 
     /**
      * @brief Find last position of a C string.
-     * Starting from __pos, searches backward for the value of __s within this
+     * Starting from pos, searches backward for the value of s within this
      * string. If found, returns the index where it begins. If not found, returns
      * npos.
      *
-     * @param __s C string to locate.
-     * @param __pos Index of character to start search at (default end).
+     * @param s C string to locate.
+     * @param pos Index of character to start search at (default end).
      * @return std::size_t Index of start of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t rfind(const char* __s, std::size_t __pos = std::string::npos) const {
-        return getString().rfind(__s, __pos);
+    inline std::size_t rfind(const char* s, std::size_t pos = std::string::npos) const {
+        return getString().rfind(s, pos);
     }
 
     /**
      * @brief Find last position of a character.
-     * Starting from __pos, searches backward for __c within this string.
+     * Starting from pos, searches backward for c within this string.
      * If found, returns the index where it was found.
      * If not found, returns npos.
      *
-     * @param __c Character to locate.
-     * @param __pos Index of character to search back from (default end).
+     * @param c Character to locate.
+     * @param pos Index of character to search back from (default end).
      * @return std::size_t Index of last occurrence.
      * @throw AccessException if dict type is not a string.
      */
-    inline std::size_t rfind(char __c, std::size_t __pos = std::string::npos) const {
-        return getString().rfind(__c, __pos);
+    inline std::size_t rfind(char c, std::size_t pos = std::string::npos) const {
+        return getString().rfind(c, pos);
     }
 
     /**
      * @brief Get a substring.
-     * Construct and return a new string using the __n characters starting at
-     * __pos. If the string is too short, use the remainder of the characters. If
-     * __pos is beyond the end of the string, out_of_range is thrown.
+     * Construct and return a new string using the n characters starting at
+     * pos. If the string is too short, use the remainder of the characters. If
+     * pos is beyond the end of the string, out_of_range is thrown.
      *
-     * @param __pos Index of first character (default 0).
-     * @param __n Number of characters in substring (default remainder).
+     * @param pos Index of first character (default 0).
+     * @param n Number of characters in substring (default remainder).
      * @return string_t The new string.
-     * @throw std::out_of_range If __pos > size().
+     * @throw std::out_of_range If pos > size().
      * @throw AccessException if dict type is not a string.
      */
-    inline string_t substr(std::size_t __pos = 0, std::size_t __n = std::string::npos) const {
-        return getString().substr(__pos, __n);
+    inline string_t substr(std::size_t pos = 0, std::size_t n = std::string::npos) const {
+        return getString().substr(pos, n);
     }
 
     /**
@@ -3154,7 +3161,7 @@ class Dict {
      * @return True if the value and the dict are equal.
      */
     inline bool operator==(const std::string& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3177,7 +3184,7 @@ class Dict {
      * @return True if the value and the dict are equal.
      */
     inline bool operator==(const char* value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3202,7 +3209,7 @@ class Dict {
      */
     template<std::size_t Size>
     inline bool operator==(const char (&value)[Size]) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3257,7 +3264,7 @@ class Dict {
      * @return True if dict is string and is lexicographically greater than value.
      */
     inline bool operator>(const std::string& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3280,7 +3287,7 @@ class Dict {
      * @return True if dict is string and is lexicographically greater than value.
      */
     inline bool operator>(const char* value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3305,7 +3312,7 @@ class Dict {
      */
     template<std::size_t Size>
     inline bool operator>(const char (&value)[Size]) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3328,7 +3335,7 @@ class Dict {
      * @return True if dict is string and is lexicographically less than value.
      */
     inline bool operator<(const std::string& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3351,7 +3358,7 @@ class Dict {
      * @return True if dict is string and is lexicographically less than value.
      */
     inline bool operator<(const char* value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3376,7 +3383,7 @@ class Dict {
      */
     template<std::size_t Size>
     inline bool operator<(const char (&value)[Size]) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3400,7 +3407,7 @@ class Dict {
      * than value.
      */
     inline bool operator>=(const std::string& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3424,7 +3431,7 @@ class Dict {
      * than value.
      */
     inline bool operator>=(const char* value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3450,7 +3457,7 @@ class Dict {
      */
     template<std::size_t Size>
     inline bool operator>=(const char (&value)[Size]) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3474,7 +3481,7 @@ class Dict {
      * value.
      */
     inline bool operator<=(const std::string& value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3498,7 +3505,7 @@ class Dict {
      * value.
      */
     inline bool operator<=(const char* value) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3524,7 +3531,7 @@ class Dict {
      */
     template<std::size_t Size>
     inline bool operator<=(const char (&value)[Size]) const {
-        bool ret;
+        bool ret = false;
         switch (type_) {
             case NULL_TYPE:
             case NUMBER_TYPE:
@@ -3889,35 +3896,35 @@ class Dict {
 
     /**
      * @brief Assigns a given value to a %vector.
-     * This function fills a %vector with __n copies of the given value.
+     * This function fills a %vector with n copies of the given value.
      * Note that the assignment completely changes the %vector and
      * that the resulting %vector's size is the same as the number of elements
      * assigned.
      *
-     * @param __n Number of elements to be assigned.
-     * @param __val Value to be assigned.
+     * @param n Number of elements to be assigned.
+     * @param val Value to be assigned.
      * @throw AccessException if dict type is not null or not a array
      */
-    inline void assign(std::size_t __n, const Dict& __val) {
-        getArray().assign(__n, __val);
+    inline void assign(std::size_t n, const Dict& val) {
+        getArray().assign(n, val);
     }
 
     /**
      * @brief Assigns a range to a %vector.
      * This function fills a %vector with copies of the elements in the
-     * range (__first,__last).
+     * range (first,last).
      *
      * Note that the assignment completely changes the %vector and
      * that the resulting %vector's size is the same as the number
      * of elements assigned.
      *
-     * @param __first An input iterator.
-     * @param __last An input iterator.
+     * @param first An input iterator.
+     * @param last An input iterator.
      * @throw AccessException if dict type is not null or not a array
      */
     template<typename InputIterator>
-    inline void array_assign(InputIterator __first, InputIterator __last) {
-        getArray().assign(__first, __last);
+    inline void array_assign(InputIterator first, InputIterator last) {
+        getArray().assign(first, last);
     }
 
     /**
@@ -4022,30 +4029,30 @@ class Dict {
      * the %vector by one. Note This operation could be expensive and if it is
      * frequently used the user should.
      *
-     * @param __position Iterator pointing to element to be erased.
+     * @param position Iterator pointing to element to be erased.
      * @return array_t::iterator An iterator pointing to the next element (or
      * end()).
      */
-    inline array_t::iterator erase(array_t::iterator __position) {
-        return getArray().erase(__position);
+    inline array_t::iterator erase(array_t::iterator position) {
+        return getArray().erase(position);
     }
 
     /**
      * @brief Remove a range of elements.
-     * This function will erase the elements in the range (__first,__last) and
+     * This function will erase the elements in the range (first,last) and
      * shorten the %vector accordingly. Note This operation could be expensive and
      * if it is frequently used the user should consider using std::list. The user
      * is also cautioned that this function only erases the elements, and that if
      * the elements themselves are pointers, the pointed-to memory is not touched
      * in any way. Managing the pointer is the user's responsibility.
      *
-     * @param __first Iterator pointing to the first element to be erased.
-     * @param __last Iterator pointing to one past the last element to be erased.
+     * @param first Iterator pointing to the first element to be erased.
+     * @param last Iterator pointing to one past the last element to be erased.
      * @return array_t::iterator An iterator pointing to the element pointed to by
-     * __last prior to erasing (or end()).
+     * last prior to erasing (or end()).
      */
-    inline array_t::iterator erase(array_t::iterator __first, array_t::iterator __last) {
-        return getArray().erase(__first, __last);
+    inline array_t::iterator erase(array_t::iterator first, array_t::iterator last) {
+        return getArray().erase(first, last);
     }
 
     /**
@@ -4077,12 +4084,12 @@ class Dict {
      * location. Note that this kind of operation could be expensive for a %vector
      * and if it is frequently used the user should consider using std::list.
      *
-     * @param __position A const_iterator into the %vector.
-     * @param __x Data to be inserted.
+     * @param position A const_iterator into the %vector.
+     * @param x Data to be inserted.
      * @return array_t::iterator An iterator that points to the inserted data.
      */
-    inline array_t::iterator insert(array_t::iterator __position, const Dict& __x) {
-        return getArray().insert(__position, __x);
+    inline array_t::iterator insert(array_t::iterator position, const Dict& x) {
+        return getArray().insert(position, x);
     }
 
     /**
@@ -4092,29 +4099,29 @@ class Dict {
      * could be expensive for a %vector and if it is frequently used the user
      * should consider using std::list.
      *
-     * @param __position An iterator into the %vector.
-     * @param __n Number of elements to be inserted.
-     * @param __x Data to be inserted.
+     * @param position An iterator into the %vector.
+     * @param n Number of elements to be inserted.
+     * @param x Data to be inserted.
      */
-    inline void insert(array_t::iterator __position, std::size_t __n, const Dict& __x) {
-        getArray().insert(__position, __n, __x);
+    inline void insert(array_t::iterator position, std::size_t n, const Dict& x) {
+        getArray().insert(position, n, x);
     }
 
     /**
      * @brief Inserts a range into the %vector.
      * This function will insert copies of the data in the range
-     * (__first,__last) into the %vector before the location specified
+     * (first,last) into the %vector before the location specified
      * by @a pos.
      * Note that this kind of operation could be expensive for a %vector and
      * if it is frequently used the user should consider using std::list.
      *
-     * @param __position An iterator into the %vector.
-     * @param __first An input iterator.
-     * @param __last An input iterator.
+     * @param position An iterator into the %vector.
+     * @param first An input iterator.
+     * @param last An input iterator.
      */
     template<typename InputIterator>
-    inline void insert(array_t::iterator __position, InputIterator __first, InputIterator __last) {
-        getArray().insert(__position, __first, __last);
+    inline void insert(array_t::iterator position, InputIterator first, InputIterator last) {
+        getArray().insert(position, first, last);
     }
 
     /**
@@ -4184,11 +4191,11 @@ class Dict {
      * truncated, otherwise the %vector is extended and new elements are populated
      * with given data.
      *
-     * @param __new_size Number of elements the %vector should contain.
-     * @param __x Data with which new elements should be populated.
+     * @param new_size Number of elements the %vector should contain.
+     * @param x Data with which new elements should be populated.
      */
-    inline void resize(std::size_t __new_size, Dict __x) {
-        getArray().resize(__new_size, __x);
+    inline void resize(std::size_t new_size, Dict x) {
+        getArray().resize(new_size, x);
     }
 
     // -------------------------------------------------------------------------
@@ -4587,11 +4594,11 @@ class Dict {
      * element is itself a pointer, the pointed-to memory is not touched in any
      * way. Managing the pointer is the user's responsibility.
      *
-     * @param __position An iterator pointing to the element to be erased.
+     * @param position An iterator pointing to the element to be erased.
      * @throw AccessException if dict type is not null or not a object
      */
-    inline void erase(object_t::iterator __position) {
-        getObject().erase(__position);
+    inline void erase(object_t::iterator position) {
+        getObject().erase(position);
     }
 
     /**
@@ -4602,28 +4609,28 @@ class Dict {
      * the pointed-to memory is not touched in any way.
      * Managing the pointer is the user's responsibility.
      *
-     * @param __x Key of element to be erased.
+     * @param x Key of element to be erased.
      * @return std::size_t The number of elements erased.
      * @throw AccessException if dict type is not null or not a object
      */
-    inline std::size_t erase(const std::string& __x) {
-        return getObject().erase(__x);
+    inline std::size_t erase(const std::string& x) {
+        return getObject().erase(x);
     }
 
     /**
-     * @brief Erases a (__first,__last) range of elements from a %map.
+     * @brief Erases a (first,last) range of elements from a %map.
      * This function erases a sequence of elements from a %map.
      * Note that this function only erases the element, and that if
      * the element is itself a pointer, the pointed-to memory is not touched
      * in any way.
      * Managing the pointer is the user's responsibility.
      *
-     * @param __first Iterator pointing to the start of the range to be erased.
-     * @param __last Iterator pointing to the end of the range to be erased.
+     * @param first Iterator pointing to the start of the range to be erased.
+     * @param last Iterator pointing to the end of the range to be erased.
      * @throw AccessException if dict type is not null or not a object
      */
-    inline void erase(object_t::iterator __first, object_t::iterator __last) {
-        getObject().erase(__first, __last);
+    inline void erase(object_t::iterator first, object_t::iterator last) {
+        getObject().erase(first, last);
     }
 
     /**
@@ -4633,13 +4640,13 @@ class Dict {
      * sought after %pair. If unsuccessful it returns the past-the-end ( @c end()
      * ) iterator.
      *
-     * @param __x Key of (key, value) %pair to be located.
+     * @param x Key of (key, value) %pair to be located.
      * @return object_t::iterator Iterator pointing to sought-after element, or
      * end() if not found.
      * @throw AccessException if dict type is not null or not a object
      */
-    inline object_t::iterator find(const std::string& __x) {
-        return getObject().find(__x);
+    inline object_t::iterator find(const std::string& x) {
+        return getObject().find(x);
     }
 
     /**
@@ -4649,13 +4656,13 @@ class Dict {
      * pointing to the sought after %pair. If unsuccessful it returns the
      * past-the-end ( @c end() ) iterator.
      *
-     * @param __x Key of (key, value) %pair to be located.
+     * @param x Key of (key, value) %pair to be located.
      * @return object_t::const_iterator Read-only (constant) iterator pointing to
      * sought-after element, or end() if not found.
      * @throw AccessException if dict type is not a object
      */
-    inline object_t::const_iterator find(const std::string& __x) const {
-        return getObject().find(__x);
+    inline object_t::const_iterator find(const std::string& x) const {
+        return getObject().find(x);
     }
 
     /**
@@ -4673,7 +4680,7 @@ class Dict {
      * thus a %pair is only inserted if its first element (the key) is not already
      * present in the %map. Insertion requires logarithmic time.
      *
-     * @param __x Pair to be inserted (see std::make_pair for easy creation of
+     * @param x Pair to be inserted (see std::make_pair for easy creation of
      * pairs).
      * @return std::pair<object_t::iterator, bool> A pair,
      * of which the first element is an iterator that points to the possibly
@@ -4681,8 +4688,8 @@ class Dict {
      * actually inserted.
      * @throw AccessException if dict type is not null or not a object
      */
-    inline std::pair<object_t::iterator, bool> insert(const object_t::value_type& __x) {
-        return getObject().insert(__x);
+    inline std::pair<object_t::iterator, bool> insert(const object_t::value_type& x) {
+        return getObject().insert(x);
     }
 
     /**
@@ -4700,29 +4707,29 @@ class Dict {
      *
      * Insertion requires logarithmic time (if the hint is not taken).
      *
-     * @param __position An iterator that serves as a hint as to where the pair
+     * @param position An iterator that serves as a hint as to where the pair
      * should be inserted.
-     * @param __x Pair to be inserted (see std::make_pair for easy creation of
+     * @param x Pair to be inserted (see std::make_pair for easy creation of
      * pairs).
      * @return object_t::iterator An iterator that points to the element with
-     * key of @a __x (may or may not be the %pair passed in).
+     * key of @a x (may or may not be the %pair passed in).
      * @throw AccessException if dict type is not null or not a object
      */
-    inline object_t::iterator insert(object_t::iterator __position, const object_t::value_type& __x) {
-        return getObject().insert(__position, __x);
+    inline object_t::iterator insert(object_t::iterator position, const object_t::value_type& x) {
+        return getObject().insert(position, x);
     }
 
     /**
      * @brief Template function that attempts to insert a range of elements.
      * Complexity similar to that of the range constructor.
      *
-     * @param __first Iterator pointing to the start of the range to be inserted.
-     * @param __last Iterator pointing to the end of the range.
+     * @param first Iterator pointing to the start of the range to be inserted.
+     * @param last Iterator pointing to the end of the range.
      * @throw AccessException if dict type is not null or not a object
      */
     template<typename InputIterator>
-    inline void insert(InputIterator __first, InputIterator __last) {
-        return getObject().insert(__first, __last);
+    inline void insert(InputIterator first, InputIterator last) {
+        return getObject().insert(first, last);
     }
 
     /**
@@ -4741,13 +4748,13 @@ class Dict {
      * the first element that has a greater value than given key or end() if no
      * such element exists.
      *
-     * @param __x Key of (key, value) pair to be located.
+     * @param x Key of (key, value) pair to be located.
      * @return object_t::iterator Iterator pointing to first element equal to or
      * greater than key, or end().
      * @throw AccessException if dict type is not null or not a object
      */
-    inline object_t::iterator lower_bound(const std::string& __x) {
-        return getObject().lower_bound(__x);
+    inline object_t::iterator lower_bound(const std::string& x) {
+        return getObject().lower_bound(x);
     }
 
     /**
@@ -4757,13 +4764,13 @@ class Dict {
      * the first element that has a greater value than given key or end() if no
      * such element exists.
      *
-     * @param __x Key of (key, value) pair to be located.
+     * @param x Key of (key, value) pair to be located.
      * @return object_t::const_iterator Read-only (constant) iterator pointing to
      * first element equal to or greater than key, or end().
      * @throw AccessException if dict type is not a object
      */
-    inline object_t::const_iterator lower_bound(const std::string& __x) const {
-        return getObject().lower_bound(__x);
+    inline object_t::const_iterator lower_bound(const std::string& x) const {
+        return getObject().lower_bound(x);
     }
 
     /**
@@ -4808,25 +4815,25 @@ class Dict {
     /**
      * @brief Finds the end of a subsequence matching given key.
      *
-     * @param __x Key of (key, value) pair to be located.
+     * @param x Key of (key, value) pair to be located.
      * @return object_t::iterator Iterator pointing to the first element greater
      * than key, or end().
      * @throw AccessException if dict type is not null or not a object
      */
-    inline object_t::iterator upper_bound(const std::string& __x) {
-        return getObject().upper_bound(__x);
+    inline object_t::iterator upper_bound(const std::string& x) {
+        return getObject().upper_bound(x);
     }
 
     /**
      * @brief Finds the end of a subsequence matching given key.
      *
-     * @param __x Key of (key, value) pair to be located.
+     * @param x Key of (key, value) pair to be located.
      * @return object_t::const_iterator Read-only (constant) iterator pointing to
      * first iterator greater than key, or end().
      * @throw AccessException if dict type is not a object
      */
-    inline object_t::const_iterator upper_bound(const std::string& __x) const {
-        return getObject().upper_bound(__x);
+    inline object_t::const_iterator upper_bound(const std::string& x) const {
+        return getObject().upper_bound(x);
     }
 
     /**
@@ -4921,7 +4928,7 @@ class Dict {
      * @return std::size_t
      */
     inline std::size_t capacity() const {
-        std::size_t ret;
+        std::size_t ret = 0;
         switch (type_) {
             case NULL_TYPE:
             case BOOLEAN_TYPE:
@@ -4940,10 +4947,10 @@ class Dict {
     }
 
     /**
-     * @brief Check if dict contains a @p path
+     * @brief Check if dict contains a @p path.
      *
-     * @param path
-     * @return true If Path is found else false
+     * @param path The dict Path.
+     * @return true If Path is found else false.
      */
     inline bool contains(const Path& path) const {
         bool ret = true;
@@ -4977,11 +4984,11 @@ class Dict {
     }
 
     /**
-     * @brief Check if dict contains a @p path with @p type
+     * @brief Check if dict contains a @p path with @p type.
      *
-     * @param path The dict Path
-     * @param type The dict type
-     * @return true If Path is found and type is matched else false
+     * @param path The dict Path.
+     * @param type The dict type.
+     * @return true If Path is found and type is matched else false.
      */
     inline bool contains(const Path& path, const EType& type) const {
         bool ret = true;
@@ -5021,7 +5028,7 @@ class Dict {
      * @brief Return true if the %string or %vector or %map is empty.
      */
     inline bool empty() const {
-        bool ret;
+        bool ret = true;
         switch (type_) {
             case NULL_TYPE:
             case BOOLEAN_TYPE:
@@ -5046,7 +5053,7 @@ class Dict {
      * %map.
      */
     inline std::size_t max_size() const {
-        std::size_t ret;
+        std::size_t ret = 0;
         switch (type_) {
             case NULL_TYPE:
             case BOOLEAN_TYPE:
@@ -5076,10 +5083,10 @@ class Dict {
      * reserve the memory in %advance, and thus prevent a possible reallocation of
      * memory and copying of %vector data.
      *
-     * @param __res_arg Number of elements required.
+     * @param res_arg Number of elements required.
      * @throw std::length_error If res_arg exceeds max_size().
      */
-    inline void reserve(std::size_t __res_arg = 0) {
+    inline void reserve(std::size_t res_arg = 0) {
         switch (type_) {
             case NULL_TYPE:
             case BOOLEAN_TYPE:
@@ -5088,10 +5095,10 @@ class Dict {
                 throw MethodException(*this, "reserve");
                 break;
             case STRING_TYPE:
-                getString().reserve(__res_arg);
+                getString().reserve(res_arg);
                 break;
             case ARRAY_TYPE:
-                getArray().reserve(__res_arg);
+                getArray().reserve(res_arg);
                 break;
         }
     }
@@ -5103,9 +5110,9 @@ class Dict {
      * size the %string or %vector is truncated, otherwise the %string or %vector
      * is extended and new elements are populated with given data.
      *
-     * @param __n Number of elements the %string or %vector should contain.
+     * @param n Number of elements the %string or %vector should contain.
      */
-    inline void resize(std::size_t __n) {
+    inline void resize(std::size_t n) {
         switch (type_) {
             case NULL_TYPE:
             case BOOLEAN_TYPE:
@@ -5114,10 +5121,10 @@ class Dict {
                 throw MethodException(*this, "resize");
                 break;
             case STRING_TYPE:
-                getString().resize(__n);
+                getString().resize(n);
                 break;
             case ARRAY_TYPE:
-                getArray().resize(__n);
+                getArray().resize(n);
                 break;
         }
     }
@@ -5126,7 +5133,7 @@ class Dict {
      * @brief Returns the number of elements in the %string or %vector or %map.
      */
     inline std::size_t size() const {
-        std::size_t ret;
+        std::size_t ret = 0;
         switch (type_) {
             case NULL_TYPE:
             case BOOLEAN_TYPE:
@@ -5153,7 +5160,7 @@ class Dict {
      * @return true if the value and the dict are equal.
      */
     inline bool operator==(const Dict& value) const {
-        bool ret;
+        bool ret = false;
         if (type_ == value.type_) {
             switch (type_) {
                 case NULL_TYPE:
@@ -5176,9 +5183,6 @@ class Dict {
                     break;
             }
         }
-        else {
-            ret = false;
-        }
         return ret;
     }
 
@@ -5199,7 +5203,7 @@ class Dict {
      * @return True if dict is lexicographically greater than value.
      */
     inline bool operator>(const Dict& value) const {
-        bool ret;
+        bool ret = false;
         if (type_ == value.type_) {
             switch (type_) {
                 case NULL_TYPE:
@@ -5222,9 +5226,6 @@ class Dict {
                     break;
             }
         }
-        else {
-            ret = false;
-        }
         return ret;
     }
 
@@ -5235,7 +5236,7 @@ class Dict {
      * @return True if dict is lexicographically less than value.
      */
     inline bool operator<(const Dict& value) const {
-        bool ret;
+        bool ret = false;
         if (type_ == value.type_) {
             switch (type_) {
                 case NULL_TYPE:
@@ -5258,9 +5259,6 @@ class Dict {
                     break;
             }
         }
-        else {
-            ret = false;
-        }
         return ret;
     }
 
@@ -5271,7 +5269,7 @@ class Dict {
      * @return True if dict is lexicographically greater or equal than value.
      */
     inline bool operator>=(const Dict& value) const {
-        bool ret;
+        bool ret = false;
         if (type_ == value.type_) {
             switch (type_) {
                 case NULL_TYPE:
@@ -5294,9 +5292,6 @@ class Dict {
                     break;
             }
         }
-        else {
-            ret = false;
-        }
         return ret;
     }
 
@@ -5307,7 +5302,7 @@ class Dict {
      * @return True if dict is lexicographically less or equal than value.
      */
     inline bool operator<=(const Dict& value) const {
-        bool ret;
+        bool ret = false;
         if (type_ == value.type_) {
             switch (type_) {
                 case NULL_TYPE:
@@ -5329,9 +5324,6 @@ class Dict {
                     ret = value_.getObject() <= value.value_.getObject();
                     break;
             }
-        }
-        else {
-            ret = false;
         }
         return ret;
     }
@@ -5457,6 +5449,7 @@ class Dict {
      * @tparam T Type of value.
      * @param value A value.
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not boolean and not a number.
      */
     template<typename T>
     inline Dict operator+(const T& value) const {
@@ -5484,6 +5477,7 @@ class Dict {
      * @tparam T Type of value.
      * @param value A value.
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not boolean and not a number.
      */
     template<typename T>
     inline Dict operator-(const T& value) const {
@@ -5511,6 +5505,7 @@ class Dict {
      * @tparam T Type of value.
      * @param value A value.
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not boolean and not a number.
      */
     template<typename T>
     inline Dict operator*(const T& value) const {
@@ -5538,6 +5533,7 @@ class Dict {
      * @tparam T Type of value.
      * @param value A value.
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not boolean and not a number.
      */
     template<typename T>
     inline Dict operator/(const T& value) const {
@@ -5565,6 +5561,7 @@ class Dict {
      * @tparam T Type of value.
      * @param value A value.
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not boolean and not a number.
      */
     template<typename T>
     inline Dict operator%(const T& value) const {
@@ -5590,6 +5587,7 @@ class Dict {
      * @brief Use operator ~ if exist.
      *
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not a number.
      */
     inline Dict operator~() const {
         Dict ret;
@@ -5614,6 +5612,7 @@ class Dict {
      * @tparam T Type of value.
      * @param value A value.
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not boolean and not a number.
      */
     template<typename T>
     inline Dict operator&(const T& value) const {
@@ -5641,6 +5640,7 @@ class Dict {
      * @tparam T Type of value.
      * @param value A value.
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not boolean and not a number.
      */
     template<typename T>
     inline Dict operator|(const T& value) const {
@@ -5668,6 +5668,7 @@ class Dict {
      * @tparam T Type of value.
      * @param value A value.
      * @return Dict A new Dict.
+     * @throw MethodException if dict type is not boolean and not a number.
      */
     template<typename T>
     inline Dict operator^(const T& value) const {
@@ -5701,9 +5702,9 @@ class Dict {
     }
 
     /**
-     * @brief Get the @p T of dict object
+     * @brief Get the @p T of dict object.
      *
-     * @tparam T Type of ret
+     * @tparam T Type of ret.
      * @param ret
      */
     template<typename T>
@@ -5712,14 +5713,25 @@ class Dict {
     }
 
     /**
-     * @brief Get dict to deque
+     * @brief Get dict to deque.
      *
-     * @tparam T
+     * @tparam T Type of deque value.
+     * @throw MethodException if dict type is not a string and not a array and not a object.
      */
     template<typename T>
     inline operator std::deque<T>() const {
         std::deque<T> ret;
         switch (type_) {
+            case NULL_TYPE:
+            case NUMBER_TYPE:
+            case BOOLEAN_TYPE:
+                throw MethodException(*this, "operator std::deque");
+                break;
+            case STRING_TYPE:
+                for (std::size_t i = 0; i < value_.getString().size(); ++i) {
+                    ret.push_back(value_.getString()[i]);
+                }
+                break;
             case ARRAY_TYPE:
                 for (std::size_t i = 0; i < value_.getArray().size(); ++i) {
                     ret.push_back(value_.getArray()[i]);
@@ -5730,21 +5742,30 @@ class Dict {
                     ret.push_back(it->second);
                 }
                 break;
-            default:
-                break;
         }
         return ret;
     }
 
     /**
-     * @brief Get dict to list
+     * @brief Get dict to list.
      *
-     * @tparam T
+     * @tparam T Type of list value.
+     * @throw MethodException if dict type is not a string and not a array and not a object.
      */
     template<typename T>
     inline operator std::list<T>() const {
         std::list<T> ret;
         switch (type_) {
+            case NULL_TYPE:
+            case NUMBER_TYPE:
+            case BOOLEAN_TYPE:
+                throw MethodException(*this, "operator std::list");
+                break;
+            case STRING_TYPE:
+                for (std::size_t i = 0; i < value_.getString().size(); ++i) {
+                    ret.push_back(value_.getString()[i]);
+                }
+                break;
             case ARRAY_TYPE:
                 for (std::size_t i = 0; i < value_.getArray().size(); ++i) {
                     ret.push_back(value_.getArray()[i]);
@@ -5755,17 +5776,15 @@ class Dict {
                     ret.push_back(it->second);
                 }
                 break;
-            default:
-                break;
         }
         return ret;
     }
 
     /**
-     * @brief Get dict to map
+     * @brief Get dict to map.
      *
-     * @tparam T
-     * @return std::map<std::string, T>
+     * @tparam T Type of map value.
+     * @throw MethodException if dict type is not a object.
      */
     template<typename T>
     inline operator std::map<std::string, T>() const {
@@ -5775,35 +5794,57 @@ class Dict {
                 ret.insert(std::pair<std::string, T>(it->first, it->second));
             }
         }
-        return ret;
-    }
-
-    /**
-     * @brief Get dict to map
-     *
-     * @tparam T key
-     * @tparam U value
-     */
-    template<typename T, typename U>
-    inline operator std::map<T, U>() const {
-        std::map<T, U> ret;
-        if (isArray()) {
-            for (std::size_t i = 0; i < value_.getArray().size(); ++i) {
-                ret.insert(std::pair<T, U>(i, value_.getArray()[i]));
-            }
+        else {
+            throw MethodException(*this, "operator std::map");
         }
         return ret;
     }
 
     /**
-     * @brief Get dict to queue
+     * @brief Get dict to map.
      *
-     * @tparam T
+     * @tparam T Type of map key.
+     * @tparam U Type of map value.
+     * @throw MethodException if dict type is not a string and not a array.
+     */
+    template<typename T, typename U>
+    inline operator std::map<T, U>() const {
+        std::map<T, U> ret;
+        if (isString()) {
+            for (std::size_t i = 0; i < value_.getString().size(); ++i) {
+                ret.insert(std::pair<T, U>(i, value_.getString()[i]));
+            }
+        }
+        else if (isArray()) {
+            for (std::size_t i = 0; i < value_.getArray().size(); ++i) {
+                ret.insert(std::pair<T, U>(i, value_.getArray()[i]));
+            }
+        }
+        else {
+            throw MethodException(*this, "operator std::map");
+        }
+        return ret;
+    }
+
+    /**
+     * @brief Get dict to queue.
+     *
+     * @tparam T Type of queue value.
      */
     template<typename T>
     inline operator std::queue<T>() const {
         std::queue<T> ret;
         switch (type_) {
+            case NULL_TYPE:
+            case NUMBER_TYPE:
+            case BOOLEAN_TYPE:
+                throw MethodException(*this, "operator std::queue");
+                break;
+            case STRING_TYPE:
+                for (std::size_t i = 0; i < value_.getString().size(); ++i) {
+                    ret.push(value_.getString()[i]);
+                }
+                break;
             case ARRAY_TYPE:
                 for (std::size_t i = 0; i < value_.getArray().size(); ++i) {
                     ret.push(value_.getArray()[i]);
@@ -5814,21 +5855,29 @@ class Dict {
                     ret.push(it->second);
                 }
                 break;
-            default:
-                break;
         }
         return ret;
     }
 
     /**
-     * @brief Get dict to set
+     * @brief Get dict to set.
      *
-     * @tparam T
+     * @tparam T Type of set value.
      */
     template<typename T>
     inline operator std::set<T>() const {
         std::set<T> ret;
         switch (type_) {
+            case NULL_TYPE:
+            case NUMBER_TYPE:
+            case BOOLEAN_TYPE:
+                throw MethodException(*this, "operator std::set");
+                break;
+            case STRING_TYPE:
+                for (std::size_t i = 0; i < value_.getString().size(); ++i) {
+                    ret.insert(static_cast<T>(value_.getString()[i]));
+                }
+                break;
             case ARRAY_TYPE:
                 for (std::size_t i = 0; i < value_.getArray().size(); ++i) {
                     ret.insert(static_cast<T>(value_.getArray()[i]));
@@ -5839,21 +5888,29 @@ class Dict {
                     ret.insert(static_cast<T>(it->second));
                 }
                 break;
-            default:
-                break;
         }
         return ret;
     }
 
     /**
-     * @brief Get dict to stack
+     * @brief Get dict to stack.
      *
-     * @tparam T
+     * @tparam T Type of stack value.
      */
     template<typename T>
     inline operator std::stack<T>() const {
         std::stack<T> ret;
         switch (type_) {
+            case NULL_TYPE:
+            case NUMBER_TYPE:
+            case BOOLEAN_TYPE:
+                throw MethodException(*this, "operator std::stack");
+                break;
+            case STRING_TYPE:
+                for (std::size_t i = 0; i < value_.getString().size(); ++i) {
+                    ret.push(value_.getString()[i]);
+                }
+                break;
             case ARRAY_TYPE:
                 for (std::size_t i = 0; i < value_.getArray().size(); ++i) {
                     ret.push(value_.getArray()[i]);
@@ -5864,21 +5921,30 @@ class Dict {
                     ret.push(it->second);
                 }
                 break;
-            default:
-                break;
         }
         return ret;
     }
 
     /**
-     * @brief Get dict to vector
+     * @brief Get dict to vector.
      *
-     * @tparam T
+     * @tparam T Type of vector value.
      */
     template<typename T>
     inline operator std::vector<T>() const {
         std::vector<T> ret;
         switch (type_) {
+            case NULL_TYPE:
+            case NUMBER_TYPE:
+            case BOOLEAN_TYPE:
+                throw MethodException(*this, "operator std::vector");
+                break;
+            case STRING_TYPE:
+                ret.reserve(value_.getString().size());
+                for (std::size_t i = 0; i < value_.getString().size(); ++i) {
+                    ret.push_back(value_.getString()[i]);
+                }
+                break;
             case ARRAY_TYPE:
                 ret.reserve(value_.getArray().size());
                 for (std::size_t i = 0; i < value_.getArray().size(); ++i) {
@@ -5890,8 +5956,6 @@ class Dict {
                 for (object_t::const_iterator it = value_.getObject().begin(); it != value_.getObject().end(); ++it) {
                     ret.push_back(it->second);
                 }
-                break;
-            default:
                 break;
         }
         return ret;
@@ -5945,7 +6009,7 @@ class Dict {
 
 } // namespace blet
 
-#endif // BLET_DICT_H_
+#endif // #ifndef BLET_DICT_H_
 
 // ----------------------------------
 // End third/Dict/include/blet/dict.h
@@ -6393,7 +6457,8 @@ class Loader {
     }
 
     inline void loadObject(blet::Dict& dict) {
-        dict.newObject();
+        dict.getType() = blet::Dict::OBJECT_TYPE;
+        dict.getValue().newObject();
         bool next = false;
         ++reader_; // jump '{'
         spaceJump();
@@ -6425,7 +6490,8 @@ class Loader {
     }
 
     inline void loadArray(blet::Dict& dict) {
-        dict.newArray();
+        dict.getType() = blet::Dict::ARRAY_TYPE;
+        dict.getValue().newArray();
         bool next = false;
 
         ++reader_; // jump '['
@@ -6544,13 +6610,13 @@ class Loader {
         return true;
     }
 
-    inline void loadNull(blet::Dict& dict) {
-        dict.newNull();
+    inline void loadNull(blet::Dict& /*dict*/) {
         reader_ += (sizeof("null") - 1);
     }
 
     inline void loadBool(bool boolean, blet::Dict& dict) {
-        dict.newBoolean(boolean);
+        dict.getType() = blet::Dict::BOOLEAN_TYPE;
+        dict.getValue().getBoolean() = boolean;
         if (boolean) {
             reader_ += (sizeof("true") - 1);
         }
@@ -6566,7 +6632,8 @@ class Loader {
         double number;
         std::istream& ris = reader_.streamOffset(reader_.index());
         if (ris >> number) {
-            dict.newNumber(number);
+            dict.getType() = blet::Dict::NUMBER_TYPE;
+            dict.getValue().getNumber() = number;
             // jump of string number size
             reader_ += (ris.tellg() - std::streampos(reader_.index()));
         }
@@ -6591,7 +6658,8 @@ class Loader {
             }
             ++reader_;
         }
-        dict.newString(stringEscape(reader_.substr(start, reader_.index())));
+        dict.getType() = blet::Dict::STRING_TYPE;
+        dict.getValue().newString(stringEscape(reader_.substr(start, reader_.index())));
         ++reader_; // jump '"'
     }
 
